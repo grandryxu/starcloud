@@ -1,0 +1,193 @@
+// 表格
+.el-table__header th {
+  color: #333;
+  background-color: #f7f8fa;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  color: #666666;
+  background-color: #eff2f7;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td {
+  background-color: #eff2f7;
+}
+// 按钮
+.iot-table-btn-primary {
+  width: 24px;
+  height: 24px;
+  background-color: #409eff;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 5px;
+  &:hover {
+    background-color: #66b1ff;
+  }
+}
+.iot-table-btn-danger {
+  width: 24px;
+  height: 24px;
+  background-color: #f56c6c;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 5px;
+  &:hover {
+    background-color: #f78989;
+  }
+}
+// tabs
+.iot-tabs {
+  position: relative;
+  .iot-tabs__back {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+  }
+}
+.iot-form {
+  // max-width: 1306px;
+  max-width: 100%;
+  padding-top: 10px;
+  text-align: left;
+  .el-form--inline .el-form-item__label{
+    // font-weight: bold;
+    color: #585860;
+    font-size: 12px;
+  }
+}
+// .iot-form-row{
+//   width: 700px;;
+// }
+
+// dialog
+.iot-dialog {
+  .el-dialog__title {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+  }
+  .el-dialog__headerbtn .el-dialog__close {
+    color: #94979d;
+  }
+  .el-dialog__body {
+    padding: 0 20px;
+    padding-bottom:1rem;
+  }
+  .el-form-item__label {
+    color: #333333;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.iot-list {
+  // border-radius: 4px;
+  // border: solid 1px #e5e5e5;
+  // padding: 20px;
+}
+
+// 分页
+.iot-pagination {
+  padding: 0 16px 16px;
+  .el-pagination {
+    display: flex;
+    padding-top: 20px;
+  }
+  .el-pagination__sizes {
+    flex: 1;
+  }
+  .el-pagination__total {
+    i {
+      font-style: normal;
+      color: #4c84ff;
+    }
+  }
+  .el-pagination.is-background .btn-next,
+  .el-pagination.is-background .btn-prev,
+  .el-pagination.is-background .el-pager li {
+    // width: 32px;
+    // height: 32px;
+    // line-height: 32px;
+    border-radius: 4px;
+    border: solid 1px #dcdee3;
+    color: #666666;
+    background-color: #ffffff;
+  }
+
+  .el-pagination.is-background .btn-next,
+  .el-pagination.is-background .btn-prev {
+    color: #a0a2ad;
+  }
+}
+// 按钮
+.el-button--mini {
+  padding: 5px 13px;
+}
+
+.iot-w50 {
+  width: 50px !important;
+}
+.iot-w90 {
+  width: 90px !important;
+}
+.iot-w120 {
+  width: 120px !important;
+}
+.iot-w150 {
+  width: 150px !important;
+}
+
+.iot-w240 {
+  width: 240px !important;
+}
+
+.iot-min-w240 {
+  min-width: 240px !important;
+}
+
+.iot-w200 {
+  width: 200px !important;
+}
+
+.iot-w280 {
+  width: 280px !important;
+}
+.iot-w412 {
+  width: 412px !important;
+}
+
+.iot-w580 {
+  width: 580px !important;
+}
+
+.iot-w610 {
+  width: 610px !important;
+}
+.iot-w660 {
+  width: 660px !important;
+}
+.lot__radio /deep/ .el-radio-button__inner {
+padding: 13px 45px;
+}
+
+.layout__search {
+  border-bottom: 1px solid  #d6d8dd;
+  width: 100%;
+  padding: 10px 0;
+}
+.el-button--primary {
+  background-color: #005cdc;
+  border-color: #005cdc;
+}
+
+.iot-system-plus-color{
+  color: #585860 !important;
+}
+
