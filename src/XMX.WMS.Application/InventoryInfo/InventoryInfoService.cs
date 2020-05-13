@@ -53,9 +53,9 @@ namespace XMX.WMS.InventoryInfo
         /// <returns></returns>
         public List<InventoryInfo> GetInventoryForStockTasking(InventoryInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding(x => x.Goods)
+            return Repository.GetAllIncluding(x => x.Goods, x => x.Slot)
                     .Where(x => x.inventory_status == InventoryStatus.可用)
-                    .WhereIf(input.task_warehouse_id.HasValue, x => x.inventory_warehouse_id == input.task_warehouse_id)
+                    .WhereIf(input.task_warehouse_id.HasValue, x => x.Slot.slot_warehouse_id == input.task_warehouse_id)
                     .WhereIf(input.task_type.HasValue, x => (input.task_type == StockTaskingType.动态盘点
                                                                 && ((Convert.ToDateTime(input.inventory_date_b + " 00:00:00") <= x.CreationTime && x.CreationTime <= Convert.ToDateTime(input.inventory_date_e + " 23:59:59"))
                                                                 || (Convert.ToDateTime(input.inventory_date_b + " 00:00:00") <= x.LastModificationTime && x.LastModificationTime <= Convert.ToDateTime(input.inventory_date_e + " 23:59:59"))))
@@ -71,9 +71,9 @@ namespace XMX.WMS.InventoryInfo
         public PagedResultDto<InventoryInfoDto> GetInventoryInfoForHead(InventoryInfoPagedRequest input)
         {
             List<ExportBillbody.ExportBillbody> bodyList = _outRepository.GetAllIncluding().Where(x => x.expbody_imphead_id == input.head_id).ToList();
-            var list = from m in Repository.GetAllIncluding(x => x.Goods, x => x.Quality, x => x.Warehouse, x => x.Port, x => x.Slot)
+            var list = from m in Repository.GetAllIncluding(x => x.Goods, x => x.Quality, x => x.Slot)
                        join s in _outRepository.GetAllIncluding().Where(x => x.expbody_imphead_id == input.head_id)
-                       on new { a = m.inventory_batch_no, b = m.inventory_goods_id } equals new { a = s.expbody_batch_no, b = s.expbody_goods_id }
+                       on new { a = m.inventory_batch_no, b = m.inventory_goods_id } equals new { a = s.expbody_batch_no, b = s.expbody_goods_id.Value }
                        select new InventoryInfoDto
                        {
                            Id = m.Id,
@@ -95,10 +95,6 @@ namespace XMX.WMS.InventoryInfo
                            Goods = m.Goods,
                            inventory_quality_status = m.inventory_quality_status,
                            Quality = m.Quality,
-                           inventory_warehouse_id = m.inventory_warehouse_id,
-                           Warehouse = m.Warehouse,
-                           inventory_port_id = m.inventory_port_id,
-                           Port = m.Port,
                            inventory_slot_code = m.inventory_slot_code,
                            Slot = m.Slot
                        };
@@ -119,11 +115,11 @@ namespace XMX.WMS.InventoryInfo
         public PagedResultDto<InventoryStatistics> GetInventoryStatistics(InventoryInfoPagedRequest input)
         {
             //初步过滤排序
-            List<InventoryInfo> iiList = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit, x => x.Quality, x => x.Warehouse)
+            List<InventoryInfo> iiList = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit, x => x.Quality, x => x.Slot.Warehouse)
                                             .Where(x => !x.inventory_goods_id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
                                             .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => (x.Goods.goods_code.Contains(input.goods_name) || x.Goods.goods_name.Contains(input.goods_name)))
                                             .WhereIf(!input.quality_name.IsNullOrWhiteSpace(), x => x.Quality.quality_name.Contains(input.quality_name))
-                                            .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.Warehouse.warehouse_name.Contains(input.warehouse_name))
+                                            .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.Slot.Warehouse.warehouse_name.Contains(input.warehouse_name))
                                             .WhereIf(!(input.inventory_date_b.IsNullOrWhiteSpace() && input.inventory_date_e.IsNullOrWhiteSpace()), x => Convert.ToDateTime(input.inventory_date_b + " 00:00:00") <= x.CreationTime && x.CreationTime <= Convert.ToDateTime(input.inventory_date_e + " 23:59:59")).ToList();
             List<InventoryStatistics> list = new List<InventoryStatistics>();
             if (iiList.Count > 0)
@@ -161,11 +157,11 @@ namespace XMX.WMS.InventoryInfo
         public PagedResultDto<InventoryStatistics> GetInventoryStatisticsBatch(InventoryInfoPagedRequest input)
         {
             //初步过滤排序
-            List<InventoryInfo> iiList = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit, x => x.Quality, x => x.Warehouse)
+            List<InventoryInfo> iiList = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit, x => x.Quality, x => x.Slot.Warehouse)
                                             .Where(x => !x.inventory_goods_id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
                                             .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => (x.Goods.goods_code.Contains(input.goods_name) || x.Goods.goods_name.Contains(input.goods_name)))
                                             .WhereIf(!input.quality_name.IsNullOrWhiteSpace(), x => x.Quality.quality_name.Contains(input.quality_name))
-                                            .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.Warehouse.warehouse_name.Contains(input.warehouse_name))
+                                            .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.Slot.Warehouse.warehouse_name.Contains(input.warehouse_name))
                                             .WhereIf(!(input.inventory_date_b.IsNullOrWhiteSpace() && input.inventory_date_e.IsNullOrWhiteSpace()), x => Convert.ToDateTime(input.inventory_date_b + " 00:00:00") <= x.CreationTime && x.CreationTime <= Convert.ToDateTime(input.inventory_date_e + " 23:59:59")).ToList();
             List<InventoryStatistics> list = new List<InventoryStatistics>();
             if (iiList.Count > 0)
@@ -253,10 +249,10 @@ namespace XMX.WMS.InventoryInfo
         /// <returns></returns>
         public PagedResultDto<TotalInventorydto> GetTotalInventory(TotalInventory input)
         {
-            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit)
+            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Goods.Unit,x=>x.Slot)
                            .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => x.Goods.goods_name.Contains(input.goods_name))
                            .WhereIf(!(input.inventory_date_b.IsNullOrWhiteSpace() && input.inventory_date_e.IsNullOrWhiteSpace()), x => Convert.ToDateTime(input.inventory_date_b + " 00:00:00") <= x.CreationTime && x.CreationTime <= Convert.ToDateTime(input.inventory_date_e + " 23:59:59"))
-                           .WhereIf(input.warehouse_id != null, x => x.inventory_warehouse_id == input.warehouse_id).GroupBy(x => new
+                           .WhereIf(input.warehouse_id != null, x => x.Slot.slot_warehouse_id == input.warehouse_id).GroupBy(x => new
                            {
                                inventory_good_code = x.Goods.goods_code,
                                inventory_good_name = x.Goods.goods_name,
@@ -331,7 +327,7 @@ namespace XMX.WMS.InventoryInfo
                     imp_lock = x.Slot.slot_imp_status,
                     ex_lock = x.Slot.slot_exp_status,
                     imptime = x.inventory_date,
-                    warehouseid = x.inventory_warehouse_id,
+                    warehouseid = x.Slot.slot_warehouse_id,
                 })
                 .Select(g => new SlotInventorydto
                 {
@@ -362,11 +358,10 @@ namespace XMX.WMS.InventoryInfo
         /// <returns></returns>
         public List<SlotInventoryDetailDto> GetSlotInventoryDetail(SlotInventoryDetail input)
         {
-            //List<SlotInventoryDetailDto> list = new List<SlotInventoryDetailDto>();
-            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Quality)
+            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Quality,x=>x.Slot)
                 .WhereIf(input.slot_code.HasValue, x => x.inventory_slot_code == input.slot_code)
                 .WhereIf(!input.stock_code.IsNullOrWhiteSpace(), x => x.inventory_stock_code == input.stock_code)
-                .WhereIf(input.warehouseid != null, x => x.inventory_warehouse_id == input.warehouseid)
+                .WhereIf(input.warehouseid != null, x => x.Slot.slot_warehouse_id == input.warehouseid)
                 .Select(x => new SlotInventoryDetailDto
                 {
                     good_code = x.Goods.goods_code,
@@ -378,7 +373,6 @@ namespace XMX.WMS.InventoryInfo
                     package_code = x.inventory_box_code,
                     unit = x.Goods.Unit.unit_name
                 }).ToList();
-            //if (iquery != null && iquery.Count > 0)
             return iquery.ToList();
         }
 
@@ -390,7 +384,7 @@ namespace XMX.WMS.InventoryInfo
         public PagedResultDto<StockInventoryDto> GetStockInventory(StockInventory input)
         {
             //条件查询
-            var iquery = Repository.GetAllIncluding(x => x.Warehouse, x => x.Slot)
+            var iquery = Repository.GetAllIncluding(x => x.Slot)
                                     .Where(x => x.inventory_goods_id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
                                     .WhereIf(!input.stock_code.IsNullOrWhiteSpace(), x => x.inventory_stock_code.Contains(input.stock_code))
                                     .GroupBy(x => new
@@ -402,8 +396,8 @@ namespace XMX.WMS.InventoryInfo
                                         imp_lock = x.Slot.slot_imp_status,
                                         exp_lock = x.Slot.slot_exp_status,
                                         imptime = x.CreationTime,
-                                        warehouseid = x.inventory_warehouse_id,
-                                        warehouse_name = x.Warehouse.warehouse_name
+                                        warehouseid = x.Slot.slot_warehouse_id,
+                                        warehouse_name = x.Slot.Warehouse.warehouse_name
                                     })
                                     .Select(g => new StockInventoryDto
                                     {
@@ -411,12 +405,12 @@ namespace XMX.WMS.InventoryInfo
                                         slot_id = g.Key.slot_id,
                                         stock_code = g.Key.stock_code,
                                         inventory_total = g.Sum(y => y.inventory_quantity),
-                                        inventory_status= g.Key.inventory_status,
-                                        imp_lock=g.Key.imp_lock,
-                                        exp_lock=g.Key.exp_lock,
-                                        imptime=g.Key.imptime,
-                                        warehouseid=g.Key.warehouseid,
-                                        warehouse_name=g.Key.warehouse_name
+                                        inventory_status = g.Key.inventory_status,
+                                        imp_lock = g.Key.imp_lock,
+                                        exp_lock = g.Key.exp_lock,
+                                        imptime = g.Key.imptime,
+                                        warehouseid = g.Key.warehouseid,
+                                        warehouse_name = g.Key.warehouse_name
                                     });
 
             // 获取总数
@@ -436,18 +430,17 @@ namespace XMX.WMS.InventoryInfo
         public List<StockInventoryDetailDto> GetStockInventoryDetail(StockInventoryDetail input)
         {
             List<StockInventoryDetailDto> list = new List<StockInventoryDetailDto>();
-            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Quality, x => x.Goods.Unit)
+            var iquery = Repository.GetAllIncluding(x => x.Goods, x => x.Quality, x => x.Goods.Unit,x=>x.Slot)
                 .Where(x => x.inventory_goods_id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
                 .WhereIf(input.slot_code.HasValue, x => x.inventory_slot_code == input.slot_code)
                 .WhereIf(!input.stock_code.IsNullOrWhiteSpace(), x => x.inventory_stock_code == input.stock_code)
-                .WhereIf(input.warehouseid != null, x => x.inventory_warehouse_id == input.warehouseid)
+                .WhereIf(input.warehouseid != null, x => x.Slot.slot_warehouse_id == input.warehouseid)
                 .Select(x => new StockInventoryDetailDto
                 {
                     good_code = x.Goods.goods_code,
                     good_name = x.Goods.goods_name,
                     number = x.inventory_quantity,
                     bill_code = x.inventory_batch_no,
-                    //imptime = x.inventory_datetime,
                     status = x.Quality.quality_name,
                     package_code = x.inventory_box_code,
                     unit = x.Goods.Unit.unit_name

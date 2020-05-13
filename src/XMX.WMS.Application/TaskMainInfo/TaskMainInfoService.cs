@@ -79,18 +79,11 @@ namespace XMX.WMS.TaskMainInfo
         [AbpAuthorize(PermissionNames.MainTaskManage_Get)]
         protected override IQueryable<TaskMainInfo> CreateFilteredQuery(TaskMainInfoPagedRequest input)
         {
-            if (input.main_execute_flag == TaskExecuteFlag.非完成)
-            {
-                return Repository.GetAllIncluding(x => x.Port1, x => x.Slot1, x => x.Slot1.Row.Warehouse)
+            //, x => x.Slot1.Row.Warehouse
+            return Repository.GetAllIncluding(x => x.Port1, x => x.Slot1,x=>x.Slot1.Warehouse)
                                  .WhereIf(input.main_mode != null, x => x.main_mode == input.main_mode)
-                                 .WhereIf(input.main_execute_flag != null, x => x.main_execute_flag != TaskExecuteFlag.已完成)
-                                 .WhereIf(input.main_manual_flag != null, x => x.main_manual_flag == input.main_manual_flag)
-                                 .WhereIf(input.main_creat_datetime != null, x => x.CreationTime == input.main_creat_datetime)
-                                 .OrderBy(x => x.main_execute_flag);
-            }
-            return Repository.GetAllIncluding(x => x.Port1, x => x.Slot1, x => x.Slot1.Row.Warehouse)
-                                 .WhereIf(input.main_mode != null, x => x.main_mode == input.main_mode)
-                                 .WhereIf(input.main_execute_flag != null, x => x.main_execute_flag == input.main_execute_flag)
+                                 .WhereIf(input.main_execute_flag != TaskExecuteFlag.非完成, x => x.main_execute_flag == input.main_execute_flag)
+                                  .WhereIf(input.main_execute_flag == TaskExecuteFlag.非完成, x => x.main_execute_flag != TaskExecuteFlag.已完成)
                                  .WhereIf(input.main_manual_flag != null, x => x.main_manual_flag == input.main_manual_flag)
                                  .WhereIf(input.main_creat_datetime != null, x => x.CreationTime == input.main_creat_datetime)
                                  .OrderBy(x => x.main_execute_flag);
@@ -149,7 +142,7 @@ namespace XMX.WMS.TaskMainInfo
             switch (input.main_execute_flag)
             {
                 case TaskExecuteFlag.输送机:
-                    if ((input.main_mode == TaskType.出库 || input.main_mode == TaskType.空托盘出库) && input.main_manual_flag == TaskManualFlag.自动)
+                    if ((input.main_mode == TaskType.出库 || input.main_mode == TaskType.空托盘出库) && input.main_manual_flag == TaskManualFlag.自动)//目前没有考虑双伸
                     {
                         slot.slot_stock_status = SlotStock.空闲;
                         _sRepository.Update(slot);
@@ -240,11 +233,8 @@ namespace XMX.WMS.TaskMainInfo
                 inventory.inventory_stock_code = order.impstock_stock_code;
                 inventory.inventory_status = InventoryStatus.可用;
                 inventory.inventory_slot_code = Guid.Parse(order.impstock_slot_code.ToString());
-                inventory.inventory_goods_id = order.impstock_goods_id;
+                inventory.inventory_goods_id = order.impstock_goods_id.Value;
                 inventory.inventory_quality_status = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                inventory.inventory_port_id = order.impstock_port_id;
-                inventory.inventory_warehouse_id = order.impstock_warehouse_id;
-                inventory.inventory_port_id = order.impstock_port_id;
                 inventory.inventory_date = DateTime.Now;
                 _iRepository.Insert(inventory);
                 // 入库流水修改
@@ -264,12 +254,17 @@ namespace XMX.WMS.TaskMainInfo
             foreach (ExportStock.ExportStock order in orderList)
             {
                 InventoryInfo.InventoryInfo inventory = _iRepository.FirstOrDefault(x => x.inventory_stock_code == order.expstock_stock_code && x.inventory_status == InventoryStatus.出库 && x.inventory_slot_code == order.expstock_slot_code);
-                if (inventory != null)
+                if (inventory == null)
                 {
-                    //有库存信息，更新库存信息
-                    inventory.IsDeleted = true;
-                    _iRepository.Update(inventory);
+                    throw new UserFriendlyException("不存在该托盘的库存，请检查！");
                 }
+                inventory.DeletionTime = DateTime.Now;
+                inventory.DeleterUserId = AbpSession.UserId;
+                //有库存信息，更新库存信息
+                inventory.IsDeleted = true;
+                _iRepository.Update(inventory);
+                order.expstock_execute_flag = ExecuteFlag.已完成;
+                _esRepository.Update(order);
             }
         }
 
@@ -389,8 +384,6 @@ namespace XMX.WMS.TaskMainInfo
                     inventory.inventory_stock_status = order.imporder_stock_status;
                     inventory.inventory_goods_id = order.imporder_goods_id.Value;
                     inventory.inventory_quality_status = order.imporder_quality_status.Value;
-                    inventory.inventory_warehouse_id = order.imporder_warehouse_id.Value;
-                    inventory.inventory_port_id = order.imporder_port_id;
                     inventory.inventory_date = order.ImportBillbody.ImportBillhead.imphead_date;
                     _iRepository.Insert(inventory);
                     // 入库单据信息修改
@@ -696,7 +689,7 @@ namespace XMX.WMS.TaskMainInfo
                         // 任务方式(1入库；2出库；3移库；4口对口)
                         task.main_mode = TaskType.出库;
                         // 库位
-                        task.main_slot_code = orderDto.exporder_slot_code;
+                        task.main_slot_code = orderDto.exporder_slot_code.Value;
                         // 托盘码
                         task.main_stock_code = orderDto.exporder_stock_code;
                         // 手自标志(1自动；2手动)                                                                                                                                               
@@ -848,7 +841,7 @@ namespace XMX.WMS.TaskMainInfo
             if (codeList == null || codeList.Count == 0)
                 throw new UserFriendlyException("参数错误！");
             // 托盘库存
-            List<InventoryInfo.InventoryInfo> inventoryList = _iRepository.GetAllIncluding().Where(x => codeList.Contains(x.inventory_slot_code.ToString()))
+            List<InventoryInfo.InventoryInfo> inventoryList = _iRepository.GetAllIncluding(x=>x.Slot).Where(x => codeList.Contains(x.inventory_slot_code.ToString()))
                                                                             .Where(x => x.inventory_status == InventoryStatus.可用).ToList();
             if (inventoryList == null || inventoryList.Count == 0)
                 throw new UserFriendlyException("未找到库存！");
@@ -860,7 +853,7 @@ namespace XMX.WMS.TaskMainInfo
                 {
                     TaskMainInfo taskMainInfo = CreateTask("ExpstockTask", "", inventory.inventory_slot_code.ToString(), inventory.inventory_stock_code);
                     // 库存状态修改
-                    inventory.inventory_status = InventoryStatus.分配;
+                    inventory.inventory_status = InventoryStatus.出库;
                     _iRepository.Update(inventory);
                     ExportStock.ExportStock stock = new ExportStock.ExportStock();
                     stock.expstock_batch_no = inventory.inventory_batch_no;
@@ -869,7 +862,7 @@ namespace XMX.WMS.TaskMainInfo
                     stock.expstock_execute_flag = ExecuteFlag.执行中;
                     stock.expstock_goods_id = inventory.inventory_goods_id;
                     stock.expstock_slot_code = inventory.inventory_slot_code;
-                    stock.expstock_warehouse_id = inventory.inventory_warehouse_id;
+                    stock.expstock_warehouse_id = inventory.Slot.slot_warehouse_id;
                     stock.expstock_task_id = taskMainInfo.Id;
                     _esRepository.Insert(stock);
                 }

@@ -103,11 +103,35 @@ namespace XMX.WMS.ExportOrder
         [ForeignKey("task_id")]
         public virtual TaskMainInfo.TaskMainInfo Task { get; set; }
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? exporder_company_id { get; set; }
+        [ForeignKey("exporder_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
+        /// 物料代码
+        /// </summary>
+        public virtual Guid? exporder_goods_id { get; set; }
+        [ForeignKey("exporder_goods_id")]
+        public virtual GoodsInfo.GoodsInfo Goods { get; set; }
+        /// <summary>
+        /// 质量状态
+        /// </summary>
+        public virtual Guid? exporder_quality_status { get; set; }
+        [ForeignKey("exporder_quality_status")]
+        public virtual QualityInfo.QualityInfo Quality { get; set; }
+        /// <summary>
         /// 库位
         /// </summary>
-        public virtual Guid exporder_slot_code { get; set; }
+        public virtual Guid? exporder_slot_code { get; set; }
         [ForeignKey("exporder_slot_code")]
         public virtual SlotInfo.SlotInfo Slot { get; set; }
+        /// <summary>
+        /// 仓库
+        /// </summary>
+        public virtual Guid? exporder_warehouse_id { get; set; }
+        [ForeignKey("exporder_warehouse_id")]
+        public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>
         /// 口号
         /// </summary>
@@ -123,7 +147,7 @@ namespace XMX.WMS.ExportOrder
         /// <summary>
         /// 批次
         /// </summary>
-        public virtual Guid exporder_body_id { get; set; }
+        public virtual Guid? exporder_body_id { get; set; }
         [ForeignKey("exporder_body_id")]
         public virtual ExportBillbody.ExportBillbody ExportBillbody { get; set; }
         #endregion

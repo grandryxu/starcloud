@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using XMX.WMS.EntityFrameworkCore;
 
 namespace XMX.WMS.Migrations
 {
     [DbContext(typeof(WMSDbContext))]
-    partial class WMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200513025504_addgoods_company_id")]
+    partial class addgoods_company_id
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

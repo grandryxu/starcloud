@@ -32,7 +32,13 @@ namespace XMX.WMS.AreaInfo
         /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid area_warehouse_id { get; set; }
+        public virtual Guid? area_company_id { get; set; }
+        [ForeignKey("area_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
+        /// 所属仓库
+        /// </summary>
+        public virtual Guid? area_warehouse_id { get; set; }
         [ForeignKey("area_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         #endregion

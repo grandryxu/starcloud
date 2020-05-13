@@ -34,6 +34,12 @@ namespace XMX.WMS.PlatFormInfo
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? platform_company_id { get; set; }
+        [ForeignKey("platform_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
         public virtual Guid? platform_warehouse_id { get; set; }

@@ -106,21 +106,27 @@ namespace XMX.WMS.ExportBillbody
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expbody_company_id { get; set; }
+        [ForeignKey("expbody_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_imphead_id { get; set; }
         [ForeignKey("expbody_imphead_id")]
         public virtual ExportBillhead.ExportBillhead ExportBillhead { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
-        public virtual Guid expbody_goods_id { get; set; }
+        public virtual Guid? expbody_goods_id { get; set; }
         [ForeignKey("expbody_goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
         /// 质量状态
         /// </summary>
-        public virtual Guid expbody_quality_status { get; set; }
+        public virtual Guid? expbody_quality_status { get; set; }
         [ForeignKey("expbody_quality_status")]
         public virtual QualityInfo.QualityInfo Quality { get; set; }
         #endregion

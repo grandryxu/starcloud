@@ -19,14 +19,13 @@ namespace XMX.WMS.Alarm
     [AbpAuthorize(PermissionNames.DullStockWarning,PermissionNames.ValidityStockWarning,PermissionNames.InventoryThresholdWarning)]
     public class AlarmService : AsyncCrudAppService<Alarm, AlarmDto, Guid, AlarmPagedRequest, AlarmCreatedDto, AlarmUpdatedDto>, IAlarmService
     {
-        private readonly UserManager _userManager;
+        public UserManager _userManager { get; set; }
+        public User loginuser { get; set; }
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _inventoryInfo;
         public AlarmService(IRepository<Alarm, Guid> repository, 
-                            IRepository<InventoryInfo.InventoryInfo, Guid> InventoryInfo,
-                            UserManager userManager) : base(repository)
+                            IRepository<InventoryInfo.InventoryInfo, Guid> InventoryInfo) : base(repository)
         {
             _inventoryInfo = InventoryInfo;
-            _userManager = userManager;
         }
 
         /// <summary>

@@ -31,7 +31,10 @@ namespace XMX.WMS.ImportApplyLog
 
         protected override IQueryable<ImportApplyLog> CreateFilteredQuery(ImportApplyLogPagedRequest input)
         {
-            return Repository.GetAll();
+            string[] dt = input.DateRange?.Split("/");
+            return Repository.GetAllIncluding().
+                WhereIf(dt?.Length == 2, x => DateTime.Compare(Convert.ToDateTime(x.CreationTime.ToString("yyyy-MM-dd")), Convert.ToDateTime(dt[0])) >= 0
+                 && DateTime.Compare(Convert.ToDateTime(x.CreationTime.ToString("yyyy-MM-dd")), Convert.ToDateTime(dt[1])) <= 0);
         }
     }
 }

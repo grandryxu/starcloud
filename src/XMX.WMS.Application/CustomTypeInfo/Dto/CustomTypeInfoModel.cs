@@ -54,7 +54,7 @@ namespace XMX.WMS.CustomTypeInfo.Dto
         /// <summary>
         /// 所属公司
         /// </summary>
-        public virtual Guid customtype_company_id { get; set; }
+        public virtual Guid? customtype_company_id { get; set; }
         #endregion
     }
     #endregion
@@ -92,7 +92,7 @@ namespace XMX.WMS.CustomTypeInfo.Dto
         /// <summary>
         /// 所属公司
         /// </summary>
-        public virtual Guid customtype_company_id { get; set; }
+        public virtual Guid? customtype_company_id { get; set; }
         #endregion
     }
     #endregion
@@ -124,7 +124,7 @@ namespace XMX.WMS.CustomTypeInfo.Dto
         /// <summary>
         /// 所属公司
         /// </summary>
-        public virtual Guid customtype_company_id { get; set; }
+        public virtual Guid? customtype_company_id { get; set; }
         [ForeignKey("customtype_company_id")]
         public virtual CompanyInfo.CompanyInfo Company { get; set; }
         #endregion

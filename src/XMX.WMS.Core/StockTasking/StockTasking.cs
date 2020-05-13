@@ -45,14 +45,20 @@ namespace XMX.WMS.StockTasking
         /// <summary>
         /// 最后盘点时间
         /// </summary>
-        public DateTime task_operate_time { get; set; }     
+        public DateTime task_operate_time { get; set; }
         #endregion
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? task_company_id { get; set; }
+        [ForeignKey("task_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid task_warehouse_id { get; set; }
+        public virtual Guid? task_warehouse_id { get; set; }
         [ForeignKey("task_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>

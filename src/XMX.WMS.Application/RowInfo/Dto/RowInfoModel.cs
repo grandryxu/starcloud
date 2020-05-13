@@ -92,17 +92,17 @@ namespace XMX.WMS.RowInfo.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? row_company_id { get; set; }
+        /// <summary>
         /// 仓库ID
         /// </summary>
-        public virtual Guid row_warehouse_id { get; set; }
+        public virtual Guid? row_warehouse_id { get; set; }
         /// <summary>
         /// 外侧排ID
         /// </summary>
         public virtual Guid? row_out_id { get; set; }
-        /// <summary>
-        /// 库位对应的巷道ID
-        /// </summary>
-        public virtual Guid row_tunnel_id { get; set; }
         /// <summary>
         /// 容积大小
         /// </summary>
@@ -178,17 +178,17 @@ namespace XMX.WMS.RowInfo.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? row_company_id { get; set; }
+        /// <summary>
         /// 仓库ID
         /// </summary>
-        public virtual Guid row_warehouse_id { get; set; }
+        public virtual Guid? row_warehouse_id { get; set; }
         /// <summary>
         /// 外侧排ID
         /// </summary>
         public virtual Guid? row_out_id { get; set; }
-        /// <summary>
-        /// 库位对应的巷道ID
-        /// </summary>
-        public virtual Guid row_tunnel_id { get; set; }
         /// <summary>
         /// 容积大小
         /// </summary>
@@ -266,9 +266,15 @@ namespace XMX.WMS.RowInfo.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? row_company_id { get; set; }
+        [ForeignKey("row_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 仓库ID
         /// </summary>
-        public virtual Guid row_warehouse_id { get; set; }
+        public virtual Guid? row_warehouse_id { get; set; }
         [ForeignKey("row_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>
@@ -277,12 +283,6 @@ namespace XMX.WMS.RowInfo.Dto
         public virtual Guid? row_out_id { get; set; }
         [ForeignKey("row_out_id")]
         public virtual RowInfo Row { get; set; }
-        /// <summary>
-        /// 库位对应的巷道ID
-        /// </summary>
-        public virtual Guid row_tunnel_id { get; set; }
-        [ForeignKey("row_tunnel_id")]
-        public virtual TunnelInfo.TunnelInfo Tunnel { get; set; }
         /// <summary>
         /// 容积大小
         /// </summary>

@@ -55,9 +55,15 @@ namespace XMX.WMS.ImportStock
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? impstock_company_id { get; set; }
+        [ForeignKey("impstock_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 物料
         /// </summary>
-        public virtual Guid impstock_goods_id { get; set; }
+        public virtual Guid? impstock_goods_id { get; set; }
         [ForeignKey("impstock_goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
@@ -69,7 +75,7 @@ namespace XMX.WMS.ImportStock
         /// <summary>
         /// 仓库
         /// </summary>
-        public virtual Guid impstock_warehouse_id { get; set; }
+        public virtual Guid? impstock_warehouse_id { get; set; }
         [ForeignKey("impstock_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>

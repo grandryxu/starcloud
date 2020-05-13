@@ -46,21 +46,27 @@ namespace XMX.WMS.StockTaskingDetail
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? task_company_id { get; set; }
+        [ForeignKey("task_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 所属盘点单
         /// </summary>
-        public virtual Guid stock_tasking_id { get; set; }
+        public virtual Guid? stock_tasking_id { get; set; }
         [ForeignKey("stock_tasking_id")]
         public virtual StockTasking.StockTasking StockTasking { get; set; }
         /// <summary>
         /// 物料
         /// </summary>
-        public virtual Guid task_goods_id { get; set; }
+        public virtual Guid? task_goods_id { get; set; }
         [ForeignKey("task_goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
         /// 库位
         /// </summary>
-        public virtual Guid task_slot_id { get; set; }
+        public virtual Guid? task_slot_id { get; set; }
         [ForeignKey("task_slot_id")]
         public virtual SlotInfo.SlotInfo Slot { get; set; }
         #endregion

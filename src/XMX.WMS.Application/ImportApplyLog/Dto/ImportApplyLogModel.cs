@@ -31,6 +31,11 @@ namespace XMX.WMS.ImportApplyLog.Dto
         /// 入库结果
         /// </summary>
         public string import_result { get; set; }
+
+        /// <summary>
+        /// 查询时间范围
+        /// </summary>
+        public string DateRange { get; set; }
     }
     #endregion
 

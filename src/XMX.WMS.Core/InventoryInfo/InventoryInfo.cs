@@ -86,18 +86,6 @@ namespace XMX.WMS.InventoryInfo
         [ForeignKey("inventory_quality_status")]
         public virtual QualityInfo.QualityInfo Quality { get; set; }
         /// <summary>
-        /// 仓库
-        /// </summary>
-        public virtual Guid inventory_warehouse_id { get; set; }
-        [ForeignKey("inventory_warehouse_id")]
-        public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
-        /// <summary>
-        /// 入库口号
-        /// </summary>
-        public virtual Guid? inventory_port_id { get; set; }
-        [ForeignKey("inventory_port_id")]
-        public virtual PortInfo.PortInfo Port { get; set; }
-        /// <summary>
         /// 库位
         /// </summary>
         public virtual Guid inventory_slot_code { get; set; }

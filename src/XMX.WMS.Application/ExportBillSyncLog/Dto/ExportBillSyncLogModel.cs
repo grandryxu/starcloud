@@ -30,6 +30,11 @@ namespace XMX.WMS.ExportBillSyncLog.Dto
         /// 出库结果
         /// </summary>
         public string expbill_result { get; set; }
+
+        /// <summary>
+        /// 查询时间范围
+        /// </summary>
+        public string DateRange { get; set; }
     }
     #endregion
 

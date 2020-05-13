@@ -25,7 +25,7 @@ namespace XMX.WMS.Alarm
         /// <summary>
         /// 阈值
         /// </summary>
-        public int thresholdz_value { get; set; }   
+        public int thresholdz_value { get; set; }
         /// <summary>
         /// 备注
         /// </summary>
@@ -44,9 +44,15 @@ namespace XMX.WMS.Alarm
         [ForeignKey("strategy_id")]
         public virtual StrategyMonitor.StrategyMonitor StrategyMonitor { get; set; }
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? company_id { get; set; }
+        [ForeignKey("company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 物料id
         /// </summary>
-        public virtual Guid goods_id { get; set; }
+        public virtual Guid? goods_id { get; set; }
         [ForeignKey("goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
@@ -55,7 +61,7 @@ namespace XMX.WMS.Alarm
         public virtual Guid? inventory_id { get; set; }
         [ForeignKey("inventory_id")]
         public virtual InventoryInfo.InventoryInfo Inventory { get; set; }
-        
+
         #endregion
     }
 

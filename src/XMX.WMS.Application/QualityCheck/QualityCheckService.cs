@@ -109,8 +109,8 @@ namespace XMX.WMS.QualityCheck
         /// <returns></returns>
         public List<BatchGoodsDto> GetBatchGoods(Guid inventory_warehouse_id)
         {
-            List<InventoryInfo.InventoryInfo> iiList = InventoryRepository.GetAllIncluding(x => x.Goods, x => x.Quality)
-                .WhereIf(inventory_warehouse_id!=null&&inventory_warehouse_id!=Guid.Empty,x=>x.inventory_warehouse_id==inventory_warehouse_id)
+            List<InventoryInfo.InventoryInfo> iiList = InventoryRepository.GetAllIncluding(x => x.Goods, x => x.Quality,x=>x.Slot)
+                .Where(x=>x.Slot.slot_warehouse_id==inventory_warehouse_id)
                 .Where(x => x.inventory_batch_no != null && x.inventory_goods_id != null&&x.inventory_goods_id!=Guid.Empty)
                 .Where(x=>x.inventory_quality_status!=null)
                 .ToList();
@@ -170,8 +170,8 @@ namespace XMX.WMS.QualityCheck
             });
 
             //通过托盘号查找Inventory表中实体信息。
-            List<InventoryInfo.InventoryInfo> infos = this.InventoryRepository.GetAllIncluding()
-                .WhereIf(input.inventory_warehouse_id != null && input.inventory_warehouse_id != Guid.Empty, x => x.inventory_warehouse_id == input.inventory_warehouse_id)
+            List<InventoryInfo.InventoryInfo> infos = this.InventoryRepository.GetAllIncluding(x=>x.Slot)
+                .WhereIf(input.inventory_warehouse_id != null && input.inventory_warehouse_id != Guid.Empty, x => x.Slot.slot_warehouse_id == input.inventory_warehouse_id)
                 .Where(x => x.inventory_stock_code.IsIn(stock_codes.ToArray())).ToList();
      
             try
@@ -219,8 +219,8 @@ namespace XMX.WMS.QualityCheck
             //通过单据号查询抽检单据实体
             QualityCheck check = this.Repository.Single(x => x.check_bill.Equals(input.check_bill));
             // 查询批次号对应Inventory
-            List<InventoryInfo.InventoryInfo> infos = this.InventoryRepository.GetAllIncluding()
-                 .WhereIf(input.inventory_warehouse_id != null && input.inventory_warehouse_id != Guid.Empty, x => x.inventory_warehouse_id == input.inventory_warehouse_id)
+            List<InventoryInfo.InventoryInfo> infos = this.InventoryRepository.GetAllIncluding(x=>x.Slot)
+                 .WhereIf(input.inventory_warehouse_id != null && input.inventory_warehouse_id != Guid.Empty, x => x.Slot.slot_warehouse_id == input.inventory_warehouse_id)
                  .Where(x => x.inventory_batch_no.Equals(check.check_batch_no)).ToList();
             try
             {

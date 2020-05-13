@@ -193,14 +193,14 @@ namespace XMX.WMS.ImportOrder
                 var bodyFlag = false;
                 if (body.impbody_execute_flag == ExecuteFlag.未执行)
                 {
-                     bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
-                                                                   .Where(x => x.Id != body.Id)
-                                                                  .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
+                    bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
+                                                                  .Where(x => x.Id != body.Id)
+                                                                 .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                 }
                 else
                 {
-                     bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
-                                                                      .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
+                    bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
+                                                                     .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                 }
                 if (!bodyFlag)
                 {

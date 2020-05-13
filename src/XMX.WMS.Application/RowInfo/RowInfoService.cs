@@ -216,7 +216,7 @@ namespace XMX.WMS.RowInfo
             if (rowInfo == null)
                 throw new Exception("找不到对应的库位排信息");
             //获取仓库信息
-            WarehouseInfo.WarehouseInfo warehouseInfo = WhRepository.Get(rowInfo.row_warehouse_id);
+            WarehouseInfo.WarehouseInfo warehouseInfo = WhRepository.Get(rowInfo.row_warehouse_id.Value);
             if (warehouseInfo == null)
                 throw new Exception("库位排对应仓库不存在");
             //根据RowType生成对应的库位或巷道

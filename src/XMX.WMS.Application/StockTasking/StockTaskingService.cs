@@ -117,7 +117,7 @@ namespace XMX.WMS.StockTasking
                     // 获取盘点单明细
                     List<StockTaskingDetail.StockTaskingDetail> detailList = _dRepository.GetAllIncluding().Where(x => x.stock_tasking_id == stock.Id).ToList();
                     List<InventoryBatchDto> batchList = detailList.GroupBy(x => new { x.task_batch_no, x.task_goods_id })
-                                                                  .Select(group => new InventoryBatchDto(group.Key.task_batch_no, group.Key.task_goods_id)).ToList();
+                                                                  .Select(group => new InventoryBatchDto(group.Key.task_batch_no, group.Key.task_goods_id.Value)).ToList();
                     int i = 1;
                     foreach (InventoryBatchDto batch in batchList)
                     {
@@ -147,7 +147,7 @@ namespace XMX.WMS.StockTasking
                                 // 任务方式(1入库；2出库；3移库；4口对口)
                                 task.main_mode = TaskType.出库;
                                 // 库位
-                                task.main_slot_code = detail.task_slot_id;
+                                task.main_slot_code = detail.task_slot_id.Value;
                                 // 托盘码
                                 task.main_stock_code = detail.task_stock_code;
                                 // 手自标志(1自动；2手动)                                                                                                                                               

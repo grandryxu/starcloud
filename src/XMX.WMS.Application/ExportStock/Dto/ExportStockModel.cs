@@ -25,7 +25,7 @@ namespace XMX.WMS.ExportStock.Dto
         /// <summary>
         /// 批号
         /// </summary>
-        [StringLength(BaseVerification.column50)] 
+        [StringLength(BaseVerification.column50)]
         public string expstock_batch_no { get; set; }
         /// <summary>
         /// 备注
@@ -70,17 +70,21 @@ namespace XMX.WMS.ExportStock.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expstock_company_id { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
-        public virtual Guid expstock_goods_id { get; set; }
+        public virtual Guid? expstock_goods_id { get; set; }
         /// <summary>
         /// 库位
         /// </summary>
-        public virtual Guid expstock_slot_code { get; set; }
+        public virtual Guid? expstock_slot_code { get; set; }
         /// <summary>
         /// 仓库
         /// </summary>
-        public virtual Guid expstock_warehouse_id { get; set; }
+        public virtual Guid? expstock_warehouse_id { get; set; }
         /// <summary>
         /// 口号
         /// </summary>
@@ -89,10 +93,6 @@ namespace XMX.WMS.ExportStock.Dto
         /// 月台
         /// </summary>
         public virtual Guid? expstock_platform_id { get; set; }
-        /// <summary>
-        /// 任务
-        /// </summary>
-        public virtual Guid? expstock_task_id { get; set; }
         #endregion
     }
     #endregion
@@ -150,17 +150,21 @@ namespace XMX.WMS.ExportStock.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expstock_company_id { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
-        public virtual Guid expstock_goods_id { get; set; }
+        public virtual Guid? expstock_goods_id { get; set; }
         /// <summary>
         /// 库位
         /// </summary>
-        public virtual Guid expstock_slot_code { get; set; }
+        public virtual Guid? expstock_slot_code { get; set; }
         /// <summary>
         /// 仓库
         /// </summary>
-        public virtual Guid expstock_warehouse_id { get; set; }
+        public virtual Guid? expstock_warehouse_id { get; set; }
         /// <summary>
         /// 口号
         /// </summary>
@@ -218,29 +222,31 @@ namespace XMX.WMS.ExportStock.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled expstock_is_enable { get; set; }
-        //// <summary>
-        //// 创建时间
-        //// </summary>
-        public DateTime? CreationTime { get; set; }
         #endregion
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expstock_company_id { get; set; }
+        [ForeignKey("expstock_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
-        public virtual Guid expstock_goods_id { get; set; }
+        public virtual Guid? expstock_goods_id { get; set; }
         [ForeignKey("expstock_goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
         /// 库位
         /// </summary>
-        public virtual Guid expstock_slot_code { get; set; }
+        public virtual Guid? expstock_slot_code { get; set; }
         [ForeignKey("expstock_slot_code")]
         public virtual SlotInfo.SlotInfo Slot { get; set; }
         /// <summary>
         /// 仓库
         /// </summary>
-        public virtual Guid expstock_warehouse_id { get; set; }
+        public virtual Guid? expstock_warehouse_id { get; set; }
         [ForeignKey("expstock_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>

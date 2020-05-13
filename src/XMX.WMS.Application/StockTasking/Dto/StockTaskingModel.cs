@@ -85,9 +85,13 @@ namespace XMX.WMS.StockTasking.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? task_company_id { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid task_warehouse_id { get; set; }
+        public virtual Guid? task_warehouse_id { get; set; }
         /// <summary>
         /// 物料
         /// </summary>
@@ -141,9 +145,13 @@ namespace XMX.WMS.StockTasking.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? task_company_id { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid task_warehouse_id { get; set; }
+        public virtual Guid? task_warehouse_id { get; set; }
         /// <summary>
         /// 物料
         /// </summary>
@@ -197,9 +205,15 @@ namespace XMX.WMS.StockTasking.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? task_company_id { get; set; }
+        [ForeignKey("task_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid task_warehouse_id { get; set; }
+        public virtual Guid? task_warehouse_id { get; set; }
         [ForeignKey("task_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>

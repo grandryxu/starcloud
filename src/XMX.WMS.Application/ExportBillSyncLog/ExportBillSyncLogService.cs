@@ -1,5 +1,6 @@
 ﻿using Abp.Application.Services;
 using Abp.Domain.Repositories;
+using Abp.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,10 @@ namespace XMX.WMS.ExportBillSyncLog
 
         protected override IQueryable<ExportBillSyncLog> CreateFilteredQuery(ExportBillSyncLogPagedRequest input)
         {
-            return Repository.GetAll();
+            string[] dt = input.DateRange?.Split("/");
+            return Repository.GetAllIncluding().
+                WhereIf(dt?.Length == 2, x => DateTime.Compare(Convert.ToDateTime(x.CreationTime.ToString("yyyy-MM-dd")), Convert.ToDateTime(dt[0])) >= 0
+                 && DateTime.Compare(Convert.ToDateTime(x.CreationTime.ToString("yyyy-MM-dd")), Convert.ToDateTime(dt[1])) <= 0);
         }
     }
 }

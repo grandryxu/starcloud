@@ -30,6 +30,12 @@ namespace XMX.WMS.PortInfo
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? port_company_id { get; set; }
+        [ForeignKey("port_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 所属仓库
         /// </summary>
         public virtual Guid? port_warehouse_id { get; set; }

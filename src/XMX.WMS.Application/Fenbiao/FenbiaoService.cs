@@ -116,8 +116,8 @@ namespace XMX.WMS.Fenbiao
             //查询所有的仓库
             var wids = _wRepository.GetAllIncluding().Select(x => new { id = x.Id }).ToList();
             //查询库存里有的仓库
-            var wiids = _iRepository.GetAllIncluding(x => x.Warehouse)
-                                    .GroupBy(x => new { id = x.inventory_warehouse_id})                    
+            var wiids = _iRepository.GetAllIncluding(x => x.Slot)
+                                    .GroupBy(x => new { id = x.Slot.slot_warehouse_id.Value})                    
                                     .Select(g => new { id = g.Key.id }).ToList();
             //库存里面没有的仓库直接new空数据
             var query2 = wids.Except(wiids).Select(x => new WarehouseStock.WarehouseStock
@@ -126,9 +126,9 @@ namespace XMX.WMS.Fenbiao
                                                         warehouse_date = dateStr,
                                                         warehouse_id = x.id
                                                     }).ToList();
-            var query = _iRepository.GetAllIncluding(x => x.Warehouse)
+            var query = _iRepository.GetAllIncluding(x => x.Slot)
                                     .GroupBy(x => new {
-                                        x.inventory_warehouse_id
+                                        inventory_warehouse_id= x.Slot.slot_warehouse_id.Value
                                     })
                                     .Select(g => new WarehouseStock.WarehouseStock
                                     {

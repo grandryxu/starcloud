@@ -32,9 +32,15 @@ namespace XMX.WMS.BillInfo
         /// <summary>
         /// 所属公司
         /// </summary>
-        public virtual Guid bill_company_id { get; set; }
+        public virtual Guid? bill_company_id { get; set; }
         [ForeignKey("bill_company_id")]
         public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
+        /// 编码规则
+        /// </summary>
+        public virtual Guid? bill_rule_id { get; set; }
+        [ForeignKey("bill_rule_id")]
+        public virtual EncodingRule.EncodingRule EncodingRule { get; set; }
         #endregion
     }
 }

@@ -13,6 +13,7 @@ using Abp.Authorization;
 using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using Newtonsoft.Json;
+using XMX.WMS.Authorization.Users;
 
 namespace XMX.WMS.GoodsInfo
 {
@@ -26,7 +27,8 @@ namespace XMX.WMS.GoodsInfo
         private readonly IRepository<ExportBillbody.ExportBillbody, Guid> _ebRepository;
         private readonly IRepository<ExportOrder.ExportOrder, Guid> _eoRepository;
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iiRepository;
-
+        public UserManager _userManager { get; set; }
+        public User loginuser { get; set; }
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -73,10 +75,11 @@ namespace XMX.WMS.GoodsInfo
         /// <returns></returns>
         public List<WarehousematerialsInfoDto> GetWarehousematerials(Guid guid)
         {
-            var list = (from a in Repository.GetAll()
+            if (loginuser == null)
+                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
+            var list = (from a in Repository.GetAll().WhereIf(loginuser.Id != 1, x => x.goods_company_id == loginuser.CompanyId)
                         join b in _areaInfo.GetAll() on new { Id = a.Area.Id } equals new { Id = b.Id }
                         join c in _warehouseInfo.GetAll() on new { Id = b.Warehouse.Id } equals new { Id = c.Id }
-
                         where
                           c.Id == guid
                         select new
@@ -100,7 +103,10 @@ namespace XMX.WMS.GoodsInfo
         [AbpAuthorize(PermissionNames.MaterialBasisInfo_Get)]
         protected override IQueryable<GoodsInfo> CreateFilteredQuery(GoodsInfoPagedRequest input)
         {
+            if (loginuser == null)
+                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
             return Repository.GetAllIncluding()
+                .WhereIf(loginuser.Id!=1,x => x.goods_company_id == loginuser.CompanyId)
                 .WhereIf(!input.goods_code.IsNullOrWhiteSpace(), x => x.goods_code.Contains(input.goods_code))
                 .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => x.goods_name.Contains(input.goods_name))
                 .WhereIf(!input.goods_area_id.IsNullOrWhiteSpace(), x => x.goods_area_id.ToString().Contains(input.goods_area_id))
@@ -158,6 +164,7 @@ namespace XMX.WMS.GoodsInfo
             }
             return false;
         }
+
         /// <summary>
         /// 新增 
         /// </summary>
@@ -169,13 +176,16 @@ namespace XMX.WMS.GoodsInfo
             var is_recode = Repository.GetAll().Where(x => x.goods_code == input.goods_code).Where(x => !x.IsDeleted).Any();
             if (is_recode)
                 throw new UserFriendlyException("物料编码已存在！");
-          
+            if(loginuser == null)
+                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
+            input.goods_company_id = loginuser.CompanyId;
             GoodsInfoDto dto= await base.Create(input);
             WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 修改
         /// </summary>

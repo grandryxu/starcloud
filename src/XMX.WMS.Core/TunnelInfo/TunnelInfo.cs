@@ -30,6 +30,12 @@ namespace XMX.WMS.TunnelInfo
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? tunnel_company_id { get; set; }
+        [ForeignKey("tunnel_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 库位排
         /// </summary>
         public virtual Guid? slot_row_id { get; set; }

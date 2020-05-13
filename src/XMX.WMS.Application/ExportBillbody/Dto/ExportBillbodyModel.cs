@@ -102,7 +102,7 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 审核人
         /// </summary>
-        [StringLength(BaseVerification.column50)] 
+        [StringLength(BaseVerification.column50)]
         public string expbody_audit_uid { get; set; }
         /// <summary>
         /// 审核时间
@@ -116,7 +116,7 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 作废人
         /// </summary>
-        [StringLength(BaseVerification.column50)] 
+        [StringLength(BaseVerification.column50)]
         public string expbody_noused_uid { get; set; }
         /// <summary>
         /// 作废时间
@@ -138,17 +138,21 @@ namespace XMX.WMS.ExportBillbody.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expbody_company_id { get; set; }
+        /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_imphead_id { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
-        public virtual Guid expbody_goods_id { get; set; }
+        public virtual Guid? expbody_goods_id { get; set; }
         /// <summary>
         /// 质量状态
         /// </summary>
-        public virtual Guid expbody_quality_status { get; set; }
+        public virtual Guid? expbody_quality_status { get; set; }
         #endregion
     }
     #endregion
@@ -156,8 +160,8 @@ namespace XMX.WMS.ExportBillbody.Dto
     #region 创建CreateDto主从
     public class ExportBillbodyorderCreatedDto
     {
-       public ExportBillbodyCreatedDto body { get; set; }
-       public List<ExportOrder.Dto.ExportOrderCreatedDto> createList { get; set; }
+        public ExportBillbodyCreatedDto body { get; set; }
+        public List<ExportOrder.Dto.ExportOrderCreatedDto> createList { get; set; }
     }
     #endregion
 
@@ -277,17 +281,21 @@ namespace XMX.WMS.ExportBillbody.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expbody_company_id { get; set; }
+        /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_imphead_id { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
-        public virtual Guid expbody_goods_id { get; set; }
+        public virtual Guid? expbody_goods_id { get; set; }
         /// <summary>
         /// 质量状态
         /// </summary>
-        public virtual Guid expbody_quality_status { get; set; }
+        public virtual Guid? expbody_quality_status { get; set; }
         #endregion
     }
     #endregion
@@ -412,21 +420,27 @@ namespace XMX.WMS.ExportBillbody.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? expbody_company_id { get; set; }
+        [ForeignKey("expbody_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_imphead_id { get; set; }
         [ForeignKey("expbody_imphead_id")]
         public virtual ExportBillhead.ExportBillhead ExportBillhead { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
-        public virtual Guid expbody_goods_id { get; set; }
+        public virtual Guid? expbody_goods_id { get; set; }
         [ForeignKey("expbody_goods_id")]
         public virtual GoodsInfo.GoodsInfo Goods { get; set; }
         /// <summary>
         /// 质量状态
         /// </summary>
-        public virtual Guid expbody_quality_status { get; set; }
+        public virtual Guid? expbody_quality_status { get; set; }
         [ForeignKey("expbody_quality_status")]
         public virtual QualityInfo.QualityInfo Quality { get; set; }
         #endregion

@@ -58,6 +58,18 @@ namespace XMX.WMS.SlotInfo
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? slot_company_id { get; set; }
+        [ForeignKey("slot_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
+        /// 所属仓库
+        /// </summary>
+        public virtual Guid? slot_warehouse_id { get; set; }
+        [ForeignKey("slot_warehouse_id")]
+        public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
+        /// <summary>
         /// 库区
         /// </summary>
         public virtual Guid? slot_area_id { get; set; }
@@ -75,6 +87,12 @@ namespace XMX.WMS.SlotInfo
         public virtual Guid? slot_size_level { get; set; }
         [ForeignKey("slot_size_level")]
         public virtual SlotSize.SlotSize Size { get; set; }
+        /// <summary>
+        /// 库位对应的巷道ID
+        /// </summary>
+        public virtual Guid? slot_tunnel_id { get; set; }
+        [ForeignKey("slot_tunnel_id")]
+        public virtual TunnelInfo.TunnelInfo Tunnel { get; set; }
         #endregion
     }
 }

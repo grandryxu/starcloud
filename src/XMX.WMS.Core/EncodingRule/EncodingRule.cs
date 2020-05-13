@@ -44,7 +44,7 @@ namespace XMX.WMS.EncodingRule
         /// <summary>
         /// 所属公司
         /// </summary>
-        public virtual Guid code_company_id { get; set; }
+        public virtual Guid? code_company_id { get; set; }
         [ForeignKey("code_company_id")]
         public virtual CompanyInfo.CompanyInfo Company { get; set; }
         #endregion

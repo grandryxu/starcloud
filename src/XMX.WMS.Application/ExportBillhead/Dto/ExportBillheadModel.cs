@@ -109,13 +109,17 @@ namespace XMX.WMS.ExportBillhead.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? exphead_company_id { get; set; }
+        /// <summary>
         /// 单据类型
         /// </summary>
-        public virtual Guid exphead_bill_id { get; set; }
+        public virtual Guid? exphead_bill_id { get; set; }
         /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid exphead_warehouse_id { get; set; }
+        public virtual Guid? exphead_warehouse_id { get; set; }
         /// <summary>
         /// 上下游客户ID
         /// </summary>
@@ -201,13 +205,17 @@ namespace XMX.WMS.ExportBillhead.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? exphead_company_id { get; set; }
+        /// <summary>
         /// 单据类型
         /// </summary>
-        public virtual Guid exphead_bill_id { get; set; }
+        public virtual Guid? exphead_bill_id { get; set; }
         /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid exphead_warehouse_id { get; set; }
+        public virtual Guid? exphead_warehouse_id { get; set; }
         /// <summary>
         /// 上下游客户ID
         /// </summary>
@@ -300,15 +308,21 @@ namespace XMX.WMS.ExportBillhead.Dto
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? exphead_company_id { get; set; }
+        [ForeignKey("exphead_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 单据类型
         /// </summary>
-        public virtual Guid exphead_bill_id { get; set; }
+        public virtual Guid? exphead_bill_id { get; set; }
         [ForeignKey("exphead_bill_id")]
         public virtual BillInfo.BillInfo Bill { get; set; }
         /// <summary>
         /// 所属仓库
         /// </summary>
-        public virtual Guid exphead_warehouse_id { get; set; }
+        public virtual Guid? exphead_warehouse_id { get; set; }
         [ForeignKey("exphead_warehouse_id")]
         public virtual WarehouseInfo.WarehouseInfo Warehouse { get; set; }
         /// <summary>

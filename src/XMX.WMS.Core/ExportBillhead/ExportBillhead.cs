@@ -58,9 +58,15 @@ namespace XMX.WMS.ExportBillhead
 
         #region 关联
         /// <summary>
+        /// 所属公司
+        /// </summary>
+        public virtual Guid? exphead_company_id { get; set; }
+        [ForeignKey("exphead_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 单据类型
         /// </summary>
-        public virtual Guid exphead_bill_id { get; set; }
+        public virtual Guid? exphead_bill_id { get; set; }
         [ForeignKey("exphead_bill_id")]
         public virtual BillInfo.BillInfo Bill { get; set; }
         /// <summary>

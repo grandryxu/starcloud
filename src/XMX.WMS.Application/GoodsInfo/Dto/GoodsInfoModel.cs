@@ -177,7 +177,7 @@ namespace XMX.WMS.GoodsInfo.Dto
         /// </summary>
         [StringLength(BaseVerification.column10)]
         public string goods_ABC_class { get; set; }
-        
+
         /// <summary>
         /// 物料图片
         /// </summary>
@@ -186,7 +186,7 @@ namespace XMX.WMS.GoodsInfo.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled goods_is_enable { get; set; }
-        
+
         #endregion
 
         #region 关联
@@ -350,7 +350,6 @@ namespace XMX.WMS.GoodsInfo.Dto
         /// </summary>
         [StringLength(BaseVerification.column10)]
         public string goods_ABC_class { get; set; }
-
         /// <summary>
         /// 物料图片
         /// </summary>
@@ -366,12 +365,12 @@ namespace XMX.WMS.GoodsInfo.Dto
         /// <summary>
         /// 物料所属公司
         /// </summary>
+        [Required]
         public virtual Guid? goods_company_id { get; set; }
         /// <summary>
         /// 单位
         /// </summary>
         [Required]
-
         public virtual Guid? goods_unit { get; set; }
         /// <summary>
         /// 存放区域
@@ -598,11 +597,15 @@ namespace XMX.WMS.GoodsInfo.Dto
     public class WarehousematerialsInfoDto : EntityDto<Guid>
     {
         /// <summary>
-        /// goods_code
+        /// Id
+        /// </summary>
+        //public string Id { get; set; }
+        /// <summary>
+        /// Id
         /// </summary>
         public string goods_code { get; set; }
         /// <summary>
-        /// goods_name
+        /// Id
         /// </summary>
         public string goods_name { get; set; }
     }

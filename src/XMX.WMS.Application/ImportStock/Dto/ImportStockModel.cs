@@ -96,6 +96,10 @@ namespace XMX.WMS.ImportStock.Dto
         /// 口号
         /// </summary>
         public virtual Guid? impstock_port_id { get; set; }
+        /// <summary>
+        /// 流水任务
+        /// </summary>
+        public virtual Guid? task_id { get; set; }
         #endregion
     }
     #endregion
@@ -171,6 +175,10 @@ namespace XMX.WMS.ImportStock.Dto
         /// 口号
         /// </summary>
         public virtual Guid? impstock_port_id { get; set; }
+        /// <summary>
+        /// 流水任务
+        /// </summary>
+        public virtual Guid? task_id { get; set; }
         #endregion
     }
     #endregion
@@ -249,6 +257,12 @@ namespace XMX.WMS.ImportStock.Dto
         public virtual Guid? impstock_port_id { get; set; }
         [ForeignKey("impstock_port_id")]
         public virtual PortInfo.PortInfo Port { get; set; }
+        /// <summary>
+        /// 流水任务
+        /// </summary>
+        public virtual Guid? task_id { get; set; }
+        [ForeignKey("task_id")]
+        public virtual TaskMainInfo.TaskMainInfo Task { get; set; }
         #endregion
     }
     #endregion

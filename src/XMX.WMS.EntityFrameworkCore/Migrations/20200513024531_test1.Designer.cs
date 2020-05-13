@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using XMX.WMS.EntityFrameworkCore;
 
 namespace XMX.WMS.Migrations
 {
     [DbContext(typeof(WMSDbContext))]
-    partial class WMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200513024531_test1")]
+    partial class test1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2117,8 +2119,6 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("goods_code");
 
-                    b.Property<Guid?>("goods_company_id");
-
                     b.Property<string>("goods_describe");
 
                     b.Property<Guid?>("goods_distribution_id");
@@ -2186,8 +2186,6 @@ namespace XMX.WMS.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("goods_area_id");
-
-                    b.HasIndex("goods_company_id");
 
                     b.HasIndex("goods_distribution_id");
 
@@ -4403,10 +4401,6 @@ namespace XMX.WMS.Migrations
                     b.HasOne("XMX.WMS.AreaInfo.AreaInfo", "Area")
                         .WithMany()
                         .HasForeignKey("goods_area_id");
-
-                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
-                        .WithMany()
-                        .HasForeignKey("goods_company_id");
 
                     b.HasOne("XMX.WMS.StrategyDistribution.StrategyDistribution", "StrategyDistribution")
                         .WithMany()

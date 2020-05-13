@@ -36,7 +36,7 @@ namespace XMX.WMS.ImportStock
             IRepository<InventoryInfo.InventoryInfo, Guid> irepository,
             IRepository<ImportOrder.ImportOrder, Guid> iorepository,
             IRepository<ExportOrder.ExportOrder, Guid> eorepository,
-        IRepository<TaskMainInfo.TaskMainInfo, Guid> trepository,
+            IRepository<TaskMainInfo.TaskMainInfo, Guid> trepository,
             IRepository<SlotInfo.SlotInfo, Guid> srepository,
             UserManager userManager) : base(repository)
         {
@@ -133,7 +133,7 @@ namespace XMX.WMS.ImportStock
             User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
             input.impstock_company_id = loginuser.CompanyId;
             input.impstock_goods_id = Guid.Parse("00000000-0000-0000-0000-000000000001");
-           
+
             ImportStock oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ImportStockDto dto = await base.Update(input);
