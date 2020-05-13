@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="${ctxPath}/static/css/modal.min.css">
+    <link rel="stylesheet" href="${ctxPath}/static/css/reset.css">
+    <link rel="stylesheet" href="${ctxPath}/static/css/design.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="main">
+        <fieldset class="baseField">
+            <legend style="margin-left: 10px;">流程基础信息</legend>
+            <ul class="baseInfo">
+                <li><label>流程ID：</label>
+                <input type="text" disabled placeholder="系统自动生成"></li>
+                <li><label>展示名称：</label>
+                    <input id="displayName" type="text" ></li>
+            </ul>
+        </fieldset>
+        <fieldset class="baseField">
+            <legend style="margin-left: 10px;">流程详情</legend>
+            <ul class="show__ul">
+            </ul>
+        </fieldset>
+        <input type="button" value="保存" id="save" style="margin: 10px 0 0 40px;"  data-toggle="modal"  >
+        <div class="side__right">
+            <form action="" class="right__form">
+                <div class="form__row row">
+                    <label>节点名称</label>
+                    <input type="text" id="nodeName"/>
+                </div>
+                <div class="form__row row">
+                    <label>参与人</label>
+                    <div style="width:100%">
+                        <select id="user"></select>
+
+                    </div>
+                </div>
+                <div class="form__row">
+                        <input type="button" value="确认" id="addBtn">
+                        <input type="button" value="取消" id="cancelBtn">
+                    <input type="button" value="删除" id="del">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4"></script>
+    <script src="${ctxPath}/static/js/bootstrap.min.js"></script>
+    <script>
+        // 全局变量 当前激活的节点
+        var nodeAct = null;
+        var nodeArr = [
+            {
+                name: '发起',
+                type: 1,
+                user: [],
+                dept: '',
+                role: ''
+            }
+        ];
+        function addSelectRow(){
+
+            $.get("${ctxPath}/mgr/getUserList",{},function(data){
+                var html = "";
+                for(var i=0;i<data.length;i++){
+                    if(data[i].roleName!="超级管理员"&&data[i].roleName!="企业名录"&&data[i].roleName!="龙信管理员"){
+                        html = html + "<option value='"+data[i].id+"'>" + data[i].name + "</option>";
+                    }
+                }
+                $("#user").append(html);
+            })
+        }
+        $(function () {
+
+            drawNode();
+            $('.show__ul').find('li').each(function (e) {
+                $(this).on('click',function () {
+                    // 同一个节点不做动作
+                    if($(this).is(nodeAct)){
+                        return;
+                    }
+                    // 当前节点为空则直接展示
+                    if(nodeAct !== null){
+                        sideHide();
+                    }
+                    sideShow(this);
+                });
+                $(this).hover(function () {
+                    $(this).children('.btn__add_clone').show();
+                    $(this).children('.btn__add').show();
+                },function () {
+                    $(this).children('.btn__add').hide();
+                    $(this).children('.btn__add_clone').hide();
+                })
+            });
+
+            $('.btn__add').on('click', function (e) {
+                var jObj = $(this).parent().clone(true);
+                jObj.children('.btn__add').hide();
+                jObj.children('.btn__add_clone').hide();
+                jObj.children('span.title').html('');
+                jObj.attr('class','');
+                $(this).parent().after(jObj);
+                var index = $(this).parent().index();
+                nodeArr.splice(index + 1,0,{});
+                e.stopPropagation();
+            });
+            $('#addBtn').on('click', function () {
+                var index = $('.show__ul').find('.active').index();
+                var nodeName = $('#nodeName').val();
+                var user = $('#user').val();
+                var dept = $('#dept').val();
+                var role = $('#role').val();
+                var type = $('#type').val();
+                var obj = {
+                  name: nodeName,
+                  user: user,
+                  dept: dept,
+                  role: role,
+                  type: type
+                };
+                nodeAct.children('span.title').html(nodeName);
+                nodeArr[index] = obj;
+                sideHide();
+            });
+            $('#cancelBtn').on('click', function () {
+                sideHide();
+            });
+            $('#del').on('click', function () {
+                var index = $('.show__ul').find('.active').index();
+                nodeArr.splice(index,1);
+                nodeAct.remove();
+                sideHide();
+            });
+
+
+            $('button.btn__right').on('click',function(){
+                // 区分是什么弹窗
+                var target = $(this).siblings('.input__with__btn').attr('id');
+                // 获取请求名称
+                var method = '/processDesign/getAll' + target.charAt(0).toUpperCase() + target.substring(1,target.length);
+                // 获取数据
+                $.get(method,null,function(res){
+                   console.log(res);
+                });
+                return false;
+            });
+        });
+
+        function sideHide(){
+            $('.side__right').hide();
+            if(nodeAct){
+                nodeAct.toggleClass('active');
+                nodeAct = null;
+            }
+            $('form')[0].reset();
+        }
+
+
+        function sideShow(dom){
+            nodeAct = $(dom);
+            nodeAct.toggleClass('active');
+            var index = $('.show__ul').find('.active').index();
+            var obj = nodeArr[index];
+            $('#nodeName').val(obj.name);
+            $('#user').val(obj.user);
+            $('#dept').val(obj.dept);
+            $('#role').val(obj.role);
+            $('#type').val(obj.type);
+            $('.side__right').show(200);
+
+        }
+
+        function drawNode() {
+            for(var i in nodeArr){
+                var html = '<li><span class="title">' + nodeArr[i].name + '</span><span class="btn__add">+</span><span class="btn__add_clone"></span></li>';
+                $('.show__ul').append(html);
+            }
+            addSelectRow();
+        }
+
+        $("#save").click(function(){
+            var displayName = $("#displayName").val();
+            if(displayName==""){
+                alert("请输入流程名称");
+                return ;
+            }
+            for(var i=0;i<nodeArr.length;i++){
+                if(nodeArr[i].name==""||nodeArr[i].user==""){
+                    alert("请完善节点详情");
+                    return ;
+                }
+            }
+
+            $.post("/processDesign/insert",{'displayName':displayName,'lists':JSON.stringify(nodeArr)},function(data){
+                parent.layer.close(window.parent.lxFlow.layerIndex);
+                parent.layer.alert("操作成功！");
+                window.parent.lxFlow.table.refresh({query: window.parent.lxFlow.formParams()});
+            })
+        })
+    </script>
+</body>
+</html>

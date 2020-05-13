@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.worker.dao.ContractFileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.worker.model.ContractFile">
+        <id column="id" property="id"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="contract_code" property="contractCode"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="face_path" property="facePath"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, organization_code AS organizationCode, contract_code AS contractCode, id_card_type AS idCardType, id_card_number AS idCardNumber, file_name AS fileName, file_path AS filePath, face_path AS facePath, is_del AS isDel
+    </sql>
+
+    <!-- 查询合同信息 -->
+    <select id="getContractFile" resultType="com.xywg.admin.modular.worker.model.ContractFile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM buss_contract_file
+        WHERE is_del = 0 AND
+        id_card_type = #{ict} AND
+        id_card_number = #{icn} AND
+        project_code = #{pc} AND
+        organization_code= #{oc}
+    </select>
+
+    <select id="getList" resultType="com.xywg.admin.modular.worker.model.ContractFile">
+        SELECT
+        bcf.id, bcf.project_code AS projectCode, bcf.organization_code AS organizationCode, bcf.contract_code AS contractCode, bcf.id_card_type AS idCardType,
+        bcf.id_card_number AS idCardNumber, bcf.file_name AS fileName, bcf.file_path AS filePath, bcf.face_path AS facePath, bcf.is_del AS isDel ,
+        bwm.worker_name AS workerName ,bpm.project_name AS projectName ,bw.worker_name AS teamLeader ,bcf.tag,bcf.create_date AS createDate,
+        tg.name AS tagName,bcf.time ,bcf.status
+        FROM
+        buss_contract_file bcf
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bcf.id_card_type AND bwm.id_card_number = bcf.id_card_number AND bwm.is_del = 0
+        LEFT JOIN buss_project_master bpm ON bpm.project_code =  bcf.project_code
+        LEFT JOIN buss_project_worker bpw ON bpw.organization_code = bcf.organization_code AND bpw.project_code = bcf.project_code AND bpw.id_card_type = bcf.id_card_type
+        AND bpw.id_card_number = bcf.id_card_number
+        LEFT JOIN buss_team_member btm ON btm.team_sys_no = bpw.team_sys_no AND btm.team_worker_type = 0
+        LEFT JOIN buss_worker_master bw ON bw.id_card_type = btm.id_card_type AND bw.id_card_number = btm.id_card_number AND bw.is_del = 0
+        left join sys_dict tg on bcf.tag=tg.num  and tg.pid=(select d2.id from sys_dict d2 where d2.name="工人标签" and d2.pid=0)
+        WHERE bcf.is_del = 0 AND bcf.project_worker_id = #{map.projectWorkerId}
+        ORDER BY bcf.id DESC
+    </select>
+
+    <select id="getContractList" resultType="com.xywg.admin.modular.worker.model.Contract">
+        SELECT
+        bcf.tag AS type,
+        bcf.file_name AS fileName,
+        bcf.file_path AS filePath,
+        bcf.create_date AS time,
+        p.project_name AS projectName,
+        c.company_name AS companyName,
+        t.team_name AS teamName,
+        w.labor_company AS laborCompany,
+        w.worker_name AS workName,
+        w.id_card_number AS idCardNumber
+        FROM
+        buss_contract_file AS bcf
+        LEFT JOIN buss_project_master AS p ON bcf.project_code = p.project_code
+        AND p.is_del = 0
+        LEFT JOIN buss_sub_contractor AS c ON bcf.organization_code = c.organization_code
+        AND c.is_del = 0
+        LEFT JOIN buss_team_master AS t ON bcf.team_sys_no = t.team_sys_no
+        AND t.is_del = 0
+        LEFT JOIN buss_worker_master AS w ON bcf.id_card_number = w.id_card_number
+        AND w.is_del = 0
+        WHERE
+        bcf.is_del = 0
+        <if test="map.projectCode != null and map.projectCode != ''">
+            and bcf.project_code =#{map.projectCode}
+        </if>
+        <if test="map.team != null and map.team != ''">
+            and bcf.team_sys_no =#{map.team}
+        </if>
+        <if test="map.tag != null and map.tag != ''">
+            and bcf.tag =#{map.tag}
+        </if>
+        <if test="map.condition != null and map.condition != ''">
+            and (
+            w.worker_name like CONCAT('%',#{map.condition},'%')
+            OR
+            w.id_card_number LIKE CONCAT('%',#{map.condition},'%')
+            )
+        </if>
+        ORDER BY bcf.create_date DESC
+    </select>
+
+    <update id="batchReviewByFileId">
+        update buss_contract_file set status = #{status}
+        where is_del = 0 and id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        <if test="status != null and status == 1">
+            and status = 0
+        </if>
+        <if test="status != null and status == 3">
+            and status = 1
+        </if>
+    </update>
+
+    <update id="batchReview">
+        UPDATE buss_contract_file
+        SET status = #{status}
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+
+    <delete id="deletePatch">
+        delete from buss_contract_file where id IN
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateSetting">
+        update buss_contract_file set tag = #{value} where id in
+        <foreach item="id" collection="ids" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectWorkerContractFiles" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT p.id AS pwId,
+        c.id,
+        p.project_name AS projectName,
+        p.organization_name AS organizationName,
+        p.labor_company_name AS laborCompanyName,
+        p.team_name AS teamName,
+        p.worker_name AS workerName,
+        p.id_card_number AS idCardNumber,
+        sum(if(c.tag = 0,1,0)) contractCount,
+        sum(if(c.tag = 1,1,0)) payCount,
+        SUM(if(c.tag = 2,1,0)) joinCount,
+        SUM(if(c.tag = 3,1,0)) otherCount,
+        SUM(if(c.`status` = 0,1,0)) projectCount,
+        SUM(if(c.`status` = 1,1,0)) companyCount
+        from buss_project_worker p
+        left JOIN buss_contract_file c  ON p.id = c.project_worker_id
+        WHERE   p.is_del = 0
+        <!--   SELECT p.id AS pwId,
+		        p.project_name AS projectName,
+		        p.organization_name AS organizationName,
+		        p.labor_company_name AS laborCompanyName,
+		        p.team_name AS teamName,
+		        p.worker_name AS workerName,
+		        p.id_card_number AS idCardNumber,
+		        w.tagCount,w.statusCount
+		FROM (
+		   SELECT s1.id_card_number,s1.project_worker_id,
+		        s1.tagCount,s2.statusCount
+		  FROM (
+		        SELECT
+				  		s.id_card_number,
+						s.project_worker_id,
+						GROUP_CONCAT(s.tagName,':',s.cout) AS tagCount
+				  FROM (
+			        SELECT c.id_card_number,
+					  			a.NAME AS tagName,
+								COUNT(1) AS cout,
+								c.project_worker_id
+			        FROM buss_contract_file c
+			        LEFT JOIN (
+			        SELECT d.num,d.NAME FROM sys_dict d
+			        WHERE d.pid = (
+			        SELECT id
+			        FROM sys_dict
+			        WHERE NAME = '工人标签')
+		        ) a ON c.tag = a.num
+		        WHERE c.is_del = 0 AND c.tag IS NOT null
+		        GROUP BY c.project_worker_id,c.tag
+		    )s
+        GROUP BY s.project_worker_id
+        ) s1
+        LEFT JOIN (
+        SELECT sc.project_worker_id,sc.id_card_number, GROUP_CONCAT(sc.statusName,':',sc.statusCount) AS statusCount
+        FROM (
+        SELECT f.project_worker_id ,f.id_card_number,
+        if(f.STATUS=0,'待工程处审核','待总部审核')AS statusName,
+        COUNT(1) AS statusCount
+        FROM buss_contract_file f
+        WHERE f.is_del = 0 AND f.STATUS IN (0,1)
+        GROUP BY f.project_worker_id,f.id_card_number,f.STATUS
+        ) sc GROUP BY sc.project_worker_id
+
+        )s2 ON s1.project_worker_id =s2.project_worker_id
+
+        GROUP BY s1.project_worker_id
+        )w
+        right JOIN buss_project_worker p ON p.id = w.project_worker_id
+        where 1=1  -->
+        <if test="map.projectCode != null and map.projectCode != ''">
+            and p.project_code =#{map.projectCode} AND p.is_del = 0
+        </if>
+        <if test="map.organizationCodes != null and map.organizationCodes.size() > 0">
+            and p.organization_code IN
+            <foreach collection="map.organizationCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.condition !=null and map.condition != '' ">
+            and (
+            locate(#{map.condition},p.project_name)
+            or locate(#{map.condition}, p.organization_name)
+            or locate(#{map.condition}, p.labor_company_name)
+            or locate(#{map.condition}, p.team_name)
+            or locate(#{map.condition}, p.worker_name)
+            or locate(#{map.condition}, p.id_card_number)
+            )
+        </if>
+        <!--  <if test="map.status != null and map.status != ''">
+             and LOCATE(#{map.status},w.statusCount )
+         </if> -->
+        GROUP BY c.project_worker_id
+        <if test="map.sort == null or map.sort == ''">
+            ORDER BY c.tag desc
+        </if>
+    </select>
+    <select id="selectIdByContractCode" resultType="java.util.Map">
+        select id,count(id) AS num from buss_contract_file where contract_code=#{contractCode}
+    </select>
+</mapper>

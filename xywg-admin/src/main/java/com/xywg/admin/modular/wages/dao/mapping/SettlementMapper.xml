@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.SettlementMapper">
+
+    <select id="selectById" resultType="com.xywg.admin.modular.wages.model.Settlement">
+        SELECT id ,settlement_code AS settlementCode FROM buss_settlement WHERE id = #{id}
+    </select>
+
+    <select id="getList" resultMap="BaseResultMap">
+        select
+        m.project_name as projectName,
+        t.team_name as teamName,
+        s.pay_status as payStatus,
+        case
+        when s.pay_status=1 then '待发放'
+        when s.pay_status=2 then '部分发放'
+        when s.pay_status=3 then '已发放'
+        end as payStatusValue,
+        (select count(1) from buss_file_info where type = 'buss_settlement'
+        AND relevance_id = s.id ) AS fileNums ,
+        if(d.id is null,0,1) AS isGeneralContractorOperation ,
+        bsc.company_name AS companyName ,
+        <include refid="Base_Column_List"/>
+        from buss_settlement s
+        left JOIN sys_dept d on s.organization_code = social_credit_number
+        and d.id IN
+        <foreach collection="map.deptId" item="item" index="index" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        left join buss_project_master m on m.project_code=s.project_code
+        left join buss_team_master t on t.team_sys_no=s.team_sys_no
+        LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code = s.organization_code
+        where s.is_del=0
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        and d.id IN
+        <foreach collection="map.deptId" item="item" index="index" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        </if>
+        <choose>
+            <when test="map.projectCode !=null and  map.projectCode !='' ">
+                and s.project_code=#{map.projectCode}
+            </when>
+            <when test="map.projectCodes !=null and map.projectCodes.size()==0">
+                and 1=2
+            </when>
+            <otherwise>
+                <if test="map.projectCodes !=null and map.projectCodes.size()>0">
+                    and s.project_code in
+                    <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                        #{item}
+                    </foreach>
+                </if>
+            </otherwise>
+        </choose>
+        <if test="map.teamSysNo !=null and  map.teamSysNo !='' ">
+            and s.team_sys_no=#{map.teamSysNo}
+        </if>
+        <if test="map.beginTime !=null and  map.beginTime !='' ">
+            and s.create_date >= #{map.beginTime}
+        </if>
+        <if test="map.endTime !=null and  map.endTime !='' ">
+            and s.create_date &lt;= #{map.endTime}
+        </if>
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="deleteBatch">
+        update buss_settlement set is_del=1
+        where
+        id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+    <update id="deleteBatchDetail">
+        update buss_settlement_detail set is_del=1
+        where
+        settlement_code in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item.settlementCode}
+        </foreach>
+    </update>
+
+
+
+    <select id="getWorkerType" resultType="com.xywg.admin.modular.system.model.Dict">
+        SELECT id, num, pid, `name`, tips from  sys_dict
+         where   pid=121    and  `name` like CONCAT('%',#{workerTypeName},'%')
+    </select>
+
+    <select id="getSettlementDetail" resultType="com.xywg.admin.modular.wages.model.SettlementDetail">
+        select
+        d.id,
+        d.settlement_code as settlementCode,
+        m.worker_name as workerName,
+        sd.name as idCardType,
+        d.id_card_number as idCardNumber,
+        sd2.name as workerType,
+        d.add_pay_amount as addPayAmount,
+        d.add_actual_amount as addActualAmount,
+        d.add_balance_amount as addBalanceAmount,
+        case
+        WHEN d.pay_status=0 then '未发放'
+        when d.pay_status=20 THEN '已发放'
+        when d.pay_status=30 then '发放失败'
+        when d.pay_status=40 then '重新发放中'
+        end as payStatusValue,
+        d.punish_amount as punishAmount,
+        d.reward_amount as rewardAmount,
+        d.settle_pay_amount AS settlePayAmount,
+        d.settle_actual_amount as settleActualAmount,
+        d.settle_balance_amount as settleBalanceAmount
+        from buss_settlement_detail d
+        left join sys_dict sd on d.id_card_type=sd.num  and sd.pid=(select d2.id from sys_dict d2 where d2.name="人员证件类型" and d2.pid=0)
+        left JOIN sys_dict sd2 on sd2.num=d.worker_type  and sd2.pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据" and d2.pid=0)
+        left JOIN buss_worker_master m on m.id_card_type=d.id_card_type and m.id_card_number=d.id_card_number
+        where d.is_del=0 and d.settlement_code=#{map.settlementCode}
+        <if test="map.workerType!=null  and  map.workerType!='' ">
+            and sd2.name like CONCAT('%',#{map.workerType},'%')
+        </if>
+        <if test="map.workerNameOrCode != null  and    map.workerNameOrCode !='' ">
+            and ( m.worker_name like CONCAT('%',#{map.workerNameOrCode},'%') or d.id_card_number like
+            CONCAT('%',#{map.workerNameOrCode},'%') )
+        </if>
+    </select>
+
+    <select id="getDetailListNoPage" resultType="com.xywg.admin.modular.wages.model.SettlementDetail">
+        select
+        d.id,
+        d.settlement_code as settlementCode,
+        m.worker_name as workerName,
+        sd.name as idCardType,
+        d.id_card_number as idCardNumber,
+        sd2.name as workerType,
+        d.add_pay_amount as addPayAmount,
+        d.add_actual_amount as addActualAmount,
+        d.add_balance_amount as addBalanceAmount,
+        case
+        WHEN d.pay_status=0 then '未发放'
+        when d.pay_status=20 THEN '已发放'
+        when d.pay_status=30 then '发放失败'
+        when d.pay_status=40 then '重新发放中'
+        end as payStatusValue,
+        d.punish_amount as punishAmount,
+        d.reward_amount as rewardAmount,
+        d.settle_pay_amount AS settlePayAmount,
+        d.settle_actual_amount as settleActualAmount,
+        d.settle_balance_amount as settleBalanceAmount
+        from buss_settlement_detail d
+        left join sys_dict sd on d.id_card_type=sd.num  and sd.pid=(select d2.id from sys_dict d2 where d2.name="人员证件类型" and d2.pid=0)
+        left JOIN sys_dict sd2 on sd2.num=d.worker_type  and sd2.pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据" and d2.pid=0)
+        left JOIN buss_worker_master m on m.id_card_type=d.id_card_type and m.id_card_number=d.id_card_number
+        where d.is_del=0 and d.settlement_code=#{map.settlementCode}
+        <if test="map.workerType!=null  and  map.workerType!='' ">
+            and sd2.name like CONCAT('%',#{map.workerType},'%')
+        </if>
+        <if test="map.workerNameOrCode != null  and    map.workerNameOrCode !='' ">
+            and ( m.worker_name like CONCAT('%',#{map.workerNameOrCode},'%') or d.id_card_number like
+            CONCAT('%',#{map.workerNameOrCode},'%') )
+        </if>
+    </select>
+
+    <select id="getSettlementDetailBySettlementCode" resultType="com.xywg.admin.modular.wages.model.SettlementDetail">
+        select
+        d.id,
+        d.settlement_code as settlementCode,
+        s.organization_code as organizationCode,
+        s.project_code  as projectCode,
+        m.worker_name as workerName,
+        sd.name as idCardTypeName,
+        d.id_card_type as idCardType,
+        d.id_card_number  as  idCardNumber,
+        sd2.name as workerTypeName,
+        d.worker_type as workerType,
+        d.add_pay_amount as addPayAmount,
+        d.add_actual_amount as addActualAmount,
+        d.add_balance_amount as addBalanceAmount,
+        case
+        WHEN d.pay_status=0 then '未发放'
+        when d.pay_status=20 THEN '已发放'
+        when d.pay_status=30 then  '发放失败'
+        when d.pay_status=40 then  '重新发放中'
+        end   as payStatusValue,
+        d.punish_amount as punishAmount,
+        d.reward_amount  as rewardAmount,
+        d.settle_pay_amount AS settlePayAmount,
+        d.settle_actual_amount  as settleActualAmount,
+        d.settle_balance_amount  as  settleBalanceAmount
+        from  buss_settlement_detail  d
+        left join  sys_dict  sd   on  d.id_card_type = sd.num  and sd.pid=(select d2.id from sys_dict d2 where d2.name="人员证件类型" and d2.pid=0)
+        left JOIN  sys_dict  sd2  on  d.worker_type = sd2.num  and sd2.pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据" and d2.pid=0)
+        left join  buss_settlement  s  on s.settlement_code=d.settlement_code
+        left JOIN  buss_worker_master  m on  m.id_card_type=d.id_card_type and m.id_card_number=d.id_card_number
+        where d.is_del=0  and  d.settlement_code=#{settlementCode}
+    </select>
+
+    <!--插入结算数据-->
+    <insert id="saveSettlement">
+        insert into buss_settlement(
+          settlement_code,
+          project_code,
+          organization_code,
+          pay_month,
+          pay_status,
+          total_amount,
+          actual_amount,
+          payed_money,
+          create_date,
+          create_user,
+          payroll_detail_ids,
+          salary_person
+        ) VALUES (
+          #{settlementCode},
+          #{projectCode},
+          #{organizationCode},
+          #{payMonth},
+          #{payStatus},
+          #{totalAmount},
+          #{actualAmount},
+          #{payedMoney},
+          now(),
+          #{createUser},
+          #{payrollDetailIds},
+          #{salaryPerson}
+        )
+    </insert>
+
+    <!--更新结算单-->
+    <update id="updateSettlement">
+        update buss_settlement
+        <set>
+            <if test="totalAmount!=null  ">total_amount=#{totalAmount},</if>
+            <if test="actualAmount!=null ">actual_amount=#{actualAmount},</if>
+            <if test="payedMoney!=null  ">payed_money=#{payedMoney},</if>
+            <if test="updateUser!=null and  updateUser!='' ">update_user=#{updateUser},</if>
+            update_date=now()
+        </set>
+        where settlement_code=#{settlementCode}
+    </update>
+
+    <!--保存结算单明细-->
+    <insert id="saveSettlementDetailBatch">
+        insert into buss_settlement_detail(
+        settlement_code,
+        id_card_type,
+        id_card_number,
+        worker_type,
+        price,
+        days,
+        add_pay_amount,
+        add_actual_amount,
+        add_balance_amount,
+        punish_amount,
+        reward_amount,
+        settle_pay_amount,
+        settle_actual_amount,
+        settle_balance_amount,
+        team_sys_no,
+        create_user,
+        create_date,
+        update_user,
+        update_date
+        )VALUES
+        <foreach collection="list" item="item" open="(" separator="),(" close=")">
+            #{item.settlementCode},
+            #{item.idCardType},
+            #{item.idCardNumber},
+            #{item.workerType},
+            #{item.price},
+            #{item.days},
+            #{item.addPayAmount},
+            #{item.addActualAmount},
+            #{item.addBalanceAmount},
+            #{item.punishAmount},
+            #{item.rewardAmount},
+            #{item.settlePayAmount},
+            #{item.settleActualAmount},
+            #{item.settleBalanceAmount},
+            #{item.teamSysNo},
+            #{item.createUser},
+            now(),
+            #{item.updateUser},
+            now()
+        </foreach>
+    </insert>
+
+    <!--更新结算单明细表-->
+    <update id="updateSettlementDetail">
+        update buss_settlement_detail
+        <set>
+            <if test="addPayAmount!=null  ">add_pay_amount=#{addPayAmount},</if>
+            <if test="addActualAmount!=null  ">add_actual_amount=#{addActualAmount},</if>
+            <if test="addBalanceAmount!=null  ">add_balance_amount=#{addBalanceAmount},</if>
+            <if test="punishAmount!=null    ">punish_amount=#{punishAmount},</if>
+            <if test="rewardAmount!=null    ">reward_amount=#{rewardAmount},</if>
+            <if test="settlePayAmount!=null    ">settle_pay_amount=#{settlePayAmount},</if>
+            <if test="settleActualAmount!=null  ">  settle_actual_amount=#{settleActualAmount}, </if>
+            <if test="settleBalanceAmount!=null "> settle_balance_amount=#{settleBalanceAmount}, </if>
+            <if test="updateUser != null and  updateUser!=''">update_user =#{updateUser},</if>
+            update_date=now()
+        </set>
+        where id=#{id}
+
+    </update>
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.Settlement">
+        <id column="id" property="id"/>
+        <result column="settlement_code" property="settlementCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="projectName" property="projectName"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="team_sys_no" property="teamSysNo"/>
+        <result column="teamName" property="teamName"/>
+        <result column="pay_month" property="payMonth"/>
+        <result column="status" property="status"/>
+        <result column="statusValue" property="statusValue"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="actual_amount" property="actualAmount"/>
+        <result column="payed_money" property="payedMoney"/>
+        <result column="construct_valid" property="constructValid"/>
+        <result column="construct_date" property="constructDate"/>
+        <result column="contract_valid" property="contractValid"/>
+        <result column="contract_date" property="contractDate"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="salary_person" property="salaryPerson"/>
+        <result column="is_del" property="isDel"/>
+        <result column="payroll_detail_ids" property="payrollDetailIds"/>
+        <result column="fileNums" property="fileNums"/>
+        <result column="companyName" property="companyName"/>
+        <result column="isGeneralContractorOperation" property="isGeneralContractorOperation"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        s.id,
+        s.settlement_code,
+        s.project_code,
+        s.organization_code,
+        s.team_sys_no,
+        s.pay_month,
+        s.status,
+        s.total_amount,
+        s.actual_amount,
+        s.payed_money,
+        s.construct_valid,
+        s.construct_date,
+        s.contract_valid,
+        s.contract_date,
+        s.create_date,
+        s.create_user,
+        s.update_date,
+        s.update_user,
+        s.salary_person,
+        s.payroll_detail_ids,
+        s.is_del
+    </sql>
+
+    <!--根据项目获取结算单列表-->
+    <select id="getSettlementListByProjectCodeAndTeamSysNo"
+            resultType="com.xywg.admin.modular.wages.model.dto.SettlementDto2">
+        select
+        s.id ,
+        IFNULL(m.project_name,'') as projectName,
+        IFNULL(sum(bsd.settle_pay_amount),0) AS payAmount,
+        IFNULL(sum(bsd.settle_actual_amount),0) AS actualAmount ,
+        IFNULL(sum(bsd.settle_balance_amount),0) AS balanceAmount ,
+        IFNULL(s.status,0) AS status,
+        s.create_date AS createDate
+        from buss_settlement s
+        LEFT JOIN buss_settlement_detail bsd ON bsd.settlement_code = s.settlement_code
+        left join buss_project_master m on m.project_code=s.project_code
+        <if test="id != null and id!=''">
+            JOIN (
+            SELECT
+            btm.team_sys_no
+            FROM
+            buss_team_member btm
+            JOIN (
+            SELECT
+            bwm.id_card_type,
+            bwm.id_card_number
+            FROM
+            buss_worker_master bwm
+            JOIN sys_user su ON su.id = #{id}
+            AND su.phone = bwm.cell_phone
+            ) teamLeader ON btm.id_card_type = teamLeader.id_card_type
+            AND btm.id_card_number = teamLeader.id_card_number
+            WHERE
+            btm.team_worker_type = 0
+            ) A ON A.team_sys_no = s.team_sys_no
+        </if>
+        where s.is_del = 0
+        <if test="projectCode !=null and  projectCode !='' ">
+            and s.project_code=#{projectCode}
+        </if>
+        GROUP BY s.id
+        ORDER BY s.id DESC
+    </select>
+
+    <!--根据项目获取结算单列表-->
+    <select id="v116GetSettlementListByProjectCodeAndSysTeamNo"
+            resultType="com.xywg.admin.modular.wages.model.dto.SettlementDto2">
+        select
+        s.id ,
+        IFNULL(m.project_name,'') as projectName,
+        IFNULL(sum(bsd.settle_pay_amount),0) AS payAmount,
+        IFNULL(sum(bsd.settle_actual_amount),0) AS actualAmount ,
+        IFNULL(sum(bsd.settle_balance_amount),0) AS balanceAmount ,
+        IFNULL(s.status,0) AS status,
+        s.create_date AS createDate
+        from buss_settlement s
+        LEFT JOIN buss_settlement_detail bsd ON bsd.settlement_code = s.settlement_code
+        left join buss_project_master m on m.project_code=s.project_code
+        <if test="id != null and id!=''">
+        left JOIN (
+            SELECT
+            btm.team_sys_no
+            FROM
+            buss_team_member btm
+            JOIN (
+            SELECT
+            bwm.id_card_type,
+            bwm.id_card_number
+            FROM
+            buss_worker_master bwm
+            JOIN sys_user su ON su.id = #{id}
+            AND su.phone = bwm.cell_phone
+            ) teamLeader ON btm.id_card_type = teamLeader.id_card_type
+            AND btm.id_card_number = teamLeader.id_card_number
+            WHERE
+            btm.team_worker_type = 0
+            ) A ON A.team_sys_no = bsd.team_sys_no
+        </if>
+        where s.is_del = 0
+        <if test="projectCode !=null and  projectCode !='' ">
+            and s.project_code=#{projectCode}
+        </if>
+        GROUP BY s.id
+        ORDER BY s.id DESC
+        limit #{index},#{pageSize}
+    </select>
+    
+    <!--根据项目获取结算单列表2-->
+    <select id="v116GetSettlementListByProjectCodeAndSysTeamNo2"
+            resultType="com.xywg.admin.modular.wages.model.dto.SettlementDto2">
+        select tt.settlementCode,tt.payAmount,tt.actualAmount,tt.balanceAmount,
+        	s.id,IFNULL(s.status,0) AS status,s.create_date AS createDate,IFNULL(m.project_name,'') as projectName
+		from (select sd.settlement_code as settlementCode,IFNULL(sum(sd.settle_pay_amount),0) AS payAmount,
+	        IFNULL(sum(sd.settle_actual_amount),0) AS actualAmount ,
+	        IFNULL(sum(sd.settle_balance_amount),0) AS balanceAmount 
+			from buss_settlement_detail sd
+			<if test="id != null and id!=''">
+				INNER join (SELECT
+	            btm.team_sys_no
+	            FROM
+	            buss_team_member btm
+	            JOIN (
+	            SELECT
+	            bwm.id_card_type,
+	            bwm.id_card_number
+	            FROM
+	            buss_worker_master bwm
+	            JOIN sys_user su ON su.id = #{id}
+	            AND su.phone = bwm.cell_phone
+	            ) teamLeader ON btm.id_card_type = teamLeader.id_card_type
+	            AND btm.id_card_number = teamLeader.id_card_number
+	            WHERE
+	            btm.team_worker_type = 0) t on t.team_sys_no = sd.team_sys_no
+	        </if>
+			where sd.is_del = 0
+			group by sd.settlement_code) tt
+		left join buss_settlement s on s.settlement_code = tt.settlementCode and s.is_del = 0
+		left join buss_project_master m on s.project_code = m.project_code and m.is_del = 0
+        where 1 = 1
+        <if test="projectCode != null and  projectCode !='' ">
+            and s.project_code = #{projectCode}
+        </if>
+        order by s.create_date desc
+        limit #{index},#{pageSize}    
+    </select>
+
+    <!--批量发放工资-->
+    <update id="payrollBatch" parameterType="list">
+        <foreach collection="list" index="index" item="item" open="" separator=";" close="">
+            <choose>
+                <when test=" item.payedMoney !=null  and   item.payedMoney!=0   and  item.status==3 ">
+                    update buss_settlement set pay_status=2,status=50 where id=#{item.id}
+                </when>
+                <when test=" item.payedMoney !=null  and   item.payedMoney==0  and  item.status==3 ">
+                    update buss_settlement set pay_status=3,status=50 where id=#{item.id}
+                </when>
+                <otherwise>
+                    update buss_settlement set pay_status=3,status=50 where 1=2
+                </otherwise>
+            </choose>
+        </foreach>
+    </update>
+
+
+    <update id="checkInfo">
+        update buss_settlement
+        set construct_valid=#{userName},construct_date=now(),status=2,update_user=#{userName},update_date=now()
+        where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="review">
+        update buss_settlement
+        set contract_valid=#{userName},contract_date=now(),status=3,update_user=#{userName},update_date=now()
+        where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+
+    <select id="getSettlementDetailById" resultType="Map">
+        SELECT
+        bwm.worker_name AS workerName ,
+        bsd.id_card_type AS idCardType ,
+        bsd.id_card_number AS idCardNumber ,
+        ifnull(bsd.add_pay_amount,0)AS addPayAmount ,
+        ifnull(bsd.add_actual_amount,0) AS addActualAmount ,
+        ifnull(bsd.add_balance_amount,0) AS addBalanceAmount ,
+        ifnull(bsd.punish_amount,0) AS punishAmount ,
+        ifnull(bsd.reward_amount,0) AS rewardAmount ,
+        ifnull(bsd.settle_pay_amount,0) AS settlePayAmount ,
+        ifnull(bsd.settle_actual_amount,0) AS settleActualAmount ,
+        if(bsd.sign is not null,1,0) AS isSign,
+        ifnull(bsd.sign,'') AS sign,
+        ifnull(bsd.icon_sign,'') AS iconSign ,
+        ifnull(bwm.head_image,'') AS headImage ,
+        ifnull(bsd.photo,'') AS photo ,
+        ifnull(bsd.icon_photo,'') AS iconPhoto ,
+        ifnull(bsd.remark,'') AS remark ,
+        bsd.id
+        FROM
+        buss_settlement_detail bsd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bsd.id_card_type AND bwm.id_card_number = bsd.id_card_number
+        LEFT JOIN buss_settlement bs ON bs.settlement_code = bsd.settlement_code
+        WHERE
+        bs.id = #{id}
+    </select>
+    
+    <select id="getSettlementDetailById2" resultType="Map">
+        SELECT
+        bwm.worker_name AS workerName ,
+        bsd.id_card_type AS idCardType ,
+        bsd.id_card_number AS idCardNumber ,
+        ifnull(bsd.add_pay_amount,0)AS addPayAmount ,
+        ifnull(bsd.add_actual_amount,0) AS addActualAmount ,
+        ifnull(bsd.add_balance_amount,0) AS addBalanceAmount ,
+        ifnull(bsd.punish_amount,0) AS punishAmount ,
+        ifnull(bsd.reward_amount,0) AS rewardAmount ,
+        ifnull(bsd.settle_pay_amount,0) AS settlePayAmount ,
+        ifnull(bsd.settle_actual_amount,0) AS settleActualAmount ,
+        if(bsd.sign is not null,1,0) AS isSign,
+        ifnull(bsd.sign,'') AS sign,
+        ifnull(bsd.icon_sign,'') AS iconSign ,
+        ifnull(bwm.head_image,'') AS headImage ,
+        ifnull(bsd.photo,'') AS photo ,
+        ifnull(bsd.icon_photo,'') AS iconPhoto ,
+        ifnull(bsd.remark,'') AS remark ,
+        bsd.id
+        FROM
+        buss_settlement_detail bsd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bsd.id_card_type AND bwm.id_card_number = bsd.id_card_number
+        LEFT JOIN buss_settlement bs ON bs.settlement_code = bsd.settlement_code
+        INNER join (SELECT
+            btm.team_sys_no
+            FROM
+            buss_team_member btm
+            JOIN (
+            SELECT
+            bwm.id_card_type,
+            bwm.id_card_number
+            FROM
+            buss_worker_master bwm
+            JOIN sys_user su ON su.id = #{uid}
+            AND su.phone = bwm.cell_phone
+            ) teamLeader ON btm.id_card_type = teamLeader.id_card_type
+            AND btm.id_card_number = teamLeader.id_card_number
+            WHERE
+            btm.team_worker_type = 0) t on t.team_sys_no = bsd.team_sys_no
+        WHERE
+        bs.id = #{id}
+    </select>
+
+    <update id="settlementDetailDtoSign">
+        UPDATE buss_settlement_detail
+        SET
+        sign = #{sign} ,
+        icon_sign = CONCAT("icon/", #{sign}) ,
+        <if test="remark !=null and remark != ''">
+            remark = #{remark} ,
+        </if>
+        photo = #{photo} ,
+        icon_photo = CONCAT("icon/", #{photo})
+        WHERE
+        id = #{id}
+    </update>
+
+    <insert id="insert">
+        INSERT INTO
+        buss_settlement(settlement_code ,project_code , team_sys_no , organization_code ,pay_month , pay_status , total_amount , actual_amount , payed_money,create_date , create_user , payroll_detail_ids)
+        values(#{settlementCode},#{projectCode},#{teamSysNo},(SELECT organization_code FROM buss_team_master WHERE team_sys_no = #{teamSysNo}),
+        now(),1,#{totalAmount},#{actualAmount},#{payedMoney},now(),#{createUser} , #{payrollDetailIds})
+    </insert>
+
+    <insert id="insertSettlementDetailDto">
+        INSERT INTO
+        buss_settlement_detail
+        (id_card_type , id_card_number , add_pay_amount ,add_actual_amount , add_balance_amount ,punish_amount ,
+        reward_amount ,settle_pay_amount , settle_actual_amount ,
+        settle_balance_amount,pay_status,create_date,create_user ,settlement_code)
+        VALUES
+        <foreach collection="detailList" item="item" open="(" separator="),(" close=")">
+            #{item.idCardType},#{item.idCardNumber},#{item.addPayAmount},#{item.addActualAmount}
+            ,#{item.addBalanceAmount},#{item.punishAmount},#{item.rewardAmount},
+            #{item.settlePayAmount},#{item.settleActualAmount},#{item.settleBalanceAmount},0,now(),#{item.createUser},#{settlementCode}
+        </foreach>
+    </insert>
+    
+    <insert id="insertSettlementDetailDto2">
+        INSERT INTO
+        buss_settlement_detail
+        (id_card_type , id_card_number , team_sys_no, worker_type, add_pay_amount ,add_actual_amount , add_balance_amount ,punish_amount ,
+        reward_amount ,settle_pay_amount , settle_actual_amount ,
+        settle_balance_amount,pay_status,create_date,create_user ,settlement_code)
+        VALUES
+        <foreach collection="detailList" item="item" open="(" separator="),(" close=")">
+            #{item.idCardType},#{item.idCardNumber},#{tsn},#{item.workerType},#{item.addPayAmount},#{item.addActualAmount}
+            ,#{item.addBalanceAmount},#{item.punishAmount},#{item.rewardAmount},
+            #{item.settlePayAmount},#{item.settleActualAmount},#{item.settleBalanceAmount},0,now(),#{item.createUser},#{settlementCode}
+        </foreach>
+    </insert>
+
+    <select id="getSettlementDtoByOrganizationCode" resultType="com.xywg.admin.modular.wages.model.dto.PayRollDto">
+        <!-- 作为参建单位 -->
+        SELECT id , projectName , payAmount , actualAmount , balanceAmount ,STATUS ,createDate FROM
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id
+        ) N
+        ORDER BY id DESC
+    </select>
+
+    <select id="v116GetSettlementDtoByOrganizationCode" resultType="com.xywg.admin.modular.wages.model.dto.PayRollDto">
+        <!-- 作为参建单位 -->
+        SELECT id , projectName , payAmount , actualAmount , balanceAmount ,STATUS ,createDate FROM
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id
+        ) N
+        ORDER BY id DESC
+        limit #{index},#{pageSize}
+    </select>
+
+    <!-- 查询待审核的结算单个数 -->
+    <select id="getToAuditSettlementCount" resultType="com.xywg.admin.modular.bad.dto.BadRecordsResultVO">
+        SELECT
+        COUNT(1) AS toAuditSettlementCount
+        FROM
+        <!-- 作为参建单位 -->
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.settle_pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.settle_actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.settle_balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_settlement bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_settlement_detail b ON b.settlement_code = bprd.settlement_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id
+        )t
+    </select>
+
+    <update id="examineSettlementDto">
+        UPDATE buss_settlement
+        SET
+        <if test="status == 2">
+            construct_valid = (SELECT name FROM sys_user WHERE id = #{userId} and status !=3) ,
+            construct_date = now() ,
+        </if>
+        <if test="status == 3">
+            contract_valid = (SELECT name FROM sys_user WHERE id = #{userId} and status !=3) ,
+            contract_date = now() ,
+        </if>
+        status = #{status}
+        WHERE id= #{id}
+    </update>
+
+
+    <!--根据项目编号和工人信息获取结算单详细-->
+    <select id="getSettlementDetailListByWorkerAndProjectCode"
+            resultType="com.xywg.admin.modular.wages.model.dto.PayrollSettlementDetail">
+            select
+                 d.add_pay_amount as payAmount,
+				 d.add_actual_amount  as  actualAmount,
+				 d.add_balance_amount as balanceAmount,
+				 d.create_date as  createDate,
+				 "2" as documentType
+            from buss_settlement_detail  d
+            left join  buss_settlement  s   on   s.settlement_code=d.settlement_code
+            where
+                d.is_del=0  and  s.is_del=0   and   s.project_code= #{projectCode}   AND d.id_card_type =#{idCardType} AND d.id_card_number =#{idCardNumber}
+    </select>
+
+
+    <update id="updateSettlementDetailStatus">
+        UPDATE buss_settlement_detail SET pay_status=20,update_user=#{userName},update_date=now(),pay_person=#{userName}
+        where settlement_code in
+        <foreach collection="settlementCodeList" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updatePayRollDetails">
+        UPDATE
+          buss_pay_roll_detail
+        SET
+          pay_status = 50
+        WHERE
+          FIND_IN_SET(id,#{ids})
+    </update>
+
+    <update id="updateDetailsPayPerson">
+        UPDATE buss_settlement_detail
+        SET pay_person = #{accountName}
+        WHERE settlement_code = (SELECT settlement_code FROM buss_settlement WHERE id = #{id})
+    </update>
+</mapper>

@@ -1,0 +1,53 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>班组成员</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            
+                            <div class="col-sm-3">
+                                <#NameCon id="name" name="姓名" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#NameCon id="phone" name="手机号" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#NameCon id="idCard" name="证件号" />
+                            </div>
+                            
+                             <input type="hidden" id="teamCode" value="${teamCode}">
+                            <div class="col-sm-3">
+                                <#button name="搜索" icon="fa-search" clickFun="TeamMember.search()"/>
+                            </div>
+                        </div>
+                        <div  id="TeamMasterTableToolbar" role="group">
+                            @if(shiro.hasPermission("/teamMaster/add")){
+                                <#button name="新增班组成员" icon="fa-plus" clickFun="TeamMember.openAddTeamMember()"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/update")){
+                                <#button name="设为班组长" icon="fa-edit" clickFun="TeamMember.setTeamLeader()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/delete")){
+                                <#button name="移除班组成员" icon="fa-remove" clickFun="TeamMember.delete()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/workerJoin")){
+                                <#button name="进场" icon="fa-plus" clickFun="TeamMember.workerJoin()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/workerOut")){
+                                <#button name="退场" icon="fa-remove" clickFun="TeamMember.workerOut()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="TeamMemberTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMember.js"></script>
+@}

@@ -1,0 +1,56 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6">
+                           <#select_sjf id="teamId" name="班组名称" underline="true" disabled="true" >
+	                             @for(i in teams){
+		                             @if(i.teamSysNo==item.teamSysNo){
+		                             	<option value="${i.id}" selected>${i.teamName}</option>
+		                             @}else{
+		                             	<option value="${i.id}">${i.teamName}</option>
+		                             @}                           
+	                             @}
+                            </#select_sjf>                         
+                                              
+                            <#input_sjf id="teamSysNo" name="班组编号" value="${item.teamSysNo}" underline="true" disabled="true"/>
+                            <#input_sjf id="teamLeader" name="班组长" value="${item.teamLeader}" underline="true" disabled="true"/>
+                            <#input_sjf id="projectCode" name="项目编号" value="${item.projectCode}" underline="true" disabled="true"/>
+                            <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" underline="true" disabled="true"/>
+                            <#input_sjf id="companyName" name="所属单位" value="${item.companyName}" underline="true" disabled="true"/>
+                                           
+                </div>
+
+                <div class="col-sm-6">
+                            <#select_sjf id="goodRecordTypeCode" name="奖励类型" underline="true" disabled="true">
+                             @for(i in dictGoodRecordTypeCode){
+	                              @if(i.num==parseInt(item.goodRecordTypeCode)){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf>   
+                            <#select_sjf id="goodRecordLevelType" name="奖励级别" underline="true" disabled="true" >
+                             @for(i in dictGoodRecordLevelType){
+	                              @if(i.num==item.goodRecordLevelType){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf>                                      
+                            <#input_sjf id="occurrenceDate" name="奖励时间" value ="${item.occurrenceDate}" underline="true"  disabled="true" 
+                             clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                            <#textarea_sjf id="details" name="奖项说明" value="${item.details}" underline="true" disabled="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/teamGoodRecords/teamGoodRecords_info.js"></script>
+@}

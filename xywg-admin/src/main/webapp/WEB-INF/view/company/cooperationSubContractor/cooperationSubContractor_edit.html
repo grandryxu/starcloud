@@ -1,0 +1,74 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="subContractorInfoForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="companyName" name="企业名称" value="${item.companyName}" underline="true" requiredFlag="true"/>
+                    <#select id="organizationType" name="单位性质" underline="true" value="${item.organizationType}">
+                        @for(item in organizationType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#input id="organizationCode" name="组织机构编号" value="${item.organizationCode}" underline="true"/>
+                    <#input id="bizRegisterCode" name="工商营业执照号" value="${item.bizRegisterCode}" underline="true" requiredFlag="true"/>
+                    <#input id="socialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="true"/>
+                    <#input id="areaCode" name=" 注册地区" value="${item.areaCode}" underline="true" requiredFlag="true"/>
+                    <#input id="address" name="营业地址" value="${item.address}" underline="true"/>
+                    <#select id="economicNature" name="企业经济性质" value="${item.economicNature}" underline="true" requiredFlag="true">
+                            @for(item in economicNature){
+                             <option value="${item.num}">${item.name}</option>
+                            @}
+                    </#select>
+                    <#input id="zipCode" name="邮政编码" value="${item.zipCode}" underline="true"/>
+                    <#input id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="true" requiredFlag="true"/>
+                    <#input id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="true"/>
+                    <#input id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="true" requiredFlag="true"/>
+                    <#input id="phoneNumber" name="办公电话" value="${item.phoneNumber}" />
+                </div>
+
+                <div class="col-sm-6">
+                    <#input id="representativeName" name="法定代表人" value="${item.representativeName}" underline="true"/>
+                    <#select id="representativeIdcardType" name="证件类型" underline="true">
+                        @for(item in representativeIdcardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#input id="representativeIdcardNumber" name="证件号码" value="${item.representativeIdcardNumber}" underline="true"/>
+                    <#input id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="true"/>
+                    <#input id="email" name="企业联系邮箱" value="${item.email}" underline="true"/>
+                    <#input id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="true"/>
+                    <#select id="enterpriseMarketType" name="企业市域类别" value="${item.enterpriseMarketType}" underline="true" requiredFlag="true">
+                        @for(item in enterpriseMarketType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#input id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="true"/>
+                    <#input id="capitalCurrency" name="币种" value="${item.capitalCurrency}" underline="true"/>
+                    <#input id="establishDate" name="成立日期" value="${item.establishDate}" underline="true"/>
+                    <#select id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="true" requiredFlag="true">
+                        @for(item in businessStatus){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#textarea_sjf id="memo" name="企业备注" underline="true" value="${item.memo}"/>
+                </div>
+            </div>
+            <!--<div>
+                <#input id="memo" name="企业备注" value="${item.memo}" underline="true"/>
+            </div>-->
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SubContractorInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SubContractorInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/cooperationSubContractor/cooperationSubContractor_info.js"></script>
+@}

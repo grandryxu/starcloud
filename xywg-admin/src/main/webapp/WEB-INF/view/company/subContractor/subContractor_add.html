@@ -1,0 +1,121 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="subContractorInfoForm">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input_sjf id="companyName" name="企业名称" underline="true" requiredFlag="true"/>
+                    <#select_sjf id="organizationType" name="单位性质" underline="true">
+                    <option value="">请选择</option>
+                    @for(item in subOrganizationType){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                </#select_sjf>
+                    <div class="form-group form-group-sss" style="padding:6px 0;">
+                        <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                            <text style="color: red">*</text>是否三证合一:
+                        </label>
+                        <div class="col-sm-9" id="cRadio">
+                            <div class="radio radio-info2 radio-inline">
+                                <input type="radio" id="inlineRadio1" value="1" name="radio" onchange="test(this)" checked>
+                                <label for="inlineRadio1"> 是</label>
+                            </div>
+
+                            <div class="radio radio-info2 radio-inline">
+                                <input type="radio" id="inlineRadio2" value="2" name="radio" onchange="test(this)">
+                                <label for="inlineRadio2"> 否</label>
+                            </div>
+                        </div>
+                    </div>
+                    <#input_sjf id="organizationCode" parentId="pOrganizationCode" requiredFlag="true" name="组织机构编号" underline="true"  />
+                    <#input_sjf id="bizRegisterCode" parentId="pBizRegisterCode" name="营业执照注册号" underline="true" requiredFlag="true" />
+                    <#input_sjf id="socialCreditNumber" parentId="pSocialCreditNumber" name="社会统一信用代码" underline="true" requiredFlag="true"/>
+                    <div class="form-group form-group-sss" style="padding-bottom:10px;">
+                        <label class="col-sm-3 control-label control-label-sss"><text style="color:red;">*</text>地区:</label>
+                        <div class="col-sm-9">
+                            <div data-toggle="distpicker" name="areaCode">
+                                <select class="form-control form-control-sss" id="provinceCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                                <select class="form-control form-control-sss" id="cityCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                                <select class="form-control form-control-sss" id="areaCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <#input_sjf id="address" name="企业营业地址" underline="true" />
+                    <#select_sjf id="economicNature" name="企业经济性质" underline="true" >
+                        <option value="">请选择</option>
+                        @for(item in subEconomicNature){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="zipCode" name="邮政编码" underline="true"/>
+                    <#input_sjf id="contactPeopleName" name="联系人姓名" underline="true" />
+                    <#input_sjf id="contactPeoplePhone" name="联系人办公电话" underline="true"/>
+                    <#input_sjf id="contactPeopleCellPhone" name="联系人手机号码" underline="true" />
+                    <div class="form-group form-group-sss" style="padding:6px 0;">
+                        <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                            	实名制同步
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="radio radio-info2 radio-inline">
+                                <input type="radio" id="inlineRadio4" value="1" name="isSynchro" checked>
+                                <label for="inlineRadio4"> 是</label>
+                            </div>
+
+                            <div class="radio radio-info2 radio-inline">
+                                <input type="radio" id="inlineRadio3" value="0" name="isSynchro" >
+                                <label for="inlineRadio3"> 否</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <#input_sjf id="representativeName" name="法人姓名" underline="true" />
+                    <#select_sjf id="representativeIdcardType" name="法人证件类型" underline="true" >
+                        <option value="">请选择</option>
+                        @for(item in subRepresentativeIdcardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="representativeIdcardNumber" name="法人证件号码" underline="true" />
+                    <#input_sjf id="faxNumber" name="传真号码" underline="true"/>
+                    <#input_sjf id="email" name="企业联系邮箱" underline="true"/>
+                    <#input_sjf id="homeWebsiteUrl" name="企业网址" underline="true"/>
+                    <#select_sjf id="enterpriseMarketType" name="企业市域类别" underline="true" >
+                        <option value="">请选择</option>
+                        注册资本币种
+                    </#select_sjf>
+                    <#input_sjf id="registrationCapital" name="注册资本(万元)" underline="true"/>
+                    <#select_sjf id="capitalCurrency" name="注册资本币种" underline="true">
+                        <option value="">请选择</option>
+                        @for(item in subCapitalCurrency){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="establishDate" name="成立日期" underline="true" />
+                    <#input_sjf id="phoneNumber" name="办公电话"/>
+                    <#select_sjf id="businessStatus" name="企业经营状态" underline="true" >
+                        <option value="">请选择</option>
+                        @for(item in subBusinessStatus){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#textarea_sjf id="memo" name="企业备注" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 tac-sss button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SubContractorInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SubContractorInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/subContractor/company_add.js"></script>
+@}

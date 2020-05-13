@@ -1,0 +1,25 @@
+##########################################################
+###################  正式环境的profile  ###################
+##########################################################
+spring:
+  datasource:
+      url: jdbc:mysql://192.168.1.158:3306/gblabor?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&useServerPrepStmts=false&rewriteBatchedStatements=true&allowMultiQueries=true
+      username: root
+      password: Xingyun*_001
+      db-name: gblabor
+      filters: log4j,mergeStat
+  mvc:
+    view:
+      imageLocalPath: http://192.168.1.124:8080/labor/
+      imageHost: http://labor.jsxywg.cn/labor/
+
+logging:
+  level.root: warn
+  path: logs/
+  file: xywg.log
+
+ftp:
+  host: 192.168.1.124
+  port: 21
+  username: jack
+  password: qwer1234

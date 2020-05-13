@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.User">
+        <id column="id" property="id"/>
+        <result column="avatar" property="avatar"/>
+        <result column="account" property="account"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="name" property="name"/>
+        <result column="birthday" property="birthday"/>
+        <result column="sex" property="sex"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="roleid" property="roleid"/>
+        <result column="deptid" property="deptid"/>
+        <result column="status" property="status"/>
+        <result column="createtime" property="createtime"/>
+        <result column="version" property="version"/>
+        <result column="user_type" property="userType"/>
+        <result column="data_source" property="dataSource"/>
+        <result column="equipment" property="equipment" />
+        <result column="is_enterprise" property="isEnterprise" />
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"  />
+        <result column="flow_status" property="flowStatus"  />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, account, name, birthday, sex, email, avatar,
+        phone, roleid, id_card_type, id_card_number,
+        deptid, status,user_type,data_source,
+        createtime, version,is_enterprise,left(start_time,10) as startTime,left(end_time,10) as endTime,
+        flow_status
+    </sql>
+
+    <sql id="Base_Column_List_With_Pwd">
+        id, account, name, birthday, password, sex, email, avatar,
+        phone, roleid, salt,id_card_type as idCardType, id_card_number as idCardNumber,
+        deptid, status,equipment,user_type as userType,data_source as dataSource,
+        createtime, version ,deptid ,is_enterprise AS isEnterprise,valid_status AS validStatus ,
+        start_time AS startTime , end_time AS endTime , flow_status AS flowStatus
+    </sql>
+
+    <update id="updateRegStatus" parameterType="com.xywg.admin.modular.system.model.User">
+        update  sys_user set flow_status = #{flowStatus} where account = #{account}
+    </update>
+
+    <select id="selectUsers" resultType="map">
+        select
+        c.name roleName,
+        b.fullname deptName,
+        a.id, a.account, a.name, a.birthday,  a.sex,
+        
+        a.phone, a.roleid, a.id_card_type, a.id_card_number,
+        a.deptid, a.status,a.user_type,a.data_source,
+        a.createtime, a.version,is_enterprise,left(a.start_time,10) as startTime,left(a.end_time,10) as endTime
+        from sys_user a
+        left join sys_dept b on a.deptid = b.id
+        left join sys_role c on a.roleid=c.id
+        where a.status != 3 and a.name is not null
+        <if test="name != null and name != ''">
+            and (a.phone like CONCAT('%',#{name},'%')
+            or a.account like CONCAT('%',#{name},'%')
+            or a.name like CONCAT('%',#{name},'%'))
+        </if>
+        <if test="deptid != null and deptid != 0">
+            and (a.deptid = #{deptid} or a.deptid in ( select id from sys_dept where pids like CONCAT('%[', #{deptid}, ']%') ))
+        </if>
+        <if test=" beginTime != null and beginTime != '' ">
+            and  a.createTime >= #{beginTime}
+        </if>
+        <if test=" endTime != null and endTime != '' ">
+            and  a.createTime &lt;= #{endTime}
+        </if>
+        ORDER BY a.user_type desc,a.createTime desc
+    </select>
+
+    <update id="setStatus">
+        UPDATE sys_user
+        SET status = #{status}
+        WHERE id =
+              #{userId}
+    </update>
+
+    <update id="changePwd">
+        UPDATE sys_user
+        SET password = #{pwd}
+        WHERE id =
+              #{userId}
+    </update>
+
+    <update id="setRoles">
+        UPDATE sys_user
+        SET roleid = #{roleIds}
+        WHERE id =
+              #{userId}
+    </update>
+
+    <select id="getByAccount" resultType="com.xywg.admin.modular.system.model.User">
+        select
+        <include refid="Base_Column_List_With_Pwd"/>
+        from sys_user where account = #{account} and status != 3 AND user_type != 0
+    </select>
+
+    <select id="getByAccountAndId" resultType="com.xywg.admin.modular.system.model.User">
+        select
+        <include refid="Base_Column_List_With_Pwd"/>
+        from sys_user where 1=1
+        <if test="account != null and account != ''">
+            and account = #{account}
+        </if>
+        <if test="id != null and id != ''">
+            and id=#{id}
+        </if>
+    </select>
+
+    <select id="getByAccountAPP" resultType="com.xywg.admin.modular.system.model.User">
+        select
+        <include refid="Base_Column_List_With_Pwd"/>
+        from sys_user where account = #{account} and status != 3  and  user_type=#{userType}
+    </select>
+    <select id="getUserInfoByIdCard" resultType="com.xywg.admin.modular.system.model.User">
+        select
+        <include refid="Base_Column_List_With_Pwd"/>
+        from sys_user where id_card_type = #{idCardType} and status != 3  and  id_card_number=#{idCardNumber}
+    </select>
+
+    <select id="getUserInfo" resultType="map">
+        <choose>
+            <when test=" type == 0 || type == 2">
+                SELECT
+                u.id as id,
+                u.account as accountName,
+                IFNULL(u.phone,'') as accountPhone,
+                IFNULL(m.gender,'0') as gender,
+                IFNULL(m.worker_name ,'') as workerName,
+                IFNULL(m.head_image ,'') as headImage,
+                IFNULL(m.is_auth ,0)as isAuth,
+                IFNULL(m.is_face ,0) as isFace,
+                IFNULL(m.id_card_type ,'') as idCardType,
+                IFNULL(m.id_card_number,'') as idCardNumber,
+                IFNULL((select num from sys_dict where  pid=(select id  FROM sys_dict where `name`="人脸考勤方式"  and pid=0 ) limit 1),-1)  as sourceType
+                from sys_user u
+                left join buss_worker_master m on u.account = m.cell_phone  and m.is_del=0
+                where u.account=#{account}  and  u.status != 3 AND u.user_type = #{type}
+            </when>
+            <when test=" type == 1 ">
+                SELECT
+					A.id,
+					A.accountName,
+					A.accountPhone,
+					A.companyName,
+					A.organizationCode,
+					A.sourceType,
+					B.projectCode,
+					B.project_name projectName,
+					B.address projectAddress,
+					B.is_concern isCollect,
+					B.contractor_type projectType
+				FROM
+					(
+					SELECT
+						IFNULL( u.id, '' ) AS id,
+						IFNULL( u.NAME, '' ) AS accountName,
+						IFNULL( u.phone, '' ) AS accountPhone,
+						IFNULL( d.fullname, '' ) AS companyName,
+						IFNULL( d.social_credit_number, '' ) AS organizationCode,
+						IFNULL(
+							( SELECT num FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE `name` = "人脸考勤方式" AND pid = 0 ) LIMIT 1 ),- 1 
+						) AS sourceType,
+						u.account 
+					FROM
+						sys_user u
+						LEFT JOIN sys_dept d ON d.id = u.deptid 
+					WHERE
+						u.account = #{account} 
+						AND u.STATUS != 3 
+						AND u.user_type = 1 
+					) A
+					LEFT JOIN (
+					SELECT
+						C.account,
+						C.projectCode,
+						D.project_name,
+						D.address,
+						D.is_concern,
+						D.contractor_type
+					FROM
+						( SELECT account, project_code projectCode FROM sys_account_project sap WHERE sap.account = #{account}  and is_del = 0 ORDER BY is_default DESC LIMIT 1) C
+						LEFT JOIN (
+						SELECT
+							bpm.project_code,
+							bpm.project_name,
+							bpm.address,
+							ifnull(sup.is_concern,0) is_concern,
+							bpsc.contractor_type
+						FROM
+							buss_project_master bpm
+							LEFT JOIN sys_user_project sup ON bpm.project_code = sup.project_code 
+							left join buss_project_sub_contractor bpsc on bpm.project_code = bpsc.project_code
+						) D ON C.projectCode = D.project_code 
+					) B ON A.account = B.account
+					limit 0,1
+            </when>
+        </choose>
+    </select>
+
+    <update id="updateUser" parameterType="com.xywg.admin.modular.system.model.User">
+        UPDATE sys_user
+        <set>
+            <if test="avatar != null  ">  avatar = #{avatar} , </if>
+            <if test="salt != null  ">  salt = #{salt} , </if>
+            <if test="password !=null ">  `password` = #{password}, </if>
+            <if test="name != null ">  `name` = #{name} ,   </if>
+            <if test="birthday != null "> birthday  = #{birthday} ,</if>
+            <if test="sex  != null ">  sex = #{sex}, </if>
+            <if test="email != null ">  email = #{email} , </if>
+            <if test="phone != null ">  phone = #{phone} , </if>
+            <if test="userType != null ">  user_type = #{userType} , </if>
+        </set>
+        where `account`=#{account}  and  status != 3
+    </update>
+
+    <update id="deleteUserByPhone">
+          update sys_user set   status=3  where  phone=#{phone}
+    </update>
+
+    <update id="updateAccount">
+        update sys_user set   account=#{newPhone},phone=#{newPhone}  where  account=#{oldPhone}  and  status != 3
+    </update>
+
+    <update id="updateAccountInfoByIdCard">
+        update sys_user
+        <set>
+            <if test="account !=null "> account = #{account}, </if>
+            <if test="avatar !=null "> avatar = #{avatar}, </if>
+            <if test="password !=null and password !='' "> password = #{password}, </if>
+            <if test="name !=null "> name = #{name}, </if>
+            <if test="birthday !=null "> birthday = #{birthday}, </if>
+            <if test="sex !=null "> sex = #{sex}, </if>
+            <if test="email !=null "> email = #{email}, </if>
+            <if test="phone !=null "> phone = #{phone}, </if>
+            <if test="roleid !=null "> roleid = #{roleid}, </if>
+            <if test="deptid !=null "> deptid = #{deptid}, </if>
+            <if test="status !=null "> status = #{status}, </if>
+            <if test="equipment !=null "> equipment = #{equipment}, </if>
+            <if test="isEnterprise !=null "> is_enterprise = #{isEnterprise}, </if>
+        </set>
+        where id_card_type=#{idCardType} and id_card_number=#{idCardNumber}  and  status!=3
+    </update>
+
+    <select id="getByIdCard" resultType="com.xywg.admin.modular.system.model.User">
+        SELECT
+        id, account, name, birthday, password, sex, email, avatar,
+        phone, roleid, salt,
+        deptid, status,equipment,
+        createtime, version ,is_enterprise AS isEnterprise,id_card_type AS idCardType,id_card_number AS idCardNumber
+        from sys_user where id_card_number = #{idCard} and status != 3 AND id_card_type = 1 AND id != #{id}
+    </select>
+
+    <select id="getById" resultType="com.xywg.admin.modular.system.model.User">
+        SELECT
+        id, account, name, birthday, password, sex, email, avatar,
+        phone, roleid, salt,
+        deptid, status,equipment,
+        createtime, version ,is_enterprise AS isEnterprise,id_card_type AS idCardType,id_card_number AS idCardNumber
+        from sys_user where id =#{id}
+    </select>
+    <select id="selectAccount" resultType="java.util.Map">
+        select
+        count(id) AS sum,
+        id,
+        account AS account
+        from sys_user where  account=#{organizationCode}
+    </select>
+    <select id="power" resultType="java.lang.Integer">
+        select  roleid AS roleId from sys_user where account=#{account}
+
+    </select>
+
+    <update id="updateIdCard">
+        update sys_user set   id_card_number = #{idCardNumber},id_card_type = 1 where  id=#{id}
+    </update>
+
+    <update id="delById">
+        update sys_user set   status=3  where  id=#{id}
+    </update>
+
+    <update id="deleteUserByAccount">
+        update sys_user set   status=3  where  account=#{account}
+    </update>
+
+    <update id="userExpire">
+        UPDATE
+          sys_user
+        SET
+          status = 2
+        WHERE
+          left(end_time,10) <![CDATA[<=]]> left(now(),10)
+    </update>
+
+    <!--根据部门设置帐号有效期 -->
+    <update id="setTimeByDept">
+        UPDATE sys_user
+        SET
+        start_time = #{startTime},
+        end_time = #{endTime}
+        WHERE
+        deptid = #{id}
+    </update>
+</mapper>

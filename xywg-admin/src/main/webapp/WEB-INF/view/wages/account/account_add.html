@@ -1,0 +1,42 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <!--<div class="col-sm-6 b-r">
+                            <#input id="id" name="主键id" underline="true"/>
+                            <#input id="projectCode" name="项目id" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号 外部系统与平台对接创建班组后，由系统返回该编号" underline="true"/>
+                            <#input id="type" name="类型1：包工 2：包点" underline="true"/>
+                            <#input id="closingTime" name="截止时间" underline="true"/>
+                            <#input id="totalAmount" name="合计发放" underline="true"/>
+                            <#input id="accountPerson" name="计工单人员"/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="createDate" name="添加人" underline="true"/>
+                            <#input id="createUser" name="添加时间" underline="true"/>
+                            <#input id="updateDate" name="修改时间" underline="true"/>
+                            <#input id="updateUser" name="修改人" underline="true"/>
+                            <#input id="note" name="备注" underline="true"/>
+                            <#input id="salaryId" name="绑定的工资单ID" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" underline="true"/>
+                </div>-->
+                <table id="acc"></table>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r" >
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="AccountInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="AccountInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/account/account_info.js"></script>
+@}

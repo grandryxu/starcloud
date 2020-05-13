@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.PersonalCertificationsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.PersonalCertifications">
+        <id column="id" property="id"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="certification_type_code" property="certificationTypeCode"/>
+        <result column="profession_code" property="professionCode"/>
+        <result column="job_type" property="jobType"/>
+        <result column="certification_level_type" property="certificationLevelType"/>
+        <result column="certification_name" property="certificationName"/>
+        <result column="valid_begin_date" property="validBeginDate"/>
+        <result column="valid_end_date" property="validEndDate"/>
+        <result column="issue_by" property="issueBy"/>
+        <result column="issue_date" property="issueDate"/>
+        <result column="status" property="status"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+         id,
+         id_card_type AS idCardType,
+         id_card_number AS idCardNumber,
+         certification_type_code AS certificationTypeCode,
+         profession_code AS professionCode, job_type AS jobType,
+         certification_level_type AS certificationLevelType,
+         certification_name AS certificationName,
+         valid_begin_date AS validBeginDate,
+         valid_end_date AS validEndDate,
+         issue_by AS issueBy,
+         issue_date AS issueDate,
+         status,
+         is_del AS isDel
+    </sql>
+
+    <!-- 根据id查询 yuanyang -->
+    <select id="getById" resultType="com.xywg.admin.modular.company.model.PersonalCertificationsVo">
+        select
+        m.employee_name AS employeeName,
+         c.id,
+         c.id_card_type AS idCardType,
+         c.id_card_number AS idCardNumber,
+         c.certification_type_code AS certificationTypeCode,
+         c.profession_code AS professionCode, job_type AS jobType,
+         c.certification_level_type AS certificationLevelType,
+         c.certification_name AS certificationName,
+         c.valid_begin_date AS validBeginDate,
+         c.valid_end_date AS validEndDate,
+         c.issue_by AS issueBy,
+         c.issue_date AS issueDate,
+         c.status
+        from buss_personal_certifications c
+        left join buss_employee_master m on m.id_card_number=c.id_card_number and m.id_card_type =c.id_card_type and m.is_del=0
+        where 1=1 AND c.id=#{id}
+        and c.is_del=0
+    </select>
+
+    <!-- 根据证件查询 yuanyang -->
+    <select id="getByIdCard" resultType="com.xywg.admin.modular.company.model.PersonalCertificationsVo">
+        select
+        c.id as id,
+        m.employee_name AS employeeName,
+        c.id,
+        c.id_card_type AS idCardType,
+        c.id_card_number AS idCardNumber,
+        c.certification_type_code AS certificationTypeCode,
+        c.profession_code AS professionCode, job_type AS jobType,
+        c.certification_level_type AS certificationLevelType,
+        c.certification_name AS certificationName,
+        c.valid_begin_date AS validBeginDate,
+        c.valid_end_date AS validEndDate,
+        c.issue_by AS issueBy,
+        c.issue_date AS issueDate,
+        c.status
+        from buss_personal_certifications c
+        left join buss_employee_master m on m.id_card_number=c.id_card_number and m.id_card_type =c.id_card_type and m.is_del=0
+        where 1=1 AND c.id_card_number=#{idCardNumber} AND  c.id_card_type=#{idCardType} AND  c.is_del=0
+    </select>
+    <!-- 列表查询 yuanyang -->
+    <select id="selectPersonalCertifications" resultType="map">
+        select
+        m.employee_name AS employeeName,
+        c.id,
+        c.id_card_type AS idCardType,
+        c.id_card_number AS idCardNumber,
+        c.certification_type_code AS certificationTypeCode,
+        c.profession_code AS professionCode,
+        job_type AS jobType,
+        c.certification_level_type AS certificationLevelType,
+        c.certification_name AS certificationName,
+        DATE_FORMAT(valid_begin_date,'%Y-%m-%d') as validBeginDate,
+        DATE_FORMAT(valid_end_date,'%Y-%m-%d') as validEndDate,
+        c.issue_by AS issueBy,
+        DATE_FORMAT(issue_date,'%Y-%m-%d') as issueDate,
+        c.status
+        from buss_personal_certifications c
+        left join buss_employee_master m on m.id_card_number=c.id_card_number and m.id_card_type =c.id_card_type and
+        m.is_del=0
+        where 1=1
+        <if test="map.employeeName != null and map.employeeName != ''">
+            and ( m.employee_name like CONCAT('%',#{map.employeeName},'%'))
+        </if>
+        <if test="map.certificationName != null and map.certificationName != ''">
+            and (c.certification_name like CONCAT('%',#{certificationName},'%'))
+        </if>
+        <if test="map.idCardNumber != null and map.idCardNumber != ''">
+            and (c.id_card_number like CONCAT('%',#{map.idCardNumber},'%'))
+        </if>
+        <if test="map.certificationTypeCode != null and map.certificationTypeCode != 0">
+            and c.certification_type_code =#{map.certificationTypeCode}
+        </if>
+        and c.is_del=0
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查看从业人员的资格证书列表 yuanyang -->
+    <select id="getListByIdCard" resultType="map">
+        select
+
+        m.employee_name AS employeeName,
+        c.id,
+        c.id_card_type AS idCardType,
+        c.id_card_number AS idCardNumber,
+        c.certification_type_code AS certificationTypeCode,
+        c.profession_code AS professionCode,
+        job_type AS jobType,
+        c.certification_level_type AS certificationLevelType,
+        c.certification_name AS certificationName,
+        DATE_FORMAT(valid_begin_date,'%Y-%m-%d') as validBeginDate,
+        DATE_FORMAT(valid_end_date,'%Y-%m-%d') as validEndDate,
+        c.issue_by AS issueBy,
+        DATE_FORMAT(issue_date,'%Y-%m-%d') as issueDate,
+        c.status
+        from buss_personal_certifications c
+        left join buss_employee_master m on m.id_card_number=c.id_card_number and m.id_card_type =c.id_card_type and
+        m.is_del=0
+        where 1=1
+        and c.is_del=0
+        and c.id_card_number=#{map.idCardNumber}
+        and c.id_card_type=#{map.idCardType}
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateStatus">
+    update
+    buss_personal_certifications set
+    status=3 where
+    valid_end_date &lt;NOW() and is_del=0
+    </update>
+
+    <!-- 批量删除 yuanyang -->
+    <update id="deleteByIds">
+        update buss_personal_certifications set
+        is_del=1
+        where
+         FIND_IN_SET(id,#{map.personalCertificationIds})
+    </update>
+
+    <!-- 查询工人资格证书 yuanyang -->
+    <select id="getWorkerCertifications" resultType="com.xywg.admin.modular.company.model.PersonalCertifications">
+        select
+        path
+        from buss_personal_certifications
+
+        where 1=1 AND id_card_number=#{idCardNumber} AND  id_card_type=#{idCardType} and is_del=0
+        ORDER BY id DESC
+    </select>
+</mapper>

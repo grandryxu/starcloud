@@ -1,0 +1,19 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <div class="row">
+                <div class="col-sm-10">
+                    <div class="inline-search-s">
+                        <label class="label-search-s">用户信息</label>
+                        <input id="workerInfo"  underline="true" maxlength="45"
+                               class="input-search-s" placeholder="姓名/身份证/电话号码" onchange="PayrollReportDetail.search()"/>
+                    </div>
+                </div>
+            </div>
+            <#table id="payrollReportDetailTable" />
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/report/payrollReport/payrollReportDetail.js"></script>
+@}

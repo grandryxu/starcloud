@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.bad.dao.WorkerBlackListMapper">
+
+    <!-- 工人黑名单查询结果列 -->
+    <sql id="Base_Column_List">
+        t1.id, t1.id_card_type AS idCardType, t1.id_card_number AS idCardNumber, t1.project_code AS projectCode, t1.contractor_org_code AS contractorOrgCode, t1.organization_code AS organizationCode, t1.team_sys_no AS teamSysNo, t6.team_name AS teamName, t1.type, left(t1.black_reason,10) AS blackReason, left(t1.occurrence_date,10) AS occurrenceDate, t1.start_time AS startTime, t1.end_time AS endTime, t1.is_valid AS isValid, t1.note, t1.create_date AS createDate, t1.create_user AS createUser, t1.update_date AS updateDate, t1.update_user AS updateUser, t1.valid_status AS validStatus,
+        t2.project_name AS projectName, t2.owner_name AS ownerName, t3.worker_name AS workerName, t5.company_name AS companyName
+    </sql>
+    <!-- 企业黑名单查询结果列 -->
+    <sql id="Else_Column_List">
+        t1.id, t1.id_card_type AS idCardType, t1.id_card_number AS idCardNumber, t1.project_code AS projectCode, t1.contractor_org_code AS contractorOrgCode, t1.organization_code AS organizationCode, t1.team_sys_no AS teamSysNo, t1.type, t1.team_name AS teamName, left(t1.black_reason,10) AS blackReason, left(t1.occurrence_date,10) AS occurrenceDate, t1.start_time AS startTime, t1.end_time AS endTime, t1.is_valid AS isValid, t1.note, t1.create_date AS createDate, t1.create_user AS createUser, t1.update_date AS updateDate, t1.update_user AS updateUser, t1.valid_status AS validStatus,
+        t2.project_name AS projectName,  t3.company_name AS companyName, t3.social_credit_number AS socialCreditNumber
+    </sql>
+    <!-- 工人黑名单查询结果列 -->
+    <sql id="Base_Column_List0">
+        t1.id, t1.id_card_type AS idCardType, t1.id_card_number AS idCardNumber, t1.project_code AS projectCode, t1.contractor_org_code AS contractorOrgCode, t1.organization_code AS organizationCode, t1.team_sys_no AS teamSysNo, t6.team_name AS teamName, t1.type, t1.black_reason AS blackReason, left(t1.occurrence_date,10) AS occurrenceDate, t1.start_time AS startTime, t1.end_time AS endTime, t1.is_valid AS isValid, t1.note, t1.create_date AS createDate, t1.create_user AS createUser, t1.update_date AS updateDate, t1.update_user AS updateUser, t1.valid_status AS validStatus,
+        t2.project_name AS projectName, t2.owner_name AS ownerName, t3.worker_name AS workerName, t5.company_name AS companyName
+    </sql>
+    <!-- 企业黑名单查询结果列 -->
+    <sql id="Else_Column_List0">
+        t1.id, t1.id_card_type AS idCardType, t1.id_card_number AS idCardNumber, t1.project_code AS projectCode, t1.contractor_org_code AS contractorOrgCode, t1.organization_code AS organizationCode, t1.team_sys_no AS teamSysNo, t1.type, t1.team_name AS teamName, t1.black_reason AS blackReason, left(t1.occurrence_date,10) AS occurrenceDate, t1.start_time AS startTime, t1.end_time AS endTime, t1.is_valid AS isValid, t1.note, t1.create_date AS createDate, t1.create_user AS createUser, t1.update_date AS updateDate, t1.update_user AS updateUser, t1.valid_status AS validStatus,
+        t2.project_name AS projectName,  t3.company_name AS companyName, t3.social_credit_number AS socialCreditNumber
+    </sql>
+    <!-- 工人黑名单记录列表查询-->
+    <select id="selectWorkerBlackList" resultType="map">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM buss_worker_black_list t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN buss_sub_contractor t5 ON t5.organization_code = t2.contractor_org_code AND t5.is_del = 0
+        LEFT JOIN buss_worker_master t3 ON t3.id_card_number = t1.id_card_number AND t3.is_del = 0
+        LEFT JOIN buss_team_master t6 ON t6.team_sys_no = t1.team_sys_no AND t6.is_del = 0
+        LEFT JOIN buss_contractor_worker t4 on t4.id_card_type=t1.id_card_type AND t4.id_card_number=t1.id_card_number
+        AND t4.is_del = 0
+        WHERE t1.is_del = 0 AND t1.type = 1
+        <!--		AND t4.organization_code IN
+                <foreach collection="map.depts" item="item" index="index"
+                    open="(" separator="," close=")">
+                    #{item}
+                </foreach>-->
+        <if test="map.workerName != null and map.workerName != ''">
+            AND t3.worker_name like CONCAT('%',#{map.workerName},'%')
+        </if>
+        <if test="map.idCardNumber != null and map.idCardNumber != ''">
+            AND t3.id_card_number like CONCAT('%',#{map.idCardNumber},'%')
+        </if>
+        <if test="map.projectName != null and map.projectName != ''">
+            AND t2.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.startDate != null and map.startDate != ''">
+            AND <![CDATA[t1.occurrence_date >= #{map.startDate}]]>
+        </if>
+        <if test="map.endDate != null and map.endDate != ''">
+            AND <![CDATA[t1.occurrence_date <= #{map.endDate}]]>
+        </if>
+        GROUP BY t1.id ORDER BY t1.id DESC
+    </select>
+
+    <!-- 企业黑名单记录列表查询-->
+    <select id="selectCompanyBlackList" resultType="map">
+        SELECT
+        <include refid="Else_Column_List"/>,
+        if(t4.id IS NULL ,0,1) AS isGeneralContractorOperation
+        FROM buss_worker_black_list t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN buss_sub_contractor t3 ON t3.organization_code = t1.organization_code AND t3.is_del = 0
+        LEFT JOIN buss_project_master t4 ON t4.project_code = t1.project_code AND t4.contractor_org_code IN
+        (SELECT social_credit_number FROM sys_dept WHERE id = #{map.deptId} OR pids LIKE CONCAT('%',#{map.deptId},'%'))
+        WHERE t1.is_del = 0 AND t1.type = 3
+        <if test="map.companyName != null and map.companyName != ''">
+            AND t3.company_name like CONCAT('%',#{map.companyName},'%')
+        </if>
+        <if test="map.socialCreditNumber != null and map.socialCreditNumber != ''">
+            AND t3.social_credit_number like CONCAT('%',#{map.socialCreditNumber},'%')
+        </if>
+        <if test="map.projectName != null and map.projectName != ''">
+            AND t2.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.startDate != null and map.startDate != ''">
+            AND <![CDATA[t1.occurrence_date >= #{map.startDate}]]>
+        </if>
+        <if test="map.endDate != null and map.endDate != ''">
+            AND <![CDATA[t1.occurrence_date <= #{map.endDate}]]>
+        </if>
+        <if test="map.organizationCode != null and map.organizationCode != ''">
+            AND t1.organization_code like CONCAT('%',#{map.organizationCode},'%')
+        </if>
+        GROUP BY t1.id ORDER BY t1.id DESC
+    </select>
+    <!-- 根据id获取工人黑名单 -->
+    <select id="selectWorkerBlackListById" resultType="com.xywg.admin.modular.bad.model.WorkerBlackListVO">
+        SELECT
+        <include refid="Base_Column_List0"/>
+        FROM buss_worker_black_list t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN buss_sub_contractor t5 ON t5.organization_code = t2.contractor_org_code AND t5.is_del = 0
+        LEFT JOIN buss_worker_master t3 ON t3.id_card_number = t1.id_card_number AND t3.is_del = 0
+        LEFT JOIN buss_team_master t6 ON t6.team_sys_no = t1.team_sys_no AND t6.is_del = 0
+        WHERE t1.is_del = 0 AND t1.type = 1
+        <if test="id != null and id != ''">
+            AND t1.id = #{id}
+        </if>
+        GROUP BY t1.id
+    </select>
+    <!-- 根据id获取企业黑名单信息 -->
+    <select id="selectCompanyBlackListById" resultType="com.xywg.admin.modular.bad.model.WorkerBlackListVO">
+        SELECT
+        <include refid="Else_Column_List0"/>
+        FROM buss_worker_black_list t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN buss_sub_contractor t3 ON t3.organization_code = t1.organization_code AND t3.is_del = 0
+        WHERE t1.is_del = 0 AND t1.type = 3
+        <if test="id != null and id != ''">
+            AND t1.id = #{id}
+        </if>
+        GROUP BY t1.id
+    </select>
+    <!-- 根据id获取工人信息 -->
+    <select id="selectWorkerInfoById" resultType="com.xywg.admin.modular.worker.model.WorkerMasterVO">
+        SELECT
+        t1.worker_name AS workerName, t1.id_card_number AS idCardNumber, t1.id_card_type AS idCardType, t2.join_status,
+        t3.team_sys_no AS teamSysNo, t3.team_name AS teamName, t3.team_leader AS teamLeader,
+        t4.project_code AS projectCode, t4.project_name AS projectName, t4.owner_name AS ownerName
+        FROM buss_worker_master t1
+        LEFT JOIN buss_project_worker t2 ON t2.id_card_number = t1.id_card_number AND t2.id_card_type = t1.id_card_type
+        AND t2.is_del = 0
+        LEFT JOIN buss_team_master t3 ON t3.team_sys_no = t2.team_sys_no AND t3.is_del = 0
+        LEFT JOIN buss_project_master t4 ON t4.project_code = t2.project_code AND t4.is_del = 0
+        WHERE t1.is_del = 0 AND t2.join_status = 2 AND t2.organization_code in(
+        SELECT social_credit_number
+        FROM sys_dept
+        WHERE social_credit_number IS NOT NULL AND (
+        id = #{deptId} OR pids LIKE CONCAT('%[', #{deptId},']%') )
+        )
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and t2.project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="id != null and id != ''">
+            AND t1.id = #{id}
+        </if>
+    </select>
+
+    <!-- 根据项目编码查询所属单位 -->
+    <select id="getOwnerNameByProjectCode" resultType="com.xywg.admin.modular.worker.model.WorkerMasterVO">
+	  SELECT t1.owner_name AS ownerName, t2.company_name AS companyName
+	  FROM buss_project_master t1
+	  LEFT JOIN buss_sub_contractor t2 ON t2.organization_code = t1.contractor_org_code AND t2.is_del = 0
+	  WHERE t1.is_del = 0 AND project_code = #{projectCode}
+	</select>
+
+    <!-- 根据项目编码查询班组信息 -->
+    <select id="getTeamInfoByProjectCode" resultType="com.xywg.admin.modular.worker.model.WorkerMasterVO">
+	  SELECT t1.team_sys_no AS teamSysNo, t1.team_name AS teamName, t2.owner_name AS ownerName, t3.company_name AS companyName
+	  FROM buss_team_master t1
+	  LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+	  LEFT JOIN buss_sub_contractor t3 ON t3.organization_code = t2.contractor_org_code AND t3.is_del = 0
+	  WHERE t1.is_del = 0 AND t1.project_code = #{projectCode}
+	  AND t1.organization_code IN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{deptId} OR pids LIKE CONCAT('%[', #{deptId},']%') )
+        )
+	</select>
+
+    <!-- 根据id获取企业信息 -->
+    <select id="selectCompanyInfoById" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT social_credit_number AS socialCreditNumber, organization_code AS organizationCode
+        FROM buss_sub_contractor
+        WHERE is_del = 0
+        <if test="organizationCode != null and organizationCode != ''">
+            AND organization_code = #{organizationCode}
+        </if>
+    </select>
+    <!-- 获取企业下拉框 -->
+    <select id="getCompanys" resultType="map">
+        SELECT
+        t2.organization_code AS organizationCode,
+        t2.company_name AS companyName
+        FROM buss_sub_contractor t2
+        JOIN (SELECT organization_code FROM buss_project_sub_contractor WHERE organization_code NOT IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            AND 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            AND project_code in(SELECT project_code FROM buss_project_sub_contractor WHERE project_code IN
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+            AND contractor_type = 16 AND is_del = 0
+            )
+        </if>
+        AND is_del = 0
+        )t3 ON t2.organization_code = t3.organization_code
+        WHERE t2.is_del=0
+        GROUP BY t2.id
+    </select>
+
+    <update id="updateBlack">
+		UPDATE buss_worker_black_list
+		SET
+		is_valid = 0
+		WHERE
+		is_del = 0 AND is_valid = 1 AND LEFT(end_time,10) <![CDATA[<=]]> LEFT(now(),10)
+	</update>
+
+    <select id="getAllMainProjectMasterByDeptId" resultType="Map">
+        SELECT
+        bpm.project_code AS projectCode,
+        bpm.project_name AS projectName
+        FROM buss_project_master bpm
+        JOIN (SELECT project_code FROM buss_project_sub_contractor WHERE contractor_type = 16 AND is_del = 0
+        AND organization_code IN (SELECT social_credit_number FROM sys_dept WHERE id=#{deptId} OR pids LIKE
+        CONCAT('%',#{deptId},'%'))) A ON A.project_code = bpm.project_code
+        WHERE bpm.is_del = 0
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and bpm.project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getBlackListApp" resultType="com.xywg.admin.modular.bad.dto.WorkerBlackDto">
+        SELECT
+        t1.id,
+        t5.company_name AS companyName ,
+        t2.project_name AS projectName ,
+        t6.team_name AS teamName,
+        t3.worker_name AS workerName,
+        t1.black_reason AS blackReason,
+        LEFT ( t1.occurrence_date, 10 ) AS occurrenceDate,
+        t3.head_image AS headImage ,
+        t1.start_time AS startTime,
+        t1.end_time AS endTime,
+        t1.note ,
+        t1.id_card_type AS idCardType ,
+        t1.id_card_number AS idCardNumber ,
+        t1.type
+        FROM buss_worker_black_list t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN buss_sub_contractor t5 ON t5.organization_code = t1.organization_code AND t5.is_del = 0
+        LEFT JOIN buss_worker_master t3 ON t3.id_card_number = t1.id_card_number AND t3.id_card_type=t1.id_card_type  AND t3.is_del = 0
+        LEFT JOIN buss_team_master t6 ON t6.team_sys_no = t1.team_sys_no AND t6.is_del = 0
+        WHERE t1.is_del = 0 AND t1.type = #{type}
+        ORDER BY id DESC
+        limit #{index},#{pageSize}
+    </select>
+
+    <select id="getTeamsByProjectCodeApp" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+        SELECT
+        team_sys_no AS teamSysNo,
+        team_name AS teamName
+        FROM
+        buss_team_master
+        WHERE
+        project_code = #{projectCode} AND is_del = 0
+        <if test="isGeneralContractor == 0">
+            AND organization_code = #{organizationCode}
+        </if>
+    </select>
+
+    <select id="getWorkersByTeamSysNoApp" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+        SELECT
+        bwm.id_card_type AS idCardType ,
+        bwm.id_card_number AS idCardNumber ,
+        bwm.worker_name AS workerName ,
+        bpw.organization_code AS organizationCode
+        FROM
+        buss_worker_master bwm
+        LEFT JOIN buss_project_worker bpw ON bpw.id_card_type = bwm.id_card_type AND bpw.id_card_number = bwm.id_card_number AND bpw.is_del = 0
+        WHERE
+        bpw.team_sys_no = #{teamSysNo} AND bwm.is_del = 0
+        <if test="isGeneralContractor == 0">
+            AND bpw.organization_code = #{organizationCode}
+        </if>
+    </select>
+
+    <select id="getWorkersByTeamSysNo" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+        SELECT
+        bwm.id_card_type AS idCardType ,
+        bwm.id_card_number AS idCardNumber ,
+        bwm.worker_name AS workerName
+        FROM
+        buss_worker_master bwm
+        LEFT JOIN buss_project_worker bpw ON bpw.id_card_type = bwm.id_card_type AND bpw.id_card_number = bwm.id_card_number AND bpw.is_del = 0
+        WHERE
+        bpw.team_sys_no = #{teamSysNo} AND bwm.is_del = 0
+        <if test="isGeneralContractor == 0">
+            AND bpw.organization_code IN
+            <foreach collection="loginComSocialCreditNumbers" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>

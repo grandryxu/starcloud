@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.longxin.dao.InviteBidMapper">
+
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+          id , tender_id as tenderId,company_id as companyId,status as status,remark as remark
+    </sql>
+
+<insert id="addPingbiao" parameterType="com.xywg.admin.modular.longxin.model.BidPingbiao">
+    insert into lx_bid_pingbiao(bid_id,content)
+    values(#{bidId},#{content})
+
+</insert>
+
+    <update id="updateBidById" parameterType="com.xywg.admin.modular.longxin.model.InviteBid">
+        update lx_invite_bid  set status = ${status}
+        <if test="pingbiao1 !=null">
+            , pingbiao1 = #{pingbiao1}
+        </if>
+        <if test="pingbiao2 !=null">
+            , pingbiao2 = #{pingbiao2}
+        </if>
+        <if test="pingbiao3 !=null">
+           ,   pingbiao3 = #{pingbiao3}
+        </if>
+        where id = ${id}
+
+    </update>
+    <select id="selectList" resultType="com.xywg.admin.modular.longxin.model.InviteBid">
+        SELECT
+        t.id as id,t.tender_id as tenderId,t.company_id as companyId,t.status as status,t.remark as remark ,m.file_name as tenderName,s.project_name as projectName,l.company_name as companyName,s.id as projectId
+       , r.bid_price as bidPrice,pingbiao1, pingbiao2,pingbiao3,m.start_time as startTime,m.deadline as deadline,r.bid_price as bidPrice,t.date as date,l.address as bidAddress,
+       l.contact_people_name as contactPeopleName ,l.contact_people_cell_phone as contactPeopleCellPhone
+        FROM
+        lx_invite_bid t
+        LEFT JOIN lx_tender m on t.tender_id = m.id
+        LEFT JOIN buss_project_master s on m.project_id = s.id
+        LEFT JOIN buss_sub_contractor l on t.company_id = l.id
+        LEFT JOIN  lx_fix_mark r  on r.invite_id = t.id
+		where 1=1 
+		<if test="map.projectName != null and map.projectName != '' ">
+            AND s.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.tenderName != null and map.tenderName != '' ">
+            AND m.file_name like CONCAT('%',#{map.tenderName},'%')
+        </if>
+        <if test="map.tenderId !=null and map.tenderId !=''">
+        and  t.tender_id = #{map.tenderId}
+        </if>
+        
+        <if test="map.account !=null and map.account !=''">
+        and  l.social_credit_number = #{map.account}
+        </if>
+
+        <if test="map.remark !=null and map.remark !=''">
+            and  t.remark = #{map.remark}
+        </if>
+        
+        ORDER BY t.id DESC
+    </select>
+    
+    
+    <insert id="insertFix" parameterType="com.xywg.admin.modular.longxin.model.FixMark" useGeneratedKeys="true" keyProperty="id" >
+        insert into lx_fix_mark(invite_id,bid_price)
+        values(#{inviteId},#{bidPrice})
+    </insert>
+    
+    <update id="fixStatus" parameterType="com.xywg.admin.modular.longxin.model.FixMark">
+        update lx_invite_bid
+        <set>
+            status = 2
+        </set>
+        where id = #{inviteId} and status = 1
+	</update>
+	
+	<update id="updatePrice" parameterType="com.xywg.admin.modular.longxin.model.FixMark">
+        update lx_fix_mark
+        <set>
+            bid_price = #{bidPrice}
+        </set>
+        where invite_id = #{inviteId} 
+	</update>
+	
+	
+	<select id="selectByBid" resultType="com.xywg.admin.modular.longxin.model.InviteBid">
+        SELECT
+        t.id as id,t.company_id as companyId,t.status as status,t.remark as remark ,l.company_name as companyName,l.qualify_level as qualifyLevel,l.registration_capital as registrationCapital,m.bid_price as bidPrice
+        ,l.contact_people_name as contactPeopleName , l.contact_people_cell_phone as contactPeopleCellPhone,pingbiao1, pingbiao2,pingbiao3
+        FROM
+        lx_invite_bid t LEFT JOIN buss_sub_contractor l on t.company_id = l.id left join lx_fix_mark m on t.id = m.invite_id
+		where t.status in (3,4,5) and t.tender_id = #{bidId}
+        ORDER BY t.id DESC
+    </select>
+    
+    <select id="getPriceByInviteId" resultType="string">
+        SELECT
+        bid_price
+        FROM
+        lx_fix_mark where invite_id = #{bidId}
+    </select>
+
+    <select id="reportlist" resultType="com.xywg.admin.modular.longxin.model.InviteBid">
+        SELECT
+        t.id as id,t.tender_id as tenderId,t.company_id as companyId,t.status as status,t.remark as remark ,m.file_name as tenderName,s.project_name as projectName,l.company_name as companyName,s.id as projectId
+        , r.bid_price as bidPrice,pingbiao1, pingbiao2,pingbiao3,m.start_time as startTime,m.deadline as deadline,r.bid_price as bidPrice,t.date as date,l.address as bidAddress,
+        l.contact_people_name as contactPeopleName ,l.contact_people_cell_phone as contactPeopleCellPhone, m.create_time as createTime
+        FROM
+        lx_invite_bid t
+        LEFT JOIN lx_tender m on t.tender_id = m.id
+        LEFT JOIN buss_project_master s on m.project_id = s.id
+        LEFT JOIN buss_sub_contractor l on t.company_id = l.id
+        LEFT JOIN  lx_fix_mark r  on r.invite_id = t.id
+        where 1=1 and t.status = 5
+        <if test="map.projectName != null and map.projectName != '' ">
+            AND s.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.tenderName != null and map.tenderName != '' ">
+            AND m.file_name like CONCAT('%',#{map.tenderName},'%')
+        </if>
+        <if test="map.tenderId !=null and map.tenderId !=''">
+            and  t.tender_id = #{map.tenderId}
+        </if>
+
+        <if test="map.account !=null and map.account !=''">
+            and  l.social_credit_number = #{map.account}
+        </if>
+
+        <if test="map.remark !=null and map.remark !=''">
+            and  t.remark = #{map.remark}
+        </if>
+
+        <if test="map.startDate !=null and map.startDate !=''">
+            and  m.create_time <![CDATA[>=]]> CONCAT(#{map.startDate},' 00:00:00')
+        </if>
+        <if test="map.endDate !=null and map.endDate !=''">
+            and  m.create_time <![CDATA[<=]]> CONCAT(#{map.endDate},' 23:59:59')
+        </if>
+
+        ORDER BY m.create_time desc
+    </select>
+
+    <select id="monthReportData" resultType="com.xywg.admin.modular.longxin.model.InviteMonthReport">
+        <choose>
+            <when test="map.reportType == null or map.reportType == ''" >
+                SELECT a.mon, ifnull(b.cou,0) cou from
+                <foreach collection="map.list" open="(SELECT " close=" mon)" separator=" mon UNION ALL SELECT " index="index" item="item">
+                    #{item}
+                </foreach>
+                a LEFT JOIN
+                (SELECT
+                date_format(create_time, '%Y-%m') mon,
+                COUNT(1) cou
+                FROM
+                lx_tender
+                WHERE
+                create_time IS NOT NULL
+                GROUP BY
+                mon
+                ) b
+                ON a.mon = b.mon
+            </when>
+            <otherwise>
+                SELECT a.mon, ifnull(b.cou,0) cou from
+                <foreach collection="map.list" open="(SELECT " close=" mon)" separator=" mon UNION ALL SELECT " index="index" item="item">
+                    #{item}
+                </foreach>
+                a LEFT JOIN
+                (SELECT
+                date_format(date, '%Y-%m') mon,
+                COUNT(1) cou
+                FROM
+                lx_invite_bid
+                WHERE
+                date IS NOT NULL
+                AND status = '5'
+                GROUP BY
+                mon
+                ) b
+                ON a.mon = b.mon
+            </otherwise>
+        </choose>
+
+
+    </select>
+
+    <select id="priceCompareData" resultType="com.xywg.admin.modular.longxin.model.BidPrice">
+        SELECT
+        b.id,
+        c.id AS tenderId,
+        c.file_name AS tenderName,
+        a.id AS inviteId,
+        b.bid_price AS bidPrice,
+        a.company_id AS companyId,
+        d.company_name AS companyName
+        FROM
+        lx_invite_bid a
+        LEFT JOIN lx_fix_mark b ON a.id = b.invite_id
+        LEFT JOIN lx_tender c ON a.tender_id = c.id
+        LEFT JOIN buss_sub_contractor d ON a.company_id = d.id
+        WHERE a.tender_id = #{map.tenderId}
+        AND a.status IN (3,4,5)
+    </select>
+
+</mapper>

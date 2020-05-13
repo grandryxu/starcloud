@@ -1,0 +1,33 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                      <#input id="companyName" name="所属企业" value="${item.companyName}" disabled="true" underline="true"/>
+                      <#input id="projectName" name="项目名称" value="${item.projectName}" disabled="true" underline="true"/>
+                      <#input id="teamName" name="班组名称" value="${item.teamName}" disabled="true" underline="true"/>
+                      <#input id="workerName" name="姓名" value="${item.workerName}" disabled="true" underline="true"/>
+                      <#input id="idCardNumber" name="身份证号" value="${item.idCardNumber}" disabled="true" underline="true"/>
+                      <#input id="time" name="考勤时间" value="${item.time}" disabled="true" underline="true"/>
+                      <input id="timeHidden"  hidden value="${item.time}" />
+                      <#input id="type" name="类型" value="${item.type}" disabled="true" underline="true"/>
+                      <#input id="lng" name="经度" value="${item.lng}" disabled="true" underline="true" />
+                      <#input id="lat" name="纬度" value="${item.lat}" disabled="true" underline="true"/>
+                      <#input id="address" name="考勤地址" value="${item.address}" disabled="true" underline="true"/>
+                      <#input id="source" name="来源" value="${item.source}" disabled="true" underline="true"/>
+                      <#input id="isValid" name="是否有效" value="${item.isValid}" disabled="true" underline="true"/>
+                      <#input id="remark" name="备注" value="${item.remark}" disabled="true" underline="true"/>
+                      <#input id="deviceType" name="考勤类型" value="${item.deviceType}" disabled="true" underline="true"/>
+                </div>
+                <div class="col-sm-6">
+                 @if(item.photo != null ){
+                	<img alt="人脸" src="${item.photo}" width="200px" height="200px" >
+                 @}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/deviceRecord/deviceRecord/deviceRecord_detail.js"></script>
+@}

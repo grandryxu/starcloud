@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.recruit.dao.ExperienceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.recruit.model.Experience">
+        <id column="id" property="id" />
+        <result column="resume_id" property="resumeId" />
+        <result column="theme" property="theme" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="content" property="content" />
+        <result column="remark" property="remark" />
+        <result column="create_date" property="createDate" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, resume_id AS resumeId, theme, start_date AS startDate, end_date AS endDate, content, remark, create_date AS createDate, update_date AS updateDate
+    </sql>
+
+</mapper>

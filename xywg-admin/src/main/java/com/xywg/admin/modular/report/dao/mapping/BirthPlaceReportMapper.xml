@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.report.dao.BirthPlaceReportMapper">
+    
+    <!--获取某公司工人籍贯分布 -->
+	<select id="birthPlaceReport"
+		resultType="map">
+	<!-- 	SELECT
+		COUNT(DISTINCT w.id) AS count,
+		IFNULL(a.shortname,'其他') AS birthPlace
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number
+		LEFT JOIN ref_area AS a ON w.birth_place_code = a.id
+		WHERE
+		pw.is_del = 0 AND
+		w.is_del = 0 -->
+		
+		SELECT
+			COUNT(DISTINCT w.id) AS count,
+			IFNULL(a.shortname,'其他') AS birthPlace
+		FROM buss_contractor_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON pw.id_card_type = w.id_card_type AND pw.id_card_number = w.id_card_number
+		LEFT JOIN ref_area AS a ON w.birth_place_code = a.id
+		WHERE pw.is_del = 0 
+			   AND w.is_del = 0 
+		AND pw.organization_code in
+		 <foreach collection="list" close=")" open="(" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+		GROUP BY w.birth_place_code
+		</select>
+</mapper>

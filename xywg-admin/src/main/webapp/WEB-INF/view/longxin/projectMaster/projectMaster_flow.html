@@ -1,0 +1,225 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+<style type="text/css">
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+    }
+
+    #workAttendanceBaiduMap {
+        height: 500px;
+        width: 100%;
+    }
+
+    .fn-div .chosen-container {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* 百度地图label与bootstrap样式冲突 */
+    #workAttendanceBaiduMap label{
+        max-width:none;
+        border-radius: 2px;
+        padding: 2px;
+    }
+</style>
+<div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal" id="ProjectMasterInfoForm">
+
+                            <input type="hidden" id="id" value="">
+
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                    <#input id="projectName" disabled='disabled' name="项目名称" underline="true" value='${project.projectName}' />
+                                    
+                                    <input id="projectId" type="hidden" id="id" value="${project.id}">
+                          @if(addFlag){
+                                <#select id="receiveFlow" name="招标流程模式" underline="true" onchange="flowChange()">
+                                	<option value="1"  >默认流程</option>
+            					 	<option value="2"  >自定义流程</option>
+
+                            </#select>
+                            @}else{
+                                    <#input id="flowMode" disabled='disabled' name="流程类型" underline="true" value='${flowMode}' />
+
+                                    @}
+                            @if(addFlag){
+                            <#select id="receiveSelect" name="招标流程选择" underline="true">
+                                ${process}
+                            </#select>
+                            @}else{
+                            <#select id="receiveSelect" disabled='disabled' name="招标流程选择" underline="true">
+                                ${process}
+                            </#select>
+                            @}
+                            
+                            <div class="form-group" id="receiveDesignFlow" >
+   							</div>
+   							
+              
+                            
+                                </div>
+                                
+                                <div class="col-sm-6 b-r">
+                          		@if(addFlag){
+                                <#select id="fixFlow"  name="定标流程模式" underline="true" onchange="flowFixChange()">
+									
+                                <option value="1"  >默认流程</option>
+            					<option value="2"  >自定义流程</option>
+                            	</#select>
+                           @}else {
+                                    <#input id="flowMode" disabled='disabled' name="流程类型" underline="true" value='${flowModeFix}' />
+                           @}
+                           @if(addFlag){
+                            <#select id="fixSelect" name="定标流程选择" underline="true">
+                                ${fixProcess}
+                            </#select>
+                            @}else{
+                            <#select id="fixSelect" disabled='disabled' name="定标流程选择" underline="true">
+                                ${fixProcess}
+                            </#select>
+                            @}
+                            <div class="form-group" id="fixDesignFlow" >
+   							</div>
+                                </div>
+
+                                
+                            </div>
+
+
+
+                        <br/> <br/> <br/> <br/> <br/> <br/> <br/>
+                            <div class="row btn-group-m-t operation">
+                                <div class="col-sm-12 tac-sss button-ta-r">
+                                	@if(addFlag){
+                                            <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterInfoDlg.addSubmit()"/>
+                                    @}
+                                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterInfoDlg.close()"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+</div>
+
+<div id="layer-baidu-map" style="display:none; padding:15px 20px;">
+    <div title="电子围栏" id="checkWorkAttendance" class="row">
+        <div class="col-sm-5">
+            <div class="fn-div">
+                <label class="fn-label">搜索地址</label>
+                <input type="text" class="fn-input" name="searchValue" id="searchValue"
+                       placeholder="搜索地址"/>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="fn-div">
+                <label class="fn-label">半径</label>
+                <input type="text" class="fn-input" name="semidiameter" id="semidiameter"
+                       placeholder="半径"/>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <a class="btn btn-primary" onclick="ProjectMasterInfoDlg.search()"><i
+                    class="iconfont icon-search iconfont-small"></i>搜索</a>
+            <a class="btn btn-primary" onclick="ProjectMasterInfoDlg.clearInfo()"><i
+                    class="iconfont icon-m_refresh iconfont-small"></i>重置</a>
+            <a class="btn btn-primary" onclick="ProjectMasterInfoDlg.confirmAddress()"><i
+                    class="iconfont icon-m_refresh iconfont-small"></i>添加</a>
+        </div>
+    </div>
+
+    <div id="projectAddress"></div>
+
+    <div id="workAttendanceBaiduMap"></div>
+
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=G8Gd8tZvStagwsAL6HX01acf93BenlEk"></script>\
+<script src="${ctxPath}/static/modular/system/user/user_info.js"></script>
+<script src="${ctxPath}/static/modular/longxin/projectMaster/projectMaster_flow.js"></script>
+<script type="text/javascript">
+
+function flowChange(){
+    var flag =   $("#receiveFlow").val();
+    if(flag=="1"){
+        $("#receiveSelect").parent().parent().attr("style","");
+        $("#receiveDesignFlow").attr("style","display:none");
+
+   //展示流程界面
+    }else{
+        $("#receiveDesignFlow").html("   <label class='col-sm-3 control-label'  id='flowLabel'>招标流程设计：</label><button type='button' class='btn btn-primary' icon='fa-plus' onclick='addSelectRow()'><i class='fa fa-plus'></i>添加</button>");
+        $("#receiveSelect").parent().parent().attr("style","display:none");
+        $("#receiveDesignFlow").attr("style","");
+       addSelectRow();
+    }
+}
+
+function addSelectRow(){
+	var randId =  Math.floor(Math.random () * 900) + 100;
+    $.get("${ctxPath}/mgr/getUserList",{},function(data){
+        var html = "<div id=" + randId + " style='float:right' class='col-sm-9'><select class='form-control fd'>";
+        for(var i=0;i<data.length;i++){
+            if(data[i].roleName!="超级管理员"&&data[i].roleName!="企业名录"&&data[i].roleName!="龙信管理员"){
+                html = html + "<option value='"+data[i].id+"'>" + data[i].name + "</option>";
+            }
+        }
+        html = html + "</select><button onclick='reduceOption("+ randId +")'><i class='fa fa-minus'>删除</button></div>";
+        $("#receiveDesignFlow").append(html);
+    })
+}
+function reduceOption(id){
+	$("#"+id).remove();
+}
+
+        function flowFixChange(){
+            var flag =   $("#fixFlow").val();
+            if(flag=="1"){
+                $("#fixSelect").parent().parent().attr("style","");
+                $("#fixDesignFlow").attr("style","display:none");
+
+           //展示流程界面
+            }else{
+                $("#fixDesignFlow").html("   <label class='col-sm-3 control-label'  id='flowLabel'>定标流程设计：</label><button type='button' class='btn btn-primary' icon='fa-plus' onclick='addFixSelectRow()'><i class='fa fa-plus'></i>添加</button>");
+                $("#fixSelect").parent().parent().attr("style","display:none");
+                $("#fixDesignFlow").attr("style","");
+                addFixSelectRow();
+            }
+        }
+
+        function addFixSelectRow(){
+        	var randId =  Math.floor(Math.random () * 900) + 100;
+            $.get("${ctxPath}/mgr/getUserList",{},function(data){
+                console.log(data)
+                var html = "<div id=" + randId + " style='float:right' class='col-sm-9'><select class='form-control ffd'>";
+                for(var i=0;i<data.length;i++){
+                    if(data[i].roleName!="超级管理员"&&data[i].roleName!="企业名录"&&data[i].roleName!="龙信管理员"){
+                        html = html + "<option value='"+data[i].id+"'>" + data[i].name + "</option>";
+                    }
+                }
+                html = html + "</select><button onclick='reduceOption("+randId+")'><i class='fa fa-minus'>删除</button></div>";
+
+                $("#fixDesignFlow").append(html);
+            })
+        }
+        
+        
+        
+      
+
+</script>
+@}

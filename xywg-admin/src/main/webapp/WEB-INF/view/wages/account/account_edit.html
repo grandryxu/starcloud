@@ -1,0 +1,42 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row" >
+                <input type="hidden" id="flag" value="1">
+                <!--<div class="col-sm-6 b-r">
+                            <#input id="id" name="主键id" value="${item.id}" underline="true"/>
+                            <#input id="projectCode" name="项目id" value="${item.projectCode}" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号 外部系统与平台对接创建班组后，由系统返回该编号" value="${item.teamSysNo}" underline="true"/>
+                            <#input id="type" name="类型1：包工 2：包点" value="${item.type}" underline="true"/>
+                            <#input id="closingTime" name="截止时间" value="${item.closingTime}" underline="true"/>
+                            <#input id="totalAmount" name="合计发放" value="${item.totalAmount}" underline="true"/>
+                            <#input id="accountPerson" name="计工单人员" value="${item.accountPerson}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="createDate" name="添加人" value="${item.createDate}" underline="true"/>
+                            <#input id="createUser" name="添加时间" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="note" name="备注" value="${item.note}" underline="true"/>
+                            <#input id="salaryId" name="绑定的工资单ID" value="${item.salaryId}" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" value="${item.isDel}" />
+                </div>-->
+                <div  id="accountDetailToolbar" role="group">
+                    <#button name="批量写计工方式" icon="fa-plus" clickFun="AccountInfoDlg.batchType()" space="true"/>
+                    <#button name="批量写单价" icon="fa-plus" clickFun="AccountInfoDlg.batchPrice()" space="true"/>
+                    <#button name="批量写工时/数量" icon="fa-plus" clickFun="AccountInfoDlg.batchNumber()" space="true"/>
+                </div>
+                <#table id="accountDetail"/>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/account/account_info.js"></script>
+@}

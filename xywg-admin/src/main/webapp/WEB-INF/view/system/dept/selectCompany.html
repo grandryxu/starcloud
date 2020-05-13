@@ -1,0 +1,33 @@
+@layout("/common/_container.html"){
+<script src="https://cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
+<link href="https://cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css" rel="stylesheet">
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                    <h5>公司管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <input id="isEnterprise" type="hidden" value="${isEnterprise}"/>
+                    <div class="col-sm-6 tree-ssd">
+                        <div id="tree"></div>
+                    </div>
+                    <div class="col-sm-6 tree-ssd-right">
+                        <div class="list-group">
+                        </div>
+                    </div>
+                </div>
+                <div class="row btn-group-m-t operation">
+                    <div class="col-sm-12 tac-sss">
+                        <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SelectCompany.commit()"/>
+                        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SelectCompany.close()"/>
+                        <#button btnCss="info" name="重置" id="cancel" icon="fa-eraser" clickFun="SelectCompany.reset()"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/dept/selectCompany.js"></script>
+@}

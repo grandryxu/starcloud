@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.ConstructionEvaluateMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.ConstructionEvaluate">
+        <id column="id" property="id" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="mass_review" property="massReview" />
+        <result column="pace_review" property="paceReview" />
+        <result column="safe_review" property="safeReview" />
+        <result column="note" property="note" />
+        <result column="create_date" property="createDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, organization_code AS organizationCode, id_card_type AS idCardType, id_card_number AS idCardNumber, mass_review AS massReview, pace_review AS paceReview, safe_review AS safeReview, note, create_date AS createDate, update_user AS updateUser, create_user AS createUser, update_date AS updateDate
+    </sql>
+
+    <select id="list" resultType="Map" parameterType="Map">
+        SELECT
+        <include refid="Base_Column_List"/>
+        from buss_construction_evaluate
+        where 1=1
+        <if test="map.organizationCode!=null and map.organizationCode!=''">
+            and organization_code=#{map.organizationCode}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+</mapper>

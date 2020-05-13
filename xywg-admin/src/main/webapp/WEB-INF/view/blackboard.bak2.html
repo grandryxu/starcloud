@@ -1,0 +1,181 @@
+@layout("/common/_container.html"){
+<div class="container-fluid container-fluid-sss">
+    <div class="top-s1 clear-float">
+        <div class="col-sm-6 col-sm-6-left">
+            <div class="box-s left-s bdwhite">
+                <p class="p-title">
+                    <span>项目类型</span>
+                    <a class="p-title-a">查看明细</a>
+                </p>
+                <div class="tac-sss clear-float" style="padding:45px 0 60px;">
+                    <div class="col-sm-6 padding0 brs">
+                        <p class="pt1">总承包项目</p>
+                        <p class="pt2">21</p>
+                    </div>
+                    <div class="col-sm-6 padding0">
+                        <p class="pt1">专业承包项目</p>
+                        <p class="pt2">5</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-sm-6-right">
+            <div class="box-s right-s bdwhite">
+                <p class="p-title">分包排行</p>
+                <div class="tac-sss clear-float">
+                    <div class="tabs-container-index">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a data-toggle="tab" href="#workerMaster" aria-expanded="true">合作项目数</a>
+                            </li>
+                            <li class="">
+                                <a data-toggle="tab" href="#workerGoodRecords" aria-expanded="false">在场班组数</a>
+                            </li>
+                            <li class="">
+                                <a data-toggle="tab" href="#workerBadRecords" aria-expanded="false">累计人数</a>
+                            </li>
+                            <li class="">
+                                <a data-toggle="tab" href="#projectTrainings" aria-expanded="false">企业总人数</a>
+                            </li>
+                            <li class="">
+                                <a data-toggle="tab" href="#settlement" aria-expanded="false">在场人数</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="workerMaster" class="tab-pane active">
+                                <div class="panel-body">
+                                    <div id="projectWorker" style="width: 100%;height:150px;"></div>
+                                </div>
+                            </div>
+                            <div id="workerGoodRecords" class="tab-pane">
+                                <div class="panel-body">
+
+                                </div>
+                            </div>
+                            <div id="workerBadRecords" class="tab-pane">
+                                <div class="panel-body">
+
+                                </div>
+                            </div>
+                            <div id="projectTrainings" class="tab-pane">
+                                <div class="panel-body">
+
+                                </div>
+                            </div>
+
+                            <div id="settlement" class="tab-pane">
+                                <div class="panel-body">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="top-s3 clear-float">
+        <div class="col-sm-8 col-sm-6-left">
+            <div class="box-s left-s bdwhite">
+                <p class="p-title">
+                    <span>工资统计</span>
+                    <a class="p-title-a">查看明细</a>
+                </p>
+                <div id="workerAge" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+        <div class="col-sm-4 col-sm-6-right">
+            <div class="box-s right-s bdwhite">
+                <p class="p-title">
+                    <span>项目进度统计</span>
+                    <a class="p-title-a">查看明细</a>
+                </p>
+                <div id="workerNativePlace" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts-en.common.js"></script>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.js"></script>
+<script src="http://gallery.echartsjs.com/dep/echarts/map/js/china.js"></script>
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-projectWorker.js"></script> -->
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerType.js"></script> -->
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerNativePlace.js"></script>
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerAge.js"></script>
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerAttendance.js"></script> -->
+<script>
+    $(function () {
+        var s = echarts.init(document.getElementById("projectWorker"));
+        var option = {
+            color: ['#4680FF', '#DE4444', '#FF9500'],
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+                }
+            },
+            grid: {
+                left: '0',
+                right: '4%',
+                bottom: '3%',
+                top: '5%',
+                containLabel: true
+            },
+            xAxis: [{
+                type: 'category',
+                data: ['公园里', '翡翠新湖', '翡翠公园', '星光耀', '翡翠华府', '城市之光', '万科'],
+                axisLine: {
+                    lineStyle: {
+                        color: ['#D8DDE4']
+                    }
+                },
+                axisLabel: {
+                    color: "#000"
+                }
+            }],
+            yAxis: [{
+                type: 'value',
+                splitLine: {
+                    show: false,
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: ['#D8DDE4']
+                    }
+                },
+                axisLabel: {
+                    color: "#666"
+                }
+            }],
+            series: [{
+                    name: '进场',
+                    type: 'bar',
+                    barWidth: 14,
+                    data: [320, 332, 301, 334, 390, 330, 320]
+                },
+                {
+                    name: '退场',
+                    type: 'bar',
+                    barWidth: 14,
+                    data: [120, 132, 101, 134, 90, 230, 210]
+                },
+                {
+                    name: '累计',
+                    type: 'bar',
+                    barWidth: 14,
+                    data: [220, 182, 191, 234, 290, 330, 310]
+                }
+            ]
+        };
+        s.setOption(option),
+            $(window).resize(s.resize);
+    });
+</script>
+
+
+
+@}

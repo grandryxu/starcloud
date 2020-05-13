@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.SafetyHelmetMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.SafetyHelmet">
+        <id column="id" property="id" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="project_code" property="projectCode" />
+        <result column="name" property="name" />
+        <result column="imei" property="imei" />
+        <result column="type" property="type" />
+        <result column="state" property="state" />
+        <result column="talk" property="talk" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, organization_code AS organizationCode, project_code AS projectCode, name, imei, type, state, talk, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, remark
+    </sql>
+
+    <select id="list" resultType="Map" parameterType="com.baomidou.mybatisplus.plugins.Page">
+    	 SELECT
+	          bsh.id, 
+			  bsh.organization_code AS organizationCode, 
+			  bsh.project_code AS projectCode, 
+			  bsh.name, 
+			  bsh.imei, 
+			  bsh.type, 
+			  bsh.state, 
+			  bsh.talk,
+			  bsh.STATUS,
+			  bsh.remark,
+	        bpm.project_name AS projectName
+	  FROM buss_safety_helmet bsh
+	 LEFT JOIN buss_project_master bpm ON bpm.project_code = bsh.project_code
+	 LEFT JOIN buss_project_sub_contractor s ON bsh.project_code = s.project_code
+	 WHERE bsh.is_del = 0 
+	 	AND s.organization_code in (
+	            SELECT social_credit_number 
+					FROM sys_dept
+	            WHERE social_credit_number IS NOT NULL
+	            AND (id =  #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') ))
+	    	
+    
+       <!--  SELECT
+        bsh.id, bsh.organization_code AS organizationCode, bsh.project_code AS projectCode, bsh.name, bsh.imei, bsh.type, bsh.state, bsh.talk,
+        bsh.create_date AS createDate, bsh.create_user AS createUser, bsh.update_date AS updateDate, bsh.update_user AS updateUser, bsh.status, bsh.remark,
+        bpm.project_name AS projectName
+        FROM buss_safety_helmet bsh
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bsh.project_code
+        JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) A ON bsh.organization_code = A.social_credit_number
+        WHERE 1=1
+        and bsh.is_del=0 -->
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and bsh.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.projectCode!=null and map.projectCode!=''">
+            AND bsh.project_code = #{map.projectCode}
+        </if>
+        <if test="map.condition!=null and map.condition!=''">
+            AND ((bsh.imei LIKE CONCAT('%',#{map.condition},'%')) OR (bsh.name LIKE CONCAT('%',#{map.condition},'%')) OR (bsh.remark LIKE CONCAT('%',#{map.condition},'%')))
+        </if>
+         GROUP BY bsh.imei           
+        order by bsh.id desc
+    </select>
+
+    <select id="getSafetyHelmetByImei" resultType="com.xywg.admin.modular.device.model.SafetyHelmet" >
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM buss_safety_helmet
+        WHERE imei = #{imei}  AND is_del = 0
+    </select>
+
+    <!-- 获取项目下未使用的安全帽 -->
+    <select id="getUnusedSafetyHelmet" resultType="com.xywg.admin.modular.device.model.SafetyHelmet" >
+        SELECT
+        bsh.id, bsh.organization_code AS organizationCode, bsh.project_code AS projectCode, bsh.name, bsh.imei, bsh.type,
+        bsh.state, bsh.talk, bsh.create_date AS createDate, bsh.create_user AS createUser, bsh.update_date AS updateDate,
+        bsh.update_user AS updateUser, bsh.status, bsh.remark
+        FROM buss_safety_helmet bsh
+        LEFT JOIN buss_project_worker bpw ON bpw.sh_imei = bsh.imei AND bpw.is_del = 0
+        WHERE bsh.project_code = #{projectCode}  AND bsh.is_del = 0 AND bpw.id IS NULL
+    </select>
+
+    <insert id="insert">
+        INSERT INTO buss_safety_helmet(
+        name ,
+        project_code ,
+        imei ,
+        remark ,
+        organization_code ,
+        state ,
+        create_date,
+        create_user
+        )
+        VALUES(
+        #{name} ,
+        #{projectCode} ,
+        #{imei} ,
+        #{remark} ,
+        (SELECT contractor_org_code FROM buss_project_master WHERE project_code = #{projectCode}) ,
+        1,
+        now(),
+        #{createUser}
+        )
+
+    </insert>
+
+    <update id="deleteSafetyHelmets">
+        UPDATE
+        buss_safety_helmet
+        SET
+        is_del = 1
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+
+    <!--更新操作-->
+    <update id="updateSafety" parameterType="com.xywg.admin.modular.device.model.SafetyHelmet">
+        update buss_safety_helmet
+        SET
+        name=#{s.name},
+        imei=#{s.imei},
+        project_code=#{s.projectCode},
+        remark=#{s.remark}
+        where id=#{s.id}
+    </update>
+    <!--判重-->
+    <select id="checkBySn" resultType="com.xywg.admin.modular.device.model.SafetyHelmet" parameterType="com.xywg.admin.modular.device.model.SafetyHelmet">
+        SELECT
+        id
+        from buss_safety_helmet
+        where imei=#{s.imei}
+        <if test="s.id!=null and s.id!=''">
+            and id!=#{s.id}
+        </if>
+        and  is_del=0
+    </select>
+    
+    <update id="updateSafetyHelmet">
+        UPDATE
+        buss_safety_helmet
+        SET
+        organization_code = #{p.organizationCode},
+        project_code = #{p.projectCode},
+        name = #{p.imei},
+        state = 1
+        WHERE imei = #{p.imei} and is_del = 0
+    </update>
+    
+    <update id="updateSafetyHelmetRelation">
+        UPDATE
+        buss_project_worker
+        SET
+        sh_imei = ''
+        WHERE sh_imei = #{i} and is_del = 0
+    </update>
+
+    <select id="getUnusedHelmetsByProjectCode" resultType="com.xywg.admin.modular.device.model.SafetyHelmet">
+        SELECT
+        bsh.id, bsh.organization_code AS organizationCode, bsh.project_code AS projectCode, bsh.name, bsh.imei, bsh.type,
+        bsh.state, bsh.talk, bsh.create_date AS createDate, bsh.create_user AS createUser, bsh.update_date AS updateDate,
+        bsh.update_user AS updateUser, bsh.status, bsh.remark
+        FROM
+        buss_safety_helmet bsh
+        WHERE
+        bsh.is_del = 0 AND bsh.status = 1 AND bsh.state = 1 AND project_code = #{projectCode}
+        AND bsh.imei NOT IN ( SELECT sh_imei FROM buss_project_worker WHERE is_del = 0 and sh_imei is not null)
+        <if test="key != null and key != ''">
+            AND(bsh.name LIKE CONCAT('%',#{key},'%') OR bsh.imei LIKE CONCAT('%',#{key},'%'))
+        </if>
+    </select>
+</mapper>

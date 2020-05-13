@@ -1,0 +1,14 @@
+table td,table th {
+    text-align: left;
+    padding: 10px 6px;
+}
+.file {
+    color: rgba(42, 130, 228, 1);
+    line-height: 28px;
+}
+.file>li {
+    cursor: pointer;
+}
+.subTable {
+    margin-top: 40px;
+}

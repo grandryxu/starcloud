@@ -1,0 +1,68 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="workerBlackListForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6">
+                            <input type ="hidden" id="type" value="1">
+                            <#select_sjf id="workerId" name="姓名" underline="true" disabled="true">
+	                             @for(i in workers){
+		                             @if(i.idCardNumber==item.idCardNumber){
+		                                 <option value="${i.id}" selected>${i.workerName}</option>
+		                             @}else{
+		                                 <option value="${i.id}">${i.workerName}</option>
+		                             @}
+	                             @}
+                            </#select_sjf> 
+                            <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="true">
+							    @for(i in dictIdCardType){
+							         @if(i.num==item.idCardType){
+							            <option value="${i.num}" selected>${i.name}</option>
+							         @}else{
+							            <option value="${i.num}">${i.name}</option>
+							         @}
+							    @}
+							</#select_sjf>
+                            <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true" disabled="true"/>
+                            <#input_sjf id="companyName" name="所属单位" value="${item.companyName}" underline="true" disabled="true"/>
+                            <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" underline="true" disabled="true"/>
+                            <input type ="hidden" id="projectCode" value="${item.projectCode}">
+                         	<#input_sjf id="teamName" name="班组名称" value="${item.teamName}" underline="true" disabled="true"/>
+                         	<#input_sjf id="teamSysNo" name="班组编号" value="${item.teamSysNo}" underline="true" disabled="true"/>                       
+                            <#input_sjf id="occurrenceDate" name="发生时间" value ="${item.occurrenceDate}" underline="true" requiredFlag="true" 
+                             clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                             
+                            <#select_sjf id="validStatus" name="时间类型" underline="true" requiredFlag="true" >
+                               @for(i in dictValidStatus){
+	                              @if(i.num==item.validStatus){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{  
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input_sjf id="startTime" name="有效期起" value ="${item.startTime}" underline="true" requiredFlag="true" disabled="true"
+                            />
+                            <#input_sjf id="endTime" name="有效期止" value ="${item.endTime}" underline="true" requiredFlag="true" disabled="true"/>
+                            <#textarea_sjf id="blackReason" name="黑名单原因" value="${item.blackReason}" requiredFlag="true"/>
+                            <#textarea_sjf id="note" name="备注信息" value="${item.note}" underline="true" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="WorkerBlackListInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerBlackListInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/workerBlackList/workerBlackList_info.js"></script>
+@}

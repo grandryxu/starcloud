@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.workerEnshrine.dao.WorkerEnshrineMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.workerEnshrine.model.WorkerEnshrine">
+        <id column="id" property="id" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="recruit_id" property="recruitId" />
+        <result column="is_del" property="isDel" />
+        <result column="remark" property="remark" />
+        <result column="create_user" property="createUser" />
+        <result column="create_date" property="createDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, id_card_type AS idCardType, id_card_number AS idCardNumber, recruit_id AS recruitId, is_del AS isDel, remark, create_user AS createUser, create_date AS createDate, update_user AS updateUser, update_date AS updateDate
+    </sql>
+
+    <!-- 查询是否关注过 -->
+    <select id="queryRelation" resultType="com.xywg.admin.modular.workerEnshrine.model.WorkerEnshrine">
+SELECT
+	id,
+	id_card_type AS idCardType,
+	id_card_number AS idCardNumber,
+	recruit_id AS recruitId,
+	is_del AS isDel,
+	remark,
+	create_user AS createUser,
+	create_date AS createDate,
+	update_user AS updateUser,
+	update_date AS updateDate
+FROM
+	recruit_worker_enshrine
+WHERE
+	is_del = 0
+	AND id_card_type = #{idCardType}
+	AND id_card_number = #{idCardNumber}
+	AND recruit_id = #{recruitId}
+    </select>
+
+    <update id="cancleEnshrine">
+UPDATE `recruit_worker_enshrine`
+SET `is_del` = 1,
+`update_user` = #{updateUser},
+`update_date` = NOW()
+WHERE
+	recruit_id = #{recruitId}
+	AND id_card_type = #{idCardType}
+	AND id_card_number = #{idCardNumber}
+    </update>
+
+    <select id="getPersonEnshrineList" resultType="com.xywg.admin.modular.workerEnshrine.model.PersonEnshrineVo">
+        SELECT
+        rr.update_date AS updateDate,
+        rr.recruit_id AS id,
+        rw.salary_type AS salaryType,
+        rw.salary_content AS salaryContent,
+        rw.salary_text AS salaryText,
+        c.company_name AS companyName,
+        rw.work_id_sets AS `work`,
+        rw.recruit_station AS recruitStation,
+        rw.description,
+        rw.recruit_type AS recruitType,
+        rw.is_del as isDel,
+        rw.phone
+        FROM
+        recruit_worker_enshrine AS rr
+        LEFT JOIN recruit_worker AS rw ON rr.recruit_id = rw.id
+        LEFT JOIN buss_sub_contractor AS c ON rw.organization_code = c.organization_code AND c.is_del = 0
+        WHERE
+        rr.is_del = 0 AND
+        rr.id_card_type = #{idCardType} AND
+        rr.id_card_number = #{idCardNumber}
+        <if test="keyword != null and keyword !='' ">
+            AND (rw.recruit_station like CONCAT('%',#{keyword},'%') OR c.company_name like CONCAT('%',#{keyword},'%'))
+        </if>
+        ORDER BY
+        updateDate DESC
+        LIMIT #{pageNo}, #{pageSize}
+    </select>
+</mapper>

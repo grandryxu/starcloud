@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.Device">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="type_id" property="typeId"/>
+        <result column="sn" property="sn"/>
+        <result column="name" property="name"/>
+        <result column="ip" property="ip"/>
+        <result column="mac" property="mac"/>
+        <result column="version" property="version"/>
+        <result column="code" property="code"/>
+        <result column="security_key" property="securityKey"/>
+        <result column="server_ip" property="serverIp"/>
+        <result column="server_port" property="serverPort"/>
+        <result column="talk" property="talk"/>
+        <result column="state" property="state"/>
+        <result column="description" property="description"/>
+        <result column="update_type" property="updateType"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="status" property="status"/>
+        <result column="type" property="type"/>
+        <result column="remark" property="remark"/>
+        <result column="alg_version" property="algVersion"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, 
+        organization_code AS organizationCode, 
+        project_code AS projectCode, 
+        type_id AS typeId, 
+        sn, 
+        name, 
+        ip, 
+        mac, 
+        version, 
+        code, 
+        security_key AS securityKey, 
+        server_ip AS serverIp, 
+        server_port AS serverPort, 
+        talk, 
+        state, 
+        description, 
+        type,
+        update_type AS updateType, 
+        create_date AS createDate, 
+        create_user AS createUser, 
+        update_date AS updateDate, 
+        update_user AS updateUser
+    </sql>
+
+
+    <select id="list" resultType="Map">
+    
+    		    SELECT
+	          b.id, 
+			  b.organization_code AS organizationCode,
+			  b.project_code AS projectCode, 
+			  b.type_id AS typeId,
+	          b.sn, 
+			  b.name, 
+			  b.ip, 
+			  b.mac, 
+			  b.VERSION,
+			  b.server_ip AS serverIp,
+	          b.server_port AS serverPort, 
+			  b.talk, 
+			  b.state, 
+			  b.update_type AS updateType, 
+			  b.status,
+	          b.type, 
+			  b.alg_version AS algVersion
+		FROM buss_device b
+		LEFT JOIN (SELECT id , num , name FROM sys_dict sd WHERE sd.pid = (SELECT id FROM sys_dict WHERE name = "设备类型"))
+		        s ON s.num = b.type_id
+		LEFT JOIN buss_project_master bpm ON bpm.project_code = b.project_code
+		LEFT JOIN buss_project_sub_contractor s ON b.project_code = s.project_code
+		 WHERE  b.is_del = 0
+		        AND bpm.virtual_id IS NULL
+		        AND ifnull(b.organization_code,0) NOT IN  ('5234','91320684138774017K','91320684666806633Q','91320684138793015M') 
+				and b.name is not NULL
+		<if test="map.userType != 3">
+				AND  s.organization_code in (
+		            SELECT social_credit_number 
+					FROM sys_dept
+		            WHERE social_credit_number IS NOT NULL
+		            AND (id = #{map.deptId} OR pids LIKE CONCAT('%[',#{map.deptId},']%') ))
+		 </if>
+<!--         SELECT
+        b.id, b.organization_code AS organizationCode, b.project_code AS projectCode, b.type_id AS typeId,
+        b.sn, b.name, b.ip, b.mac, b.version, b.code, b.security_key AS securityKey, b.server_ip AS serverIp,
+        b.server_port AS serverPort, b.talk, b.state, b.description, b.update_type AS updateType, b.create_date AS
+        createDate, b.create_user AS createUser, b.update_date AS updateDate, b.update_user AS updateUser, b.status,
+        b.type, b.remark, b.alg_version AS algVersion, b.is_del AS isDel
+        FROM
+        buss_device b
+        LEFT JOIN (SELECT id , num , name FROM sys_dict sd WHERE sd.pid = (SELECT id FROM sys_dict WHERE name = "设备类型"))
+        s ON s.num = b.type_id
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = b.project_code
+        LEFT JOIN buss_project_master bpm2 ON bpm2.virtual_id = b.id
+        <if test="map.userType != 3">
+            JOIN (
+            SELECT
+            social_credit_number
+            FROM
+            sys_dept
+            WHERE
+            social_credit_number IS NOT NULL
+            AND (
+            id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+            ) A ON b.organization_code = A.social_credit_number
+        </if>
+        WHERE
+        b.is_del = 0
+        AND bpm2.virtual_id IS NULL
+        AND ifnull(b.organization_code,0) NOT IN  ('5234','91320684138774017K','91320684666806633Q','91320684138793015M') and b.name is not null--> 
+        <if test="map.userType != 3">
+            <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+                and 1=2
+            </if>
+            <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+                and b.project_code in
+                <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != '' ">
+            AND b.project_code = #{map.projectCode}
+        </if>
+        <if test="map.condition !=null and map.condition != '' ">
+            AND ((b.name LIKE CONCAT('%',#{map.condition},'%')) OR (s.name LIKE CONCAT('%',#{map.condition},'%')) OR
+            (bpm.project_name LIKE
+            CONCAT('%',#{map.condition},'%')) OR (b.remark LIKE CONCAT('%',#{map.condition},'%')))
+        </if>
+        <if test="map.state !=null and map.state != '' ">
+            AND state = #{map.state}
+        </if>
+        group by b.sn
+        order by b.id desc
+    </select>
+
+    <select id="selectDeviceById" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_device
+        WHERE id = #{id}
+        and is_del = 0
+    </select>
+
+    <select id="selectDeviceBySn" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_device
+        WHERE sn = #{sn} AND is_del = 0
+        AND state = 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+        buss_device(name , type_id , sn , type , project_code , organization_code ,remark , create_date , create_user ,
+        state)
+        VALUES (
+        #{name},
+        #{typeId},
+        #{sn},
+        #{type},
+        #{projectCode},
+        <if test="organizationCode == null || organizationCode == ''">
+            (SELECT contractor_org_code FROM buss_project_master WHERE project_code = #{projectCode}) ,
+        </if>
+        <if test="organizationCode != null and organizationCode != ''">
+            #{organizationCode},
+        </if>
+        #{remark} ,
+        now(),
+        #{createUser} ,
+        1
+        )
+    </insert>
+
+    <update id="toggle">
+        UPDATE buss_device
+        SET state = #{state}
+        WHERE
+        FIND_IN_SET(id,#{ids})
+    </update>
+
+    <select id="getDevicesByDeviceType" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT
+        b.id, b.organization_code AS organizationCode, b.project_code AS projectCode, b.type_id AS typeId,
+        b.sn, b.name, b.ip, b.mac, b.version, b.code, b.security_key AS securityKey, b.server_ip AS serverIp,
+        b.server_port AS serverPort, b.talk, b.state, b.description, b.update_type AS updateType, b.create_date AS
+        createDate, b.create_user AS createUser, b.update_date AS updateDate, b.update_user AS updateUser, b.status,
+        b.type, b.remark, b.alg_version AS algVersion, b.is_del AS isDel
+        FROM buss_device b
+        JOIN ( SELECT id,num FROM sys_dict WHERE pid = (SELECT id FROM sys_dict WHERE id = #{menuId}) ) sd ON  sd.num = b.type_id
+        WHERE  b.is_del = 0
+    </select>
+
+    <select id="getDevicesByDeviceTypeList" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_device
+        WHERE
+        is_del = 0 AND type_id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <resultMap type="com.xywg.admin.modular.device.model.Device" id="DeviceMap" autoMapping="true">
+        <id column="id" property="id"/>
+        <association property="project" javaType="com.xywg.admin.modular.project.model.ProjectMaster">
+            <id property="projectCode" column="project_code"/>
+        </association>
+    </resultMap>
+
+    <!--根据序列号获取 -->
+    <select id="getByDeviceSnMap" parameterType="java.util.Map" resultMap="DeviceMap">
+        SELECT
+        id,
+        sn ,
+        state ,
+        project_code
+        FROM buss_device
+        where sn=#{sn} and state = 1 and is_del=0
+        <if test="id!=null">
+            and id!=#{id}
+        </if>
+    </select>
+
+    <!-- 准备询问设备信息 -->
+    <insert id="askDeviceInfo">
+        INSERT INTO buss_device_command
+        (device_sn, type, state, createDate, modify_id)
+        values
+        (#{sn},3, 0, now(), 0)
+    </insert>
+
+    <!-- 设置设备信息 -->
+    <update id="setDeviceInfo">
+        UPDATE buss_device SET
+        <if test="ip != null">
+            ip = #{ip,jdbcType=VARCHAR},
+        </if>
+        <if test="mac != null">
+            mac = #{mac,jdbcType=VARCHAR},
+        </if>
+        <if test="version != null">
+            version = #{version,jdbcType=VARCHAR},
+        </if>
+        <if test="typeId != null">
+            type_id = #{typeId,jdbcType=BIGINT},
+        </if>
+        <if test="algVersion != null">
+            alg_version = #{algVersion,jdbcType=VARCHAR},
+        </if>
+        talk = now(),
+        update_type = 2
+        WHERE sn = #{sn,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 心跳更新 -->
+    <update id="heartbeat" parameterType="list">
+        UPDATE buss_device SET
+        talk = now(),
+        update_type = 2
+        WHERE id in
+        <foreach collection="list" item="id" open="(" separator=","
+                 index="index" close=")">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <!-- 批量删除考勤机 -->
+    <update id="deleteDevices" parameterType="list">
+        UPDATE buss_device SET
+        is_del= 1
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+
+    <!--跟新-->
+    <update id="updateDevice" parameterType="com.xywg.admin.modular.device.model.Device">
+        update buss_device
+        SET
+        name=#{d.name},
+        sn=#{d.sn},
+        project_code=#{d.projectCode},
+        type=#{d.type},
+        type_id=#{d.typeId},
+        remark=#{d.remark} ,
+        organization_code = (select contractor_org_code from buss_project_master where project_code = #{d.projectCode})
+        where id=#{d.id}
+    </update>
+
+    <!-- 考勤机判重 -->
+    <select id="checkBySn" resultType="com.xywg.admin.modular.device.model.Device">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device
+        where sn=#{d.sn}
+        <if test="d.id!=null and d.id!=''">
+            and id!=#{d.id}
+        </if>
+        and is_del=0 and state = 1
+    </select>
+
+    <!--发送考勤设备数据对接到实名制-->
+    <select id="getDeviceFromLabor" resultType="com.xywg.admin.modular.smz.model.DeviceMo">
+        select
+        bd.id as deviceId,
+        bd.sn as sn,
+        bd.type_id as deviceType,
+        bd.name as name,
+        bpm.project_name as projectName,
+        bd.alg_version as algVersion,
+        bd.ip as ip,
+        bd.remark as remark,
+        bpm.id as projectId,
+        bd.version as edition,
+        bd.code as code,
+        bd.mac as mac,
+        bd.security_key as szKey,
+        bd.server_ip as serverIp,
+        bd.server_port as serverPoort,
+        bd.update_type as updateType,
+        bd.type as deviceProperty
+        from buss_device bd
+        left join buss_project_master bpm on bpm.project_code =bd.project_code
+        where bd.is_del = 0    and bpm.is_synchro =1 and bd.id in
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+
+    <!--根据sn判断这的设备能不能启用-->
+    <select id="checkEnable" resultType="com.xywg.admin.modular.device.model.Device">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device
+        where sn=(select sn from buss_device where id=#{id})
+        and state = 1 and is_del = 0
+        and id!=#{id}
+    </select>
+
+    <select id="getDeviceInfoByProjectCode" resultType="com.xywg.admin.modular.device.model.Device">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device
+        where project_code = #{pc} and is_del = 0
+    </select>
+
+    <select id="getAllDeviceSnsByProjectCode" resultType="String">
+        SELECT
+        bd.sn
+        FROM
+        buss_device bd
+        LEFT JOIN buss_project_master bpm ON bpm.virtual_id = bd.id
+        WHERE
+        bd.project_code = #{projectCode} AND bpm.virtual_id IS NULL
+    </select>
+    
+    <select id="getByDeviceSn" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM buss_device
+        where sn=#{sn} and state = 1 and is_del=0
+    </select>
+    <select id="getZrDeviceInfo" resultType="Map">
+    select * 
+    from buss_device
+    where organization_code = ''
+    and is_del <![CDATA[ <> ]]> 1
+    </select>
+    <select id="queryKey" resultType="String">
+	    select zr_id from r_smz_zr 
+		where smz_id = #{s,jdbcType=DECIMAL}
+		AND table_name = #{n,jdbcType=VARCHAR}
+    </select>
+    <insert id="addRelation">
+	INSERT INTO r_smz_zr (ng_id,smz_id, zr_id, table_name, create_date)
+		VALUES
+		(#{id,jdbcType=DECIMAL},#{smzId,jdbcType=DECIMAL},#{zrId,jdbcType=VARCHAR},#{tableName,jdbcType=VARCHAR},SYSDATE)
+	</insert>
+</mapper>

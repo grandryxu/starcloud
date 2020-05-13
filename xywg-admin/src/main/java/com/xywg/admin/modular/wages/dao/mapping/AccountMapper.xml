@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.AccountMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.Account">
+        <id column="id" property="id" />
+        <result column="project_code" property="projectCode" />
+        <result column="team_sys_no" property="teamSysNo" />
+        <result column="type" property="type" />
+        <result column="closing_time" property="closingTime" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="account_person" property="accountPerson" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="note" property="note" />
+        <result column="salary_id" property="salaryId" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, team_sys_no AS teamSysNo, type, closing_time AS closingTime, total_amount AS totalAmount, account_person AS accountPerson, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, note, salary_id AS salaryId, is_del AS isDel
+    </sql>
+    <select id="getList" resultType="Map">
+        select
+        btm.team_name teamName,
+        ba.id, ba.project_code AS projectCode, ba.team_sys_no AS teamSysNo, type, ba.closing_time AS closingTime, ba.total_amount AS totalAmount, ba.account_person AS accountPerson,
+        ba.create_date AS createDate, ba.create_user AS createUser, ba.update_date AS updateDate, ba.update_user AS updateUser, ba.note, ba.salary_id AS salaryId,
+        ba.is_del AS isDel , bsc.company_name AS companyName, if(M.social_credit_number is null,0,1) AS isGeneralContractorOperation
+        from buss_account ba
+        LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code = (SELECT organization_code FROM buss_team_master WHERE team_sys_no = ba.team_sys_no)
+        LEFT JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) M ON M.social_credit_number = (SELECT organization_code FROM buss_team_master WHERE team_sys_no = ba.team_sys_no)
+        left join buss_team_master btm on ba.team_sys_no = btm.team_sys_no
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) A ON A.social_credit_number = (SELECT organization_code FROM buss_team_master WHERE team_sys_no = ba.team_sys_no)
+        </if>
+        where ba.is_del=0
+        <if test="map.projectCode!=null and map.projectCode!=''">
+            and ba.project_code=#{map.projectCode}
+        </if>
+        <if test="map.teamSysNo!=null and map.teamSysNo!=''">
+            and ba.team_sys_no=#{map.teamSysNo}
+        </if>
+        <if test="map.startDate != null and map.startDate != '' ">
+            AND ba.closing_time <![CDATA[>=]]> #{map.startDate}
+        </if>
+        <if test="map.endDate != null and map.endDate != '' ">
+            AND ba.closing_time <![CDATA[<=]]> #{map.endDate}
+        </if>
+
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and ba.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getAccountListByTeamNo" resultType="Map">
+        SELECT
+        ba.id, ba.project_code AS projectCode, ba.team_sys_no AS teamSysNo, ba.type, ba.closing_time AS closingTime, ba.total_amount AS totalAmount,
+        ba.account_person AS accountPerson, ba.create_date AS createDate, ba.create_user AS createUser, ba.update_date AS updateDate, ba.update_user AS updateUser,
+        ba.note, ba.salary_id AS salaryId, ba.is_del AS isDel ,bpm.project_name AS projectName
+        from buss_account ba
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = ba.project_code
+        where ba.salary_id is NULL and ba.team_sys_no=#{map.teamSysNo}
+        and ba.project_code=#{map.projectCode} and ba.is_del = 0
+    </select>
+
+    <update id="updateSalaryId">
+        UPDATE buss_account
+        SET salary_id = #{id}
+        WHERE
+        FIND_IN_SET(id,#{accountIds})
+    </update>
+    <select id="getSalaryIdSum" resultType="java.lang.Long">
+    	select ifnull(sum(salary_id),0) as totalIds
+    	from buss_account
+    	WHERE
+        FIND_IN_SET(id,#{accountIds})
+    </select>
+
+    <insert id="insertAccount" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        buss_account
+        (team_sys_no,
+        project_code,
+        closing_time,
+        create_date,
+        total_amount,
+        account_person,
+        type)
+        VALUES
+        (#{teamSysNo},
+        #{projectCode},
+        #{closingTime},
+        now(),
+        #{totalAmount},
+        #{accountPerson},
+        1)
+    </insert>
+
+    <update id="del" parameterType="Integer">
+        update buss_account
+        set is_del=1
+        where id=#{id}
+    </update>
+
+    <select id="getById" parameterType="Integer" resultType="com.xywg.admin.modular.wages.model.Account">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_account
+        where id=#{id}
+    </select>
+    
+    <select id="getAccountListByProjectCodeAndIsSign" resultType="java.util.Map">
+        select
+        A.id as id,
+        A.projectName as projectName,
+        A.closingTime as closingTime,
+        A.type as type,
+        A.totalAmount as totalAmount,
+        A.workerCount as workerCount,
+        A.isSign as isSign,
+        A.rewardAmount as rewardAmount,
+        A.punishAmount as punishAmount
+        from (
+        SELECT
+        a.id AS id,
+        pm.project_name AS projectName,
+        a.closing_time AS closingTime,
+        a.type AS type,
+        SUM(ad.pay_amuont) AS totalAmount,
+        COUNT(1) AS workerCount,
+        if(sum(ad.is_sign)=COUNT(1),1,0) as isSign,
+        ifnull(ad.reward_amount,0) as rewardAmount,
+        ifnull(ad.punish_amount,0) as punishAmount
+        FROM
+        buss_account a
+        LEFT JOIN buss_project_master pm ON a.project_code = pm.project_code
+        LEFT JOIN buss_account_detail ad ON a.id = ad.account_id
+        join (select
+        tm.team_sys_no
+        from sys_user su
+        left join buss_worker_master wm on su.phone=wm.cell_phone
+        left join buss_team_member tm on tm.id_card_number=wm.id_card_number and tm.id_card_type=wm.id_card_type
+        where su.id=#{id} and tm.team_worker_type=0) T on T.team_sys_no=a.team_sys_no
+        where 1=1
+        <if test="teamSysNo!=null and teamSysNo!=''">
+            and a.team_sys_no=#{teamSysNo}
+        </if>
+        GROUP BY
+        a.id
+        ) A
+        where 1=1
+        <if test="isSign!=null">
+           and A.isSign = #{isSign}
+        </if>
+        order by A.id desc
+    </select>
+    <select id="getAccountListByProjectCodeAndIsSignV116" resultType="java.util.Map">
+        select
+        A.id as id,
+        A.projectName as projectName,
+        A.closingTime as closingTime,
+        A.type as type,
+        A.totalAmount as totalAmount,
+        A.workerCount as workerCount,
+        A.isSign as isSign,
+        A.rewardAmount as rewardAmount,
+        A.punishAmount as punishAmount
+        from (
+        SELECT
+        a.id AS id,
+        pm.project_name AS projectName,
+        a.closing_time AS closingTime,
+        a.type AS type,
+        SUM(ad.pay_amuont) AS totalAmount,
+        COUNT(1) AS workerCount,
+        if(sum(ad.is_sign)=COUNT(1),1,0) as isSign,
+        ifnull(ad.reward_amount,0) as rewardAmount,
+        ifnull(ad.punish_amount,0) as punishAmount
+        FROM
+        buss_account a
+        LEFT JOIN buss_project_master pm ON a.project_code = pm.project_code
+        LEFT JOIN buss_account_detail ad ON a.id = ad.account_id
+        join (select
+        tm.team_sys_no
+        from sys_user su
+        left join buss_worker_master wm on su.phone=wm.cell_phone
+        left join buss_team_member tm on tm.id_card_number=wm.id_card_number and tm.id_card_type=wm.id_card_type
+        where su.id=#{id} and tm.team_worker_type=0) T on T.team_sys_no=a.team_sys_no
+        where 1=1
+        <if test="teamSysNo!=null and teamSysNo!=''">
+            and a.team_sys_no=#{teamSysNo}
+        </if>
+        GROUP BY
+        a.id
+        ) A
+        where 1=1
+        <if test="isSign!=null">
+           and A.isSign = #{isSign}
+        </if>
+        order by A.id desc
+        limit #{pn},#{ps}
+    </select>
+
+    <select id="getWorkerMateList" resultType="Map">
+        select
+        tm.team_sys_no as teamSysNo,
+        tm.id_card_type as idCardType,
+        tm.id_card_number  AS idCardNumber ,
+        wm.worker_name as workerName,
+        wm.head_image as headImage,
+        ifnull(AA.closing_time,'1970-01-01') as lastTime,
+        d.name  as workerType,
+        ifnull(wk.amount,0) as price,
+        wk.organization_code as organizationCode,
+        <choose>
+            <when test="closeTime!=null  and   closeTime!=''">
+                ifnull(sum(ddr.time <![CDATA[>=]]>  ifnull(AA.closing_time,'1970-01-01')  and  ddr.time  <![CDATA[<=]]> CONCAT(#{closeTime}," 23:59:59")),0) as recordDay
+            </when>
+            <otherwise>
+                ifnull(sum(left(ddr.time ,7)=LEFT(#{payMonth},7)),0)  as recordDay
+            </otherwise>
+        </choose>
+        from buss_team_member tm
+        LEFT JOIN buss_project_worker bpw ON bpw.team_sys_no = tm.team_sys_no AND bpw.id_card_type = tm.id_card_type AND bpw.id_card_number = tm.id_card_number AND bpw.is_del = 0
+        left join buss_team_master  ts on tm.team_sys_no=ts.team_sys_no
+        left join  buss_worker_master  wm   on   tm.id_card_type = wm.id_card_type and   tm.id_card_number=wm.id_card_number
+        left join  sys_dict   d   on   bpw.work_type_code=d.num  and  d.pid= (select id from sys_dict where name='工种字典数据' and num = 0)
+        left  join buss_work_kind  wk  on   wk.num= d.num  and  wk.`status`=1   and  ts.organization_code=wk.organization_code
+        left join  (
+        select max(bt.closing_time) AS closing_time,bad.id_card_type,bad.id_card_number
+        from buss_account bt
+        LEFT JOIN  buss_account_detail  bad  on bt.id=bad.account_id
+        where bt.is_del=0  and bt.team_sys_no=#{projectCode}
+        GROUP BY bad.id_card_type,bad.id_card_number
+        ) AA  on AA.id_card_type=tm.id_card_type  and AA.id_card_number=tm.id_card_number
+        LEFT JOIN (select time, id_card_type , id_card_number from buss_device_record where team_sys_no = #{projectCode}  group by id_card_type,id_card_number,left(time,10)) ddr ON ddr.id_card_type = tm.id_card_type
+        AND ddr.id_card_number = tm.id_card_number
+        where  tm.is_del=0
+        and  tm.team_sys_no=#{projectCode}
+        GROUP BY tm.id_card_type,tm.id_card_number
+    </select>
+
+    <select id="v116GetWorkerMateList" resultType="Map">
+        select
+        tm.team_sys_no as teamSysNo,
+        tm.id_card_type as idCardType,
+        tm.id_card_number  AS idCardNumber ,
+        wm.worker_name as workerName,
+        wm.head_image as headImage,
+        ifnull(AA.closing_time,'1970-01-01') as lastTime,
+        d.name  as workerType,
+        ifnull(wk.amount,0) as price,
+        wk.organization_code as organizationCode,
+        <choose>
+            <when test="closeTime!=null  and   closeTime!=''">
+                ifnull((select count(DISTINCT DATE_FORMAT(ddr.time ,'%Y-%m-%d'))  from buss_device_record ddr where
+                ddr.id_card_type=wm.id_card_type  and  ddr.id_card_number=wm.id_card_number and ddr.team_sys_no = #{projectCode}
+                and  ddr.time <![CDATA[>=]]>  ifnull(AA.closing_time,'1970-01-01')  and  ddr.time  <![CDATA[<=]]> CONCAT(#{closeTime}," 23:59:59") ),0)     as recordDay
+            </when>
+            <otherwise>
+                ifnull((select count(DISTINCT DATE_FORMAT(ddr.time ,'%Y-%m-%d'))  from buss_device_record ddr where
+                ddr.id_card_type=tm.id_card_type  and  ddr.id_card_number=wm.id_card_number AND ddr.team_sys_no = #{projectCode}
+                and  DATE_FORMAT(ddr.time ,'%Y-%m')= LEFT(#{payMonth},7)),0) as recordDay
+
+            </otherwise>
+        </choose>
+        from buss_team_member tm
+        LEFT JOIN buss_project_worker bpw ON bpw.team_sys_no = tm.team_sys_no AND bpw.id_card_type = tm.id_card_type AND bpw.id_card_number = tm.id_card_number AND bpw.is_del = 0
+        left join buss_team_master  ts on tm.team_sys_no=ts.team_sys_no
+        left join  buss_worker_master  wm   on   tm.id_card_type = wm.id_card_type and   tm.id_card_number=wm.id_card_number
+        left join  sys_dict   d   on   bpw.work_type_code=d.num  and  d.pid= (select id from sys_dict where name='工种字典数据' and num = 0)
+        left  join buss_work_kind  wk  on   wk.num= d.num  and  wk.`status`=1   and  ts.organization_code=wk.organization_code
+        left join buss_device_record dr  on  dr.id_card_type = wm.id_card_type and   dr.id_card_number=wm.id_card_number
+        left join  (
+        select max(bt.closing_time) AS closing_time,bad.id_card_type,bad.id_card_number
+        from buss_account bt
+        LEFT JOIN  buss_account_detail  bad  on bt.id=bad.account_id
+        where bt.is_del=0  and bt.team_sys_no=#{projectCode}
+        GROUP BY bad.id_card_type,bad.id_card_number
+        ) AA  on AA.id_card_type=tm.id_card_type  and AA.id_card_number=tm.id_card_number
+        where  tm.is_del=0
+        and  tm.team_sys_no=#{projectCode}
+        GROUP BY tm.id_card_type,tm.id_card_number
+        limit #{index},#{pageSize}
+    </select>
+
+    <select id="getWorkerMateListByMonth" resultType="com.xywg.admin.modular.wages.model.AccountDetailDto">
+        SELECT
+        wm.worker_name as workerName,
+        wm.id_card_number as idCardNumber,
+        wm.id_card_type as idCardType,
+        wm.head_image as headImage,
+        count(DISTINCT(DATE_FORMAT(dr.time,"%Y-%M-%D")))
+        from buss_team_member tm
+        left join buss_worker_master wm on tm.id_card_number=wm.id_card_number and tm.id_card_type=wm.id_card_type
+        left join buss_device_record dr on dr.id_card_number=tm.id_card_number and dr.id_card_type=tm.id_card_type and dr.team_sys_no=tm.team_sys_no and dr.time<![CDATA[<=]]>#{start} and dr.time<![CDATA[<=]]>#{end}
+        where tm.team_sys_no=#{projectCode}
+        GROUP BY tm.id_card_number,tm.id_card_type
+    </select>
+    <update id="updateTypeAndAmount" parameterType="Long">
+        UPDATE buss_account
+        SET type = 1
+        , total_amount = (
+        SELECT
+        SUM(pay_amuont)
+        FROM
+        buss_account_detail
+        WHERE
+        account_id = #{id}
+        )
+        where id=#{id}
+    </update>
+
+    <!--获取字典表中的单位-->
+    <select id="getUnit" resultType="com.xywg.admin.modular.system.model.Dict" parameterType="String">
+        select
+        num as num,
+        name as name
+        from sys_dict
+        where pid =(select id from sys_dict where name=#{name})
+    </select>
+
+    <!--计工单选择列表-->
+    <select id="getAccountSelectList" resultType="Map">
+select
+a.id as id,
+count(ad.id) as workerCount,
+ifnull(sum(ad.pay_amuont),0) as totalAmount,
+pm.project_name as projectName,
+if(sum(ad.is_sign)=count(ad.id),1,0) as isSign,
+a.closing_time as closingTime
+from buss_account a
+left join buss_account_detail ad on ad.account_id=a.id
+left join buss_project_master pm on pm.project_code=a.project_code
+where a.team_sys_no=#{teamSysNo} AND
+a.salary_id is null
+group by a.id
+    </select>
+
+    <!--计工单选择列表-->
+    <select id="v116GetAccountSelectList" resultType="Map">
+        select
+        a.id as id,
+        count(ad.id) as workerCount,
+        ifnull(sum(ad.pay_amuont),0) as totalAmount,
+        pm.project_name as projectName,
+        if(sum(ad.is_sign)=count(ad.id),1,0) as isSign,
+        a.closing_time as closingTime
+        from buss_account a
+        left join buss_account_detail ad on ad.account_id=a.id
+        left join buss_project_master pm on pm.project_code=a.project_code
+        where a.team_sys_no=#{teamSysNo} AND
+        a.salary_id is null
+        group by a.id
+        limit #{index},#{pageSize}
+    </select>
+
+    <update id="updateSalaryIdWhenDeletePayRoll">
+        UPDATE
+        buss_account
+        SET
+        salary_id = NULL
+        WHERE
+        FIND_IN_SET(salary_id,#{ids})
+    </update>
+</mapper>

@@ -1,0 +1,65 @@
+@layout("/common/_container.html"){
+<link rel="stylesheet" href="${ctxPath}/static/js/plugins/layui/css/layui.css"  media="all">
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="userInfoForm">
+
+            <input type="hidden" id="id" value="" />
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="account" name="账户" underline="true" requiredFlag="true"  maxlength="45" />
+                    <#input id="name" name="姓名"  requiredFlag="true" underline="true" maxlength="45" />
+                    <#input id="citySel" name="部门"  requiredFlag="true" underline="true" readonly="readonly" hidden="deptid"
+                            clickFun="UserInfoDlg.showDeptSelectTree(); return false;" style="background-color: #ffffff !important;"/>
+                    <#input id="phone" name="电话"  maxlength="45" />
+                    <#input id="password" name="密码" underline="true" type="password"  requiredFlag="true" maxlength="45" autocomplete="new-password" />
+                    <#input id="rePassword" name="确认密码"  requiredFlag="true"   type="password" underline="true" autocomplete="new-password" maxlength="45" />
+                    <div class="form-group" style="margin-left: 40px;" >
+                        <label style="color: red">企业级:</label>
+                        <input type="checkbox" name="isEnterprise" id="isEnterprise" value="UserIsAdministratorAccount" checked/>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div id="driverInfoContent">
+                        <#select id="validStatus" name="时间类型" underline="true" requiredFlag="true" >
+                            <option value=''>请选择</option>
+                            @for(item in dictValidStatus){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select>
+                        <#input id="startTime" name="有效期起" underline="true" disabled="true" />
+                        <#input id="endTime" name="有效期止" underline="true" disabled="true"/>
+                        <#select id="sex" name="性别" underline="true">
+                            @for(item in dictSex){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select>
+                        <#input id="birthday" name="出生日期" underline="true" />
+                        <#input id="email" name="邮箱" type="email" maxlength="45" autocomplete="new-password" />
+                        <#input id="roleid" name="角色" underline="true" disabled="disabled"  autocomplete="off"/>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 这是部门选择的下拉框 -->
+        <div id="menuContent" class="menuContent" style="display: none; position: absolute; z-index: 200;">
+            <ul id="treeDemo" class="ztree tree-box" style="width: 249px !important;"></ul>
+        </div>
+
+        <div class="row btn-group-m-t">
+            <div class="col-sm-12" style="text-align:center;margin-top: 20px">
+                <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="UserInfoDlg.addSubmit()"/>
+                <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="UserInfoDlg.close()"/>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+<script src="${ctxPath}/static/js/plugins/layui/layui.js" charset="utf-8"></script>
+<script src="${ctxPath}/static/modular/system/user/user_info.js"></script>
+@}

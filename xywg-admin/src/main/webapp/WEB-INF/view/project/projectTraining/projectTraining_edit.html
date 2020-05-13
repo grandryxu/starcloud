@@ -1,0 +1,40 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" value="${item.id}" underline="true"/>
+                            <#input id="projectCode" name="项目编号" value="${item.projectCode}" underline="true"/>
+                            <#input id="trainingTime" name="培训时间" value="${item.trainingTime}" underline="true"/>
+                            <#input id="trainingDuration" name="培训时长" value="${item.trainingDuration}" underline="true"/>
+                            <#input id="trainingName" name="课程名称" value="${item.trainingName}" underline="true"/>
+                            <#input id="trainingTypeCode" name="培训类型 参见项目培训类型字典表" value="${item.trainingTypeCode}" underline="true"/>
+                            <#input id="trainer" name="培训人" value="${item.trainer}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="description" name="培训简述" value="${item.description}" underline="true"/>
+                            <#input id="createDate" name="添加人" value="${item.createDate}" underline="true"/>
+                            <#input id="createUser" name="添加时间" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" value="${item.isDel}" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectTrainingInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectTrainingInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectTraining/projectTraining_info.js"></script>
+@}

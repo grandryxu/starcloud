@@ -1,0 +1,86 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+<style type="text/css">
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+    }
+
+    #workAttendanceBaiduMap {
+        height: 500px;
+        width: 100%;
+    }
+
+    .fn-div .chosen-container {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* 百度地图label与bootstrap样式冲突 */
+    #workAttendanceBaiduMap label{
+        max-width:none;
+        border-radius: 2px;
+        padding: 2px;
+    }
+
+    .divcss5{width:500px}
+
+
+    #divcss6{margin:0 auto;border:1px solid #ffffff;width:400px;height:200px}
+</style>
+<div class="ibox float-e-margins">
+    <div class="tabs-container">
+        <div class="tab-content">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal" id="ProjectMasterInfoForm">
+                            <input hidden id="id" value="${id}">
+                            <div id="divcss6" class="divcss5">
+                                <#input id="items" name="评分项" value="${items}" underline="true" requiredFlag="true" disabled="disabled" />
+                             <!--   <#input id="type" name="评分类型" value="${type}" underline="true" />-->
+
+                                <div class="form-group has-feedback">
+                                    <label class="col-sm-3 control-label">
+                                        <text style="color: red">*</text>
+                                        评分类型
+                                    </label>
+                                    <!-- !search-chosen-->
+                                    <div class="col-sm-9 fn-div" style="display: inline-block;width:75%;padding-bottom: 0;">
+                                        <select class="fn-input search-chosen" id="type"
+                                                name="generalContractorName">
+                                            <option value="">请选择</option>
+                                            <option value="单选">单选</option>
+                                            <option value="范围">范围</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <#input id="max" name="分值上限" value="${max}"  underline="true" />
+                            </div>
+
+                            <div class="row btn-group-m-t operation">
+                                <div class="col-sm-12 tac-sss button-ta-r">
+                                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterInfoDlg.editSubmit()"/>
+                                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterInfoDlg.close()"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+            <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=G8Gd8tZvStagwsAL6HX01acf93BenlEk"></script>\
+            <!--<script src="${ctxPath}/static/modular/system/user/user_info.js"></script>-->
+            <!--<script src="${ctxPath}/static/modular/longxin/projectMaster/projectMaster_info.js"></script>
+            <script src="${ctxPath}/static/modular/project/projectMaster/projectSubContractor.js"></script>-->
+            <script src="${ctxPath}/static/modular/longxin/evaluate/evaluate_add.js"></script>
+            @}

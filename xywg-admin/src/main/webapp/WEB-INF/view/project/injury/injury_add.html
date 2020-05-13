@@ -1,0 +1,45 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="injuryForm" novalidate="novalidate">
+            <div class="row">
+                <div class="col-sm-6 porject-sss-898">
+                    <#select_sjf id="projectCode" name="项目" underline="false"  requiredFlag="true">
+                        <option value=''>请选择</option>
+                        @for(item in project){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="teamSysNo" name="班组" underline="false"  requiredFlag="true" onchange="InjuryInfoDlg.teamOnChange()">
+                        <option value=''>请选择</option>
+                    </#select_sjf>
+                    <#select_sjf id="teamWorker" name="班组工人" underline="false"  requiredFlag="true">
+                        <option value=''>请选择</option>
+                    </#select_sjf>
+                </div>
+                <div class="col-sm-6">
+                    <#input_sjf id="occureTime" name="发生时间" underline="true"  requiredFlag="true" type="datetime"/>
+                    <#select_sjf id="type" name="类型" underline="false"  requiredFlag="true">
+                        <option value=''>请选择</option>
+                        @for(item in types){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                </div>
+
+            </div>
+            <div class="row input-textarea remark1">
+                <#textarea_sjf id="remark" name="备注" underline="false"/>
+            </div>
+            <div class="row" style="padding-top:20px;">
+                <div class="col-sm-12" style="text-align: center;">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="InjuryInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="InjuryInfoDlg.close()"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/injury/injury_info.js"></script>
+@}

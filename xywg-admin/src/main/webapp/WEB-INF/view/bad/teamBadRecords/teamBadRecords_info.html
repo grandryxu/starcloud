@@ -1,0 +1,60 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="${item.id}">
+            <div class="row">
+             <div class="col-sm-6">
+                            <input id="id" type = "hidden"name="" value="${item.id}" underline="true"/>
+                           <!--  <#select_sjf id="teamId" name="班组名称" underline="true" requiredFlag="true" disabled="true">
+	                             @for(i in teams){
+		                             @if(i.teamSysNo==item.teamSysNo){
+		                             	<option value="${i.id}" selected>${i.teamName}</option>
+		                             @}else{
+		                             	<option value="${i.id}">${i.teamName}</option>
+		                             @}                           
+	                             @}
+                            </#select_sjf>    -->
+                            <#input_sjf id="teamName" name="班组名称 " value="${item.teamName}" underline="true" disabled="true"/>
+                            <#input_sjf id="teamLeader" name="班组长" value="${item.teamLeader}" underline="true" disabled="true"/>
+                            <#input_sjf id="teamSysNo" name="班组编号 " value="${item.teamSysNo}" underline="true" disabled="true"/>
+                            <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" underline="true" disabled="true"/>
+                            <#input_sjf id="companyName" name="所属单位" value="${item.companyName}" underline="true" disabled="true"/>
+                            <input id="projectCode" type = "hidden" value="${item.projectCode}" underline="true"/>
+                            <#select_sjf id="badRecordTypeCode" name="事件类别" underline="true" disabled="true">
+                             @if(item.badRecordTypeCode == '' || item.badRecordTypeCode == null){
+                            	<option value=''>请选择</option>
+                             @}
+                             @for(i in dictBadRecordTypeCode){
+	                              @if(i.num==parseInt(item.badRecordTypeCode)){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{  
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf> 
+                            
+                </div>
+                <div class="col-sm-6">
+                            <#select_sjf id="badRecordLevelType" name="事件级别" underline="true" disabled="true">
+	                            @if(item.badRecordLevelType == '' || item.badRecordLevelType == null){
+	                            	<option value=''>请选择</option>
+	                             @}
+	                             @for(i in dictBadRecordLevelType){
+		                              @if(i.num==item.badRecordLevelType){
+		                              	<option value="${i.num}" selected>${i.name}</option>
+		                              @}else{
+		                              	<option value="${i.num}">${i.name}</option>
+		                              @}
+		                            @}
+                            </#select_sjf>                       
+                           
+                            <#input_sjf id="occurrenceDate" name="发生时间" value ="${item.occurrenceDate}" underline="true" 
+                             clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" disabled="true"/>
+                            <#textarea_sjf id="reason" name="不良记录原因" value="${item.reason}" underline="true" disabled="true"/>
+                </div>
+            </div>     
+        </div>
+    </div>
+</div>
+@}

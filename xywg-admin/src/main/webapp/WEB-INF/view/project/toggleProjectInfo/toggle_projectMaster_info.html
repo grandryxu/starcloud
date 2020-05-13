@@ -1,0 +1,172 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+<style type="text/css">
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+    }
+
+    #container {
+        height: 500px;
+        width: 100%;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目详情</h5>
+            </div>
+            <input type="hidden" id="page" value="ZBXM">
+            <input type="hidden" id="pageType" value="view">
+            <div id="info" data-flag="true" style="display: none;"></div>
+            <div class="tabs-container">
+                <div class="ibox-content">
+                    <div class="form-horizontal">
+
+                        <input type="hidden" id="id" value="${item.id}">
+
+                        <div class="row">
+                            <div class="col-sm-6 b-r">
+                                <#input_sjf id="projectName" name="项目名称" underline="true" requiredFlag="true" value="${item.projectName}" disabled="disabled"/>
+                                <#input_sjf id="projectCode" name="项目编号" underline="true" visible="true" requiredFlag="true" value="${item.projectCode}" disabled="disabled"/>
+                                <#input_sjf id="generalContractorCode" name="承包单位编号" underline="true" disabled="disabled" value="${item.generalContractorCode}" disabled="disabled"/>
+                                <#select_sjf id="isMajorProject" name="重点项目" underline="true" requiredFlag="true" value="${item.isMajorProject}" disabled="disabled">
+                                    @if("0"==""+item.isMajorProject){
+                                    <option value="0">否</option>
+                                    @}else{
+                                    <option value="1">是</option>
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="ownerName" name="建设单位名称" underline="true" requiredFlag="true" value="${item.ownerName}" disabled="disabled"/>
+
+                                <#select_sjf id="projectActivityType" name="项目活动类型" underline="true" requiredFlag="true" value="${item.projectActivityType}" disabled="disabled">
+                                    @for(i in projectActivityType){
+                                    @if(""+i.num==""+item.projectActivityType){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="builderLicenceNum" name="施工许可证编号" underline="true" requiredFlag="true" value="${item.builderLicenceNum}" disabled="disabled"/>
+                                <#input_sjf id="buildingArea" name="建筑面积(平方米)" underline="true" value="${item.buildingArea}" disabled="disabled"/>
+                                <#input_sjf id="address" name="详细地址" underline="true"  value="${item.address}" disabled="disabled"/>
+                                <#select_sjf id="deviceType" name="考勤类型" underline="true" disabled="disabled">
+                                    @for(i in deviceType){
+                                    @if(""+i.num==""+item.deviceType){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="startDate" name="开工时间" underline="true"  disabled="disabled" value="${item.startDate}"/>
+                                <#input_sjf id="projectSource" name="项目来源" underline="true" value="${item.projectSource}" disabled="disabled"/>
+                            </div>
+
+                            <div class="col-sm-6">
+
+                                <!--<div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="input-group" style="width: 300px;">
+                                            <text style="color:red;">*</text>
+                                            承包商名称
+                                            <input type="text" class="form-control" disabled="disabled"  id="generalContractorName" autocomplete="off" value="${item.generalContractorName}">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-white dropdown-toggle" data-toggle="">
+                                                    <span>搜索</span>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-right" role="menu"
+                                                    style="padding-top: 0px; max-height: 375px; max-width: 800px; overflow: auto; width: auto; transition: 0.3s; left: -267px; right: auto; min-width: 300px;">
+
+                                                </ul>
+                                            </div>
+                                            &lt;!&ndash; /btn-group &ndash;&gt;
+                                        </div>
+                                    </div>
+                                </div>-->
+                                <#input_sjf id="generalContractorName" name="承包商名称" underline="true" requiredFlag="true" disabled="disabled" value="${item.generalContractorName}"/>
+                                <#input_sjf id="contractorOrgCode" name="组织机构代码" underline="true" requiredFlag="true" disabled="disabled" value="${item.contractorOrgCode}"/>
+                                <#select_sjf id="projectCategory" name="项目分类" underline="true"  requiredFlag="true" value="${item.projectCategory}" disabled="disabled">
+                                    @for(i in projectCategory){
+                                    @if(""+i.num==""+item.projectCategory){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="buildCorporationCode" name="社会信用代码" underline="true" requiredFlag="true" disabled="disabled" value="${item.buildCorporationCode}"/>
+                                <#input_sjf id="areaName" name="项目所在地" requiredFlag="true" value="${item.areaName}" disabled="disabled"/>
+                                <#input_sjf id="totalContractAmt" name="承包合同额(万元)" underline="true" requiredFlag="true" value="${item.totalContractAmt}" disabled="disabled"/>
+                                <#input_sjf id="completeDate" name="竣工时间" underline="true" type="date"  disabled="disabled" requiredFlag="true" value="${item.completeDate}"/>
+                                <#select_sjf id="projectStatus" name="项目状态" underline="true" requiredFlag="true"  disabled="disabled">
+                                    @for(i in projectStatus){
+                                    @if(""+i.num==item.projectStatus){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="radius" name="考勤范围" underline="true" value="${item.radius}" disabled="disabled"/>
+                                <#input_sjf id="lng" name="经度" underline="true" value="${item.lng}" disabled="disabled"/>
+                                <#input_sjf id="lat" name="纬度" underline="true" value="${item.lat}" disabled="disabled"/>
+                            </div>
+                        </div>
+
+                        <div id="container">
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+    </div>
+</div>
+
+
+<style>
+    .ap-container .ap-title {
+        height: 40px;
+        line-height: 40px;
+        background-color: #f9f9f9;
+        border: #EEE solid 1px;
+        padding: 0 25px;
+    }
+
+    .ap-container .ap-content {
+        min-height: 400px;
+        border: #EEE solid 1px;
+        border-top: none;
+        padding: 25px;
+    }
+
+    .ap-container .ap-add {工人不良记录
+            班组不良记录
+        width: 40px;
+        text-align: right;
+        float: right;
+        font-size: 24px;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .span-but {
+        padding: 0 5px;
+        cursor: pointer;
+    }
+</style>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=G8Gd8tZvStagwsAL6HX01acf93BenlEk"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster_info.js"></script>
+@}

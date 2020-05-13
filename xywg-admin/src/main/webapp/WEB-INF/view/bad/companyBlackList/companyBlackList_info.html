@@ -1,0 +1,43 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="page" value="view"/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <input type="hidden" id="type" value="3">
+                    <!-- <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" disabled="true" underline="true"/> -->
+                    <#input_sjf id="companyName" name="企业名称" value="${item.companyName}" disabled="true" underline="true"/>
+                    <#input_sjf  id="socialCreditNumber" name="社会信用代码" value="${item.organizationCode}" underline="true" disabled="true"/>
+                    <#input_sjf  id="occurrenceDate" name="发生时间" value="${item.occurrenceDate}" underline="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" disabled="true"/>
+
+                    <#select_sjf id="validStatus" name="时间类型" underline="true" disabled="true" >
+                        @for(i in dictValidStatus){
+                        @if(i.num==item.validStatus){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+
+                    <#input_sjf id="startTime" name="有效期起" value="${item.startTime}" underline="true" disabled="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                    <#input_sjf id="endTime" name="有效期止" value="${item.endTime}" underline="true"  disabled="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <#textarea_sjf  id="blackReason" name="黑名单原因" value="${item.blackReason}" disabled="true"/>
+                    <#textarea_sjf  id="note" name="备注信息" value="${item.note}" underline="false" disabled="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/companyBlackList/companyBlackList_info.js"></script>
+@}

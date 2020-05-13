@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.AppealMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.Appeal">
+        <result column="id" property="id" />
+        <result column="evaluate_id" property="evaluateId" />
+        <result column="type" property="type" />
+        <result column="appeal_reason" property="appealReason" />
+        <result column="is_audit" property="isAudit" />
+        <result column="reject_reason" property="rejectReason" />
+        <result column="audit_user" property="auditUser" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, evaluate_id AS evaluateId, type, appeal_reason AS appealReason, is_audit AS isAudit, reject_reason AS rejectReason, audit_user AS auditUser, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser
+    </sql>
+
+    <select id="selectList" resultType="com.xywg.admin.modular.system.model.AppealVo">
+        SELECT
+           ra.id ,
+           bsc.company_name AS companyName ,
+           bwm.worker_name AS workerName ,
+           rw.recruit_station AS recruitStation,
+           re.evaluate AS evaluate ,
+           re.score AS score ,
+           re.create_date AS evaluateDate ,
+           dict.name AS typeName,
+           ra.appeal_reason AS appealReason ,
+           ra.is_audit AS isAudit,
+           ra.create_date AS appealDate
+        FROM recruit_appeal ra
+        JOIN recruit_evaluate re ON re.id = ra.evaluate_id AND re.is_del = 0
+        JOIN recruit_worker rw ON rw.id = re.recruit_id AND rw.is_del = 0
+        LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code = rw.organization_code AND bsc.is_del = 0
+        LEFT JOIN buss_worker_master bwm ON bwm.cell_phone = re.mobile AND bwm.is_del = 0
+        LEFT JOIN sys_dict dict ON dict.pid = (select id from sys_dict where name='申诉类型' and num = 0) AND dict.num = ra.type
+        WHERE 1=1
+        <if test="map.condition != null and map.condition != ''">
+            AND ((bsc.company_name LIKE CONCAT('%',#{map.condition},'%')) OR  (rw.organization_code LIKE CONCAT('%',#{map.condition},'%')) OR (rw.recruit_station LIKE CONCAT('%',#{map.condition},'%')))
+        </if>
+        <if test="map.type != null and map.type != ''">
+            AND ra.type = #{map.type}
+        </if>
+        <if test="map.startDate != null and map.startDate != ''">
+            AND ra.create_date >= #{map.startDate}
+        </if>
+        <if test="map.endDate != null and map.endDate != ''">
+            AND ra.create_date <![CDATA[<=]]> #{map.endDate}
+        </if>
+        <if test="map.isAudit != null and map.isAudit != ''">
+            AND ra.is_audit = #{map.isAudit}
+        </if>
+        ORDER BY ra.is_audit ASC, ra.id DESC
+    </select>
+
+    <update id="operation">
+        UPDATE recruit_appeal
+        SET is_audit = #{isAudit},
+        reject_reason = #{rejectReason},
+        audit_user = #{auditUser}
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+</mapper>

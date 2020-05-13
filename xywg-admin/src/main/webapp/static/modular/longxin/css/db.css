@@ -1,0 +1,36 @@
+
+.title {
+    width: 100%;
+    color: #505050;
+    word-break: normal;
+    line-height: 150%;
+    outline: 0;
+    font-weight: 700;
+    font-size: 32px;
+}
+.subTitle {
+    font-size: 14px;
+    color: #505050;
+    padding: 10px 0;
+}
+.desc {
+    background-color: rgba(153, 153, 153, 0.1);
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #505050;
+}
+table td {
+    text-align: left;
+    padding: 10px 6px;
+}
+.font14 {
+    font-size: 14px;
+}
+.bgColor {
+    cursor: pointer;
+    color: rgba(42, 130, 228, 1);
+}
+.rowCenter td {
+    text-align: center;
+}

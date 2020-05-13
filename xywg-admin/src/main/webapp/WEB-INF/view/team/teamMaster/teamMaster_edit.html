@@ -1,0 +1,43 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="TeamMasterInfoForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="leaderId" name="leaderId" class="form-control" />
+            <input type="hidden" id="projectCode" name="projectCode" class="form-control" />
+            <div class="row" >
+                <div class="col-sm-3"></div>
+                <div class="col-sm-6">
+                        <#input_sjf id="teamName" name="班组名称" underline="true" value="${item.teamName}" requiredFlag="true" />
+                        <#input_sjf id="companyName" placeholder="参建单位" readonly="true" value="${item.companyName}"  name="参建单位" underline="true"/>
+                        <div class="form-group form-group-sss" style="padding-top:5px;">
+                            <label class="col-sm-3 control-label control-label-sss" style="padding-top:7px;">
+                                班组长:</label>
+                            <div class="col-sm-9 input-search-look">
+                                <input type="text" id="teamLeader" readonly="readonly" value="${item.teamLeader}" name="teamLeader" class="form-control" readonly />
+                                
+                            </div>
+                        </div>
+
+                        <#input_sjf id="contact" placeholder="请填入联系人手机号码" value="${item.contact}"  name="联系手机号码" underline="true" />
+                        <#input_sjf id="teamLeaderIdNumber" placeholder="责任人身份证号码" readonly="true" value="${item.teamLeaderIdNumber}"  name="班组长身份证号码" underline="true"/>
+                        <#textarea_sjf id="note" value="${item.note}" name="备注信息" />
+                </div>
+                <div class="col-sm-3"></div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="TeamMasterInfoDlg.editSubmit()" value="提交"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="TeamMasterInfoDlg.close()"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster_info.js"></script>
+
+
+@}

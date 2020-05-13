@@ -1,0 +1,128 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目信息管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <form class="col-sm-12" id="searchForm">
+                                <div class="clear-float">
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">名称编码</label>
+                                            <input type="text" class="fn-input" id="condition" placeholder="项目名称/项目编码"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">项目状态</label>
+                                            <select class="fn-input" id="projectStatus" name="项目状态">
+                                                <option value="">全部</option>
+                                                @for(item in projectStatus){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-condition">
+                                        <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search()"/>
+                                        <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                        <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                        <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">考勤方式</label>
+                                            <select class="fn-input" id="deviceType" name="考勤方式">
+                                                <option value="">全部</option>
+                                                @for(item in deviceType){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">开工时间</label>
+                                            <div class="fn-datepicker" id="datepicker1">
+                                                <input class="fn-datepicker-input" id="startDate1" name="establishDate"
+                                                       readonly="readonly">
+                                                <span class="">-</span>
+                                                <input class="fn-datepicker-input" id="endDate1" name="establishDate"
+                                                       readonly="readonly">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">竣工时间</label>
+                                            <div class="fn-datepicker" id="datepicker2">
+                                                <input class="fn-datepicker-input" id="startDate2" name="establishDate"
+                                                       readonly="readonly">
+                                                <span class="">-</span>
+                                                <input class="fn-datepicker-input" id="endDate2" name="establishDate"
+                                                       readonly="readonly">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fn-buttons clear-float fn-need-hide">
+                                    <div class="col-sm-4">
+
+                                    </div>
+                                </div>
+                            </form>
+
+
+
+                        </div>
+                        <form method="post" enctype="multipart/form-data" id="form1" >
+                            <input type="file" style="display:none" id="excelFile" name="file" class="form-control"
+                                   multiple
+                                   onchange="fileUpload()">
+                        </form>
+                        <div  id="ProjectMasterTableToolbar" role="group">
+
+                            <#button name="添加" icon="fa-plus" clickFun="ProjectMaster.openAddProjectMaster()"/>
+                            <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterDetail()" space="true"/>
+                            <#button name="删除" icon="fa-remove" clickFun="ProjectMaster.delete()" space="true"/>
+                            <#button name="绑定流程" icon="fa-plus" clickFun="ProjectMaster.openAddProjectFlow()" space="true"/>
+                            @if(shiro.hasPermission("/projectMaster/toggleProjectStatus")){
+                         <!--   <#button name="开工" icon="fa-navicon" clickFun="ProjectMaster.toggleProjectStatus(3)" space="true"/>
+                            <#button name="停工" icon="fa-navicon" clickFun="ProjectMaster.toggleProjectStatus(5)" space="true"/>
+                            <#button name="完工" icon="fa-navicon" clickFun="ProjectMaster.toggleProjectStatus(4)" space="true"/>-->
+                            @}
+                            @if(shiro.hasPermission("/projectMaster/update")){
+                            <#button name="工时设置" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterSetTime()" space="true"/>
+                            @}
+                            <#button name="绑定Mac" icon="fa-plus" clickFun="ProjectMaster.openMac()" space="true"/>
+
+                        </div>
+                        <#table id="ProjectMasterTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function getZbHtml(row) {
+        var str = ''
+       @if(shiro.hasPermission("/lx/tendering")){
+            str += "<a size='2' color='blue' onclick='SubContractor.openAddSubContractor(\"" + row.id + "\")'>管理招标</a>"
+       @}
+        return str;
+    }
+</script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster.js"></script>
+@}

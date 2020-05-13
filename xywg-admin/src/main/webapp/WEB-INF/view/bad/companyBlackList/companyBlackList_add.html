@@ -1,0 +1,64 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="companyBlackListForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <input type="hidden" id="type" value="3">
+                  <!--   <#select_sjf id="projectCode" name="所属项目" underline="true" requiredFlag="true" onchange="CompanyBlackListInfoDlg.projectChangeAndReset();">
+                        <option value=''>请选择</option>
+                        @for(item in projects){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </#select_sjf> -->
+
+                    <div class="form-group form-group-sss">
+                        <label class="col-sm-3 control-label control-label-sss" style="margin-top:-5px;">
+                            <text style="color: red">*</text>
+                            企业名称:</label>
+                        <div class="col-sm-9">
+                            <p class="select-disabled-p">
+                                <select class="input-search-s search-chosen" id="organizationCode" name="企业名称"
+                                        requiredFlag="true">
+                                    <option value=''>请选择</option>
+                                </select>
+                                <span class="select-disabled-block"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <#input_sjf id="socialCreditNumber" name="社会信用代码"  underline="true" disabled="true"/>
+                    <#input_sjf id="occurrenceDate" name="发生时间" underline="true" requiredFlag="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                    <#select_sjf id="validStatus" name="时间类型" underline="true" requiredFlag="true" >
+                        <option value=''>请选择</option>
+                        @for(item in dictValidStatus){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="startTime" name="有效期起" underline="true" requiredFlag="true" disabled="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                    <#input_sjf id="endTime" name="有效期止" underline="true" requiredFlag="true" disabled="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                </div>
+
+                <div class="col-sm-6">
+                    <#textarea_sjf id="blackReason" name="黑名单原因" underline="false" requiredFlag="true"/>
+                    <#textarea_sjf id="note" name="备注信息" underline="false"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="CompanyBlackListInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="CompanyBlackListInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/companyBlackList/companyBlackList_info.js"></script>
+@}

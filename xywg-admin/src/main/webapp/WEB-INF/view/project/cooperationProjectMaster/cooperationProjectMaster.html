@@ -1,0 +1,262 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="tabs-container tabs-container-new">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a id="zyfb" data-toggle="tab" href="#tab-1" aria-expanded="true" onClick="chfun(1)">
+                                专业分包</a>
+                        </li>
+                        <li class="">
+                            <a id="fzyfb" data-toggle="tab" href="#tab-2" aria-expanded="false"
+                               onClick="chfun(2)">非专业分包</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tab-1" class="tab-pane active">
+                            <div class="panel-body">
+                                <div class="ibox-content">
+                                    <div class="row row-lg">
+                                        <div class="col-sm-12 no-before">
+                                            <div class="row">
+                                                <form class="col-sm-12" id="searchForm">
+                                                    <div class="clear-float">
+                                                        <div class="col-sm-4">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">名称编码</label>
+                                                                <input type="text" class="fn-input" id="condition1"
+                                                                       placeholder="项目名称/项目编码"/>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">项目状态</label>
+                                                                <select class="fn-input" id="projectStatus1"
+                                                                        name="项目状态">
+                                                                    <option value="">请选择</option>
+                                                                    @for(item in projectStatus){
+                                                                    <option value="${item.num}">${item.name}</option>
+                                                                    @}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4 fn-condition">
+                                                            <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search1()"/>
+                                                            <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                                            <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                                            <span class="fn-icon fn-down">展开<i
+                                                                    class="fa fa-angle-down"></i></span>
+                                                        </div>
+
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">考勤方式</label>
+                                                                <select class="fn-input" id="deviceType1" name="考勤方式">
+                                                                    <option value="">请选择</option>
+                                                                    @for(item in deviceType){
+                                                                    <option value="${item.num}">${item.name}</option>
+                                                                    @}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">开工时间</label>
+                                                                <div class="fn-datepicker" id="datepicker1">
+                                                                    <input class="fn-datepicker-input" id="startDate11"
+                                                                           name="establishDate" readonly="readonly">
+                                                                    <span class="">-</span>
+                                                                    <input class="fn-datepicker-input" id="endDate11"
+                                                                           name="establishDate" readonly="readonly">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">竣工时间</label>
+                                                                <div class="fn-datepicker" id="datepicker2">
+                                                                    <input class="fn-datepicker-input" id="startDate12"
+                                                                           name="establishDate" readonly="readonly">
+                                                                    <span class="">-</span>
+                                                                    <input class="fn-datepicker-input" id="endDate12"
+                                                                           name="establishDate" readonly="readonly">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="fn-buttons clear-float fn-need-hide">
+                                                        <div class="col-sm-4">
+
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <form method="post" enctype="multipart/form-data" id="form1">
+                                                <input type="file" style="display:none" id="excelFile1"
+                                                       name="file" multiple
+                                                       class="form-control"
+                                                       onchange="fileUpload()">
+                                            </form>
+                                            <!--该模块只有查询功能-->
+                                            <!--<div class="hidden-xs" id="professionProjectTableToolbar" role="group">
+                                                @if(shiro.hasPermission("/projectMaster/update")){
+                                                <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterDetail()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/projectMaster/delete")){
+                                                <#button name="删除" icon="fa-remove" clickFun="ProjectMaster.delete()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/safetyHelmet/list")){
+                                                <#button name="安全帽管理" icon="fa-navicon" clickFun="ProjectMaster.openSafetyHelmetManager()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/device/list")){
+                                                <#button name="考勤机管理" icon="fa-navicon" clickFun="ProjectMaster.openDeviceManager()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/upload/laborContract")){
+                                                <#button name="上传劳动合同" icon="fa-navicon" clickFun="ProjectMaster.uploadLaborContract()" space="true"/>
+                                                @}
+                                            </div>-->
+                                            <#table id="professionProjectTable"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-2" class="tab-pane">
+                            <div class="panel-body">
+                                <div class="ibox-content">
+                                    <div class="row row-lg">
+                                        <div class="col-sm-12 no-before">
+                                            <div class="row">
+                                                <form class="col-sm-12" id="searchForm2">
+                                                    <div class="clear-float">
+
+                                                        <div class="col-sm-4">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">名称编码</label>
+                                                                <input type="text" class="fn-input" id="condition2"
+                                                                       placeholder="名称编码"/>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">项目状态</label>
+                                                                <select class="fn-input" id="projectStatus2"
+                                                                        name="项目状态">
+                                                                    <option value="">请选择</option>
+                                                                    @for(item in projectStatus){
+                                                                    <option value="${item.num}">${item.name}</option>
+                                                                    @}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-sm-4 fn-condition">
+                                                            <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search2()"/>
+                                                            <#reset name="重置" icon="fa-mail-forward" formId="searchForm2"/>
+                                                            <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                                            <span class="fn-icon fn-down">展开<i
+                                                                    class="fa fa-angle-down"></i></span>
+                                                        </div>
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">考勤方式</label>
+                                                                <select class="fn-input" id="deviceType2" name="考勤方式">
+                                                                    <option value="">请选择</option>
+                                                                    @for(item in deviceType){
+                                                                    <option value="${item.num}">${item.name}</option>
+                                                                    @}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">开工时间</label>
+                                                                <div class="fn-datepicker" id="datepicker3">
+                                                                    <input class="fn-datepicker-input" id="startDate21"
+                                                                           name="establishDate" readonly="readonly">
+                                                                    <span class="">-</span>
+                                                                    <input class="fn-datepicker-input" id="endDate21"
+                                                                           name="establishDate" readonly="readonly">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <div class="col-sm-4 fn-need-hide">
+                                                            <div class="fn-div">
+                                                                <label class="fn-label">竣工时间</label>
+                                                                <div class="fn-datepicker" id="datepicker4">
+                                                                    <input class="fn-datepicker-input" id="startDate22"
+                                                                           name="establishDate" readonly="readonly">
+                                                                    <span class="">-</span>
+                                                                    <input class="fn-datepicker-input" id="endDate22"
+                                                                           name="establishDate" readonly="readonly">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="fn-buttons clear-float fn-need-hide">
+                                                        <div class="col-sm-4">
+
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <form method="post" enctype="multipart/form-data" id="form2">
+                                                <input type="file" style="display:none" id="excelFile2" multiple
+                                                       name="file"
+                                                       class="form-control"
+                                                       onchange="fileUpload()">
+                                            </form>
+                                            <!--该模块只有查询功能-->
+                                            <!--<div class="hidden-xs" id="amateurProjectTableToolbar" role="group">
+
+                                                @if(shiro.hasPermission("/projectMaster/update")){
+                                                <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterDetail()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/projectMaster/delete")){
+                                                <#button name="删除" icon="fa-remove" clickFun="ProjectMaster.delete()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/safetyHelmet/list")){
+                                                <#button name="安全帽管理" icon="fa-navicon" clickFun="ProjectMaster.openSafetyHelmetManager()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/device/list")){
+                                                <#button name="考勤机管理" icon="fa-navicon" clickFun="ProjectMaster.openDeviceManager()" space="true"/>
+                                                @}
+                                                @if(shiro.hasPermission("/upload/laborContract")){
+                                                <#button name="上传劳动合同" icon="fa-navicon" clickFun="ProjectMaster.uploadLaborContract()" space="true"/>
+                                                @}
+                                            </div>-->
+                                            <#table id="amateurProjectTable"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/project/cooperationProjectMaster/cooperationProjectMaster.js"></script>
+
+@}

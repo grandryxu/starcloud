@@ -1,0 +1,204 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="tabs-container tabs-container-new">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#companyInfo" aria-expanded="true">企业信息</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#certifications" aria-expanded="false">企业资质</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#projectHistory" aria-expanded="false">项目记录</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#badHistory" aria-expanded="false">参建单位不良记录</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#employee" aria-expanded="false">从业人员列表</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="companyInfo" class="tab-pane active">
+                    <div class="panel-body">
+                        <div class="ibox-content">
+                            <div class="form-horizontal">
+
+                                <input type="hidden" id="id" value="${item.id}">
+
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <#input_sjf id="companyName" name="企业名称" value="${item.companyName}" underline="false" disabled="disabled"/>
+                                        <#select_sjf id="organizationType" name="单位性质" underline="false" value="${item.organizationType}" disabled="disabled">
+                                            @if(isNotEmpty(item.organizationType)){
+                                            @for(i in organizationType){
+                                            @if(i.num+""==item.organizationType+""){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <div class="form-group form-group-sss" style="padding:6px 0;">
+                                            <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                                                <text></text>是否三证合一:
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <div class="radio radio-info2 radio-inline">
+                                                    <input type="radio" id="inlineRadio1" value="1" name="radio" >
+                                                    <label for="inlineRadio1"> 是</label>
+                                                </div>
+
+                                                <div class="radio radio-info2 radio-inline">
+                                                    <input type="radio" id="inlineRadio2" value="2" name="radio" >
+                                                    <label for="inlineRadio2"> 否</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <#input_sjf id="organizationCode" parentId="pOrganizationCode" name="组织机构编号" value="${item.organizationCode}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="socialCreditNumber" parentId="pSocialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="bizRegisterCode" parentId="pBizRegisterCode" name="营业执照注册号" value="${item.bizRegisterCode}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="areaName" name=" 注册地区" value="${item.areaName}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="address" name="营业地址" value="${item.address}" underline="false" disabled="disabled"/>
+                                        <#select_sjf id="economicNature" name="企业经济性质"  underline="false" disabled="disabled">
+                                            <option value="">请选择</option>
+                                            @for(i in economicNature){
+                                            @if(i.num==item.economicNature){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <#input_sjf id="zipCode" name="邮政编码" value="${item.zipCode}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="false" disabled="disabled"/>
+                                        <div class="form-group form-group-sss" style="padding:6px 0;">
+                                            <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                                                <text style="color: red">*</text>实名制同步
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <div class="radio radio-info2 radio-inline">
+                                                    <input type="radio" id="inlineRadio4" value="1" name="isSynchro"
+                                                           @if(item.isSynchro==1){
+                                                           checked
+                                                           @}
+                                                           disabled
+                                                    >
+                                                    <label for="inlineRadio4"> 是</label>
+                                                </div>
+
+                                                <div class="radio radio-info2 radio-inline">
+                                                    <input type="radio" id="inlineRadio3" value="0" name="isSynchro"
+                                                           @if(item.isSynchro==0){
+                                                           checked
+                                                           @}
+                                                           disabled
+                                                    >
+                                                    <label for="inlineRadio3"> 否</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <#input_sjf id="representativeName" name="法人" value="${item.representativeName}" underline="false" disabled="disabled"/>
+                                        <#select_sjf id="representativeIdcardType" name="法人证件类型" underline="false" disabled="disabled">
+                                            @for(i in representativeIdcardType){
+                                            @if(i.num+""==item.representativeIdcardType+""){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <#input_sjf id="representativeIdcardNumber" name="法人证件号码" value="${item.representativeIdcardNumber}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="email" name="企业联系邮箱" value="${item.email}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="false" disabled="disabled"/>
+                                        <#select_sjf id="enterpriseMarketType" name="企业市域类别"  underline="false" disabled="disabled">
+                                           <option value="">请选择</option>
+                                            @for(i in enterpriseMarketType){
+                                            @if(i.num==item.enterpriseMarketType){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <#input_sjf id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="false"  disabled="disabled"/>
+                                        <#select_sjf id="capitalCurrency" name="币种"  underline="false" disabled="disabled">
+                                            @for(i in capitalCurrency){
+                                            @if(""+i.num==item.capitalCurrency){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <#input_sjf id="establishDate" name="成立日期" value="${item.establishDate}" underline="false" disabled="disabled"/>
+                                        <#input_sjf id="phoneNumber" name="办公电话" value="${item.phoneNumber}"  disabled="disabled"/>
+                                        <#select_sjf id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="false" disabled="disabled">
+                                            @for(i in businessStatus){
+                                            @if(i.num+""==item.businessStatus+""){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                            @}
+                                        </#select_sjf>
+                                        <#textarea_sjf id="memo" name="企业备注" value="${item.memo}" underline="false" disabled="disabled"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="certifications" class="tab-pane">
+                    <div class="panel-body">
+
+                        <div class="col-sm-12">
+                            <div  id="" role="group">
+                            <!--<#button name="删除" icon="fa-remove" clickFun="SubContractorCertifications.delete()" space="true"/>-->
+                            </div>
+                            <#table id="SubContractorCertificationsTable"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="projectHistory" class="tab-pane">
+                    <div class="panel-body">
+                        <div class="col-sm-12">
+                            <#table id="ProjectSubContractorTable"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="badHistory" class="tab-pane">
+                    <div class="panel-body">
+                        <div class="col-sm-12">
+                            <#table id="CompanyBadRecordsTable"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="employee" class="tab-pane">
+                    <div class="panel-body">
+                        <div class="col-sm-12">
+                            <#table id="EmployeeMasterTable"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="${ctxPath}/static/modular/company/subContractor/subContractor_info.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/subContractorCertifications.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/projectSubContractor.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/companyBadRecords.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/employeeMaster.js"></script>
+@}

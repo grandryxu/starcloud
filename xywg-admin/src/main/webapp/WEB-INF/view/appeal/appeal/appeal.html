@@ -1,0 +1,86 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>申诉管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">搜索</label>
+                                        <input type="text" class="fn-input" id="condition" placeholder="企业名称/社会信用码/招聘主题" />
+                                    </div>
+                                </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">申诉类型</label>
+                                            <select class="fn-input" id="type" name="申诉类型" >
+                                                <option value="">全部</option>
+                                                @for(item in type){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-condition">
+                                        <#button name="搜索" icon="fa-search" clickFun="Appeal.search()"/>
+                                        <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                        <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                        <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">申诉时间</label>
+                                            <div class="fn-datepicker" id="datepicker">
+                                                <input class="fn-datepicker-input" id="startDate" name="establishDate" readonly="readonly">
+                                                <span class="">-</span>
+                                                <input class="fn-datepicker-input" id="endDate" name="establishDate" readonly="readonly">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">状态</label>
+                                            <select class="fn-input" id="isAudit" name="状态" >
+                                                <option value="">全部</option>
+                                                <option value="0">待审核</option>
+                                                <option value="1">通过</option>
+                                                <option value="2">驳回</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+                        <div  id="AppealTableToolbar" role="group">
+                            <#button name="通过" icon="fa-check" clickFun="Appeal.operation(1)"/>
+                            <#button name="驳回" icon="fa-remove" clickFun="Appeal.operation(2)" space="true"/>
+                        </div>
+                        <#table id="AppealTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<!-- 星星 -->
+<link href="/static/js/plugins/bootstrapStarRating/css/star-rating.css" media="all" rel="stylesheet" type="text/css" />
+<script src="/static/js/plugins/bootstrapStarRating/js/star-rating.js" type="text/javascript"></script>
+<script src="${ctxPath}/static/modular/appeal/appeal/appeal.js"></script>
+@}

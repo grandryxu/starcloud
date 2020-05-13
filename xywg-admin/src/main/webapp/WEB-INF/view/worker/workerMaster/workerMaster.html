@@ -1,0 +1,152 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>工人管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" onsubmit="return false;">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">查询</label>
+                                        <input type="text" class="fn-input" id="key" placeholder="姓名/证件号" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                            <option value="">选择项目</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="WorkerMaster.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">工种</label>
+                                        <select class="fn-input" id="workTypeCode" name="工种" >
+                                            <option value="">全部</option>
+                                            @for(item in dictWorkTypeCode){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">年龄区间</label>
+                                        <select class="fn-input" id="age" name="年龄区间" >
+                                            <option value="">全部</option>
+                                            @for(item in dictAge){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">籍贯</label>
+                                        <!-- !!!!!!!!!!!!!!!!! search-chosen-->
+                                        <select class="fn-input" id="birthPlaceCode" name="籍贯" >
+                                            <option value="">全部</option>
+                                            @for(item in birthPlaceCode){
+                                            <option value="${item.id}">${item.shortname}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">性别</label>
+                                        <select class="fn-input" id="gender" name="性别" >
+                                            <option value="">全部</option>
+                                            @for(item in dictGender){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">学历</label>
+                                        <select class="fn-input" id="cultureLevelType" name="学历" >
+                                            <option value="">全部</option>
+                                            @for(item in dictCultureLevelType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">是否删除</label>
+                                        <select class="fn-input" id="isDel" name="是否删除" >
+                                            <option value="">全部  </option>
+                                            <option value="0">否</option>
+                                            <option value="1">是</option>
+                                        </select>
+                                    </div>
+                                </div> -->
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+                        <!--<input type="text" id="deptId">-->
+                        <input type="file" style="display:none" id="excelFile" name="excelFile" class="form-control"
+                               onchange="fileUpload()">
+                        <div  id="WorkerMasterTableToolbar" role="group">
+                            @if(shiro.hasPermission("/workerMaster/add")){
+                            <#button name="添加" icon="fa-plus" clickFun="WorkerMaster.openAddWorkerMaster()"/>
+                            @}
+                            @if(shiro.hasPermission("/workerMaster/update")){
+                            <#button name="修改" icon="fa-edit" clickFun="WorkerMaster.openWorkerMasterDetail()"/>
+                            @}
+
+                            @if(shiro.hasPermission("/workerMaster/download")){
+                            <#button name="导出" icon="fa-download" clickFun="WorkerMaster.download()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/workerMaster/excelUpload")){
+                            <#button name="导入" icon="fa-upload" clickFun="WorkerMaster.selectFile()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/workerMaster/mouldDownload")){
+                            <#button name="下载模板" icon="fa-download" clickFun="WorkerMaster.mouldDownload()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="WorkerMasterTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/dept/selectCompany.js"></script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/worker/workerMaster/workerMaster.js"></script>
+
+@}

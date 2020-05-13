@@ -1,0 +1,62 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="subConCerForm">
+
+            <input type="hidden" id="id" value="">
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#select_sjf id="organizationCode" name="公司名称" underline="true" requiredFlag="true">
+                    <option value="">请选择</option>
+                    @for(item in companys){
+                    <option value="${item.socialCreditNumber}">${item.companyName}</option>
+                    @}
+                </#select_sjf>
+
+                <#input_sjf id="certificationName" name="证书名称" underline="true" requiredFlag="true"/>
+                <#input_sjf id="certificationCode" name="证书编号" underline="true" requiredFlag="true"/>
+                <#input_sjf id="validBeginDate" name="证书有效时间(起)" underline="true" requiredFlag="true"/>
+                <#input_sjf id="validEndDate" name="证书有效时间(止)" underline="true" requiredFlag="true"/>
+
+
+        </div>
+
+        <div class="col-sm-6">
+            <#select_sjf id="certificationType" name="证书类型" underline="true" requiredFlag="true">
+            <option value="">请选择</option>
+            @for(item in certificationType){
+            <option value="${item.num}">${item.name}</option>
+            @}
+        </#select_sjf>
+            <#select_sjf id="qualificationStatus" name="资质状态" underline="true" requiredFlag="true">
+            <option value="">请选择</option>
+            @for(item in qualificationStatus){
+            <option value="${item.num}">${item.name}</option>
+            @}
+        </#select_sjf>
+
+
+
+        <#select_sjf id="certificationStatus" name="资质证书状态" underline="true" requiredFlag="true">
+        <option value="">请选择</option>
+        @for(item in certificationStatus){
+        <option value="${item.num}">${item.name}</option>
+        @}
+    </#select_sjf>
+    <#input_sjf id="grantOrg" name="发证机关" requiredFlag="true" requiredFlag="true"/>
+    <#input id="recentValidDate" name="最近发放日期" underline="true"/>
+</div>
+</div>
+
+<div class="row btn-group-m-t">
+    <div class="col-sm-12 button-ta-r">
+        <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SubContractorCertificationsInfoDlg.addSubmit()"/>
+        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SubContractorCertificationsInfoDlg.close()"/>
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+<script src="${ctxPath}/static/modular/company/subContractorCertifications/subContractorCertifications_info.js"></script>
+@}

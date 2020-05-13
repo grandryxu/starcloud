@@ -1,0 +1,26 @@
+package com.xywg.admin.modular.zr.service;
+
+
+/**
+ * <p>
+ * 中如接口
+ * </p>
+ *
+ * @author jln
+ */
+public interface IZrInterfaceService {
+
+	boolean SendCompanyInfo(String stoken);
+
+	void SendProjectInfo(String stoken);
+
+	void SendDeviceInfo(String stoken);
+
+	void SendUserInfo(String stoken);
+
+	void SendAttendance(String stoken);
+
+	void SendInjuryInfo(String stoken);
+
+   
+}

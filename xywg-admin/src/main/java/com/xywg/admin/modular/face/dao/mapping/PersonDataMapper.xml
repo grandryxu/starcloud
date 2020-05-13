@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.face.dao.PersonDataMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.face.model.PersonData">
+        <id column="id" property="id" />
+        <result column="device_sn" property="deviceSn" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="user_Name" property="userName" />
+        <result column="uid" property="uid" />
+        <result column="alg_version" property="algVersion" />
+        <result column="tx_face" property="txFace" />
+        <result column="createDate" property="createDate" />
+        <result column="type" property="type" />
+        <result column="ocv_version" property="ocvVersion" />
+        <result column="ocv_face" property="ocvFace" />
+        <result column="img_path" property="imgPath" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, device_sn AS deviceSn, id_card_type AS idCardType, id_card_number AS idCardNumber, user_Name AS userName, uid, alg_version AS algVersion, tx_face AS txFace, createDate, type, ocv_version AS ocvVersion, ocv_face AS ocvFace, img_path AS imgPath
+    </sql>
+
+	<!-- 删除人脸模型 -->
+	<delete id="deletePersonData" >
+		delete from buss_person_data 
+		where id_card_number = #{w.idCardNumber} and id_card_type = #{w.idCardType} and type=1
+	</delete>
+	
+	<!-- 新增人脸模型 -->
+	<insert id="savePersonData">
+		insert into buss_person_data(
+			id_card_number,
+			id_card_type,
+			createDate,
+			type,
+			img_path
+		)values(
+			#{w.idCardNumber},
+			#{w.idCardType},
+			now(),
+			1,
+			#{w.face}
+		)
+	</insert>
+	
+	<!-- 删除模板 -->
+    <delete id="deleteData">
+        DELETE FROM buss_person_data WHERE id_card_type = #{wm.idCardType} AND id_card_number = #{wm.idCardNumber} and
+        <choose>
+            <when test="a !=null">
+                alg_version = #{a}
+            </when>
+            <otherwise>
+                alg_version is null
+            </otherwise>
+        </choose>
+        AND type = 0<!-- 考勤机 -->
+    </delete>
+    
+    <!-- 保存用户模板 -->
+    <insert id="create" parameterType="com.xywg.admin.modular.face.model.PersonData">
+        INSERT INTO buss_person_data (id_card_type,id_card_number,user_Name, device_sn,
+         tx_face, alg_version, createDate,type)
+        VALUES
+        (#{p.idCardType},#{p.idCardNumber},#{p.userName}, #{p.deviceSn}, #{p.txFace}, #{p.algVersion}, now(),0)
+    </insert>
+</mapper>

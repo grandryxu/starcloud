@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.message.dao.MessageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.message.model.Message">
+        <id column="id" property="id" />
+        <result column="project_code" property="projectCode" />
+        <result column="team_sys_no" property="teamSysNo" />
+        <result column="send_id" property="sendId" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="receive_id" property="receiveId" />
+        <result column="type" property="type" />
+        <result column="content" property="content" />
+        <result column="send_time" property="sendTime" />
+        <result column="is_read" property="isRead" />
+        <result column="read_time" property="readTime" />
+        <result column="kind" property="kind" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, team_sys_no AS teamSysNo, send_id AS sendId, id_card_type AS idCardType, id_card_number AS idCardNumber, receive_id AS receiveId, type, content, send_time AS sendTime, is_read AS isRead, read_time AS readTime, kind
+    </sql>
+    <!--查询未读消息数 -->
+    <select id="getUnreadCount" resultType="com.xywg.admin.modular.message.model.Message">
+        select
+        id
+        from buss_message
+        where receive_id=#{receiveId}
+        and is_read=0
+        and type%2=0
+    </select>
+    <!--根据id删除消息-->
+    <delete id="del">
+        delete
+        from buss_message
+        where id=#{id}
+    </delete>
+
+    <!--根据id把未读改为已读-->
+    <update id="changeIsRead" parameterType="Integer">
+        update buss_message
+        set is_read=1
+        where id=#{id}
+    </update>
+    <!--根据id查询消息-->
+    <select id="getMessageById" resultType="com.xywg.admin.modular.message.model.Message" parameterType="Integer">
+        select
+        project_code as projectCode,
+        team_sys_no as teamSysNo,
+        id_card_type as idCardType,
+        id_card_number as idCardNumber,
+        send_id as sendId,
+        receive_id as receiveId
+        from buss_message
+        where id=#{id}
+    </select>
+
+    <insert id="createMessage" parameterType="com.xywg.admin.modular.message.model.Message">
+        insert into buss_message
+        (
+        project_code,
+        team_sys_no,
+        id_card_type,
+        id_card_number,
+        type,
+        content,
+        send_time,
+        is_read,
+        kind,
+        send_id,
+        receive_id,
+        equipment
+        )VALUES (
+        #{projectCode},
+        #{teamSysNo},
+        #{idCardType},
+        #{idCardNumber},
+        #{type},
+        #{content},
+        now(),
+        #{isRead},
+        #{kind},
+        #{sendId},
+        #{receiveId},
+        #{equipment}
+        )
+    </insert>
+
+    <select id="getMessageList" resultType="Map">
+        select
+        wm.worker_name as sendName,
+        m.type as type,
+        m.content as content,
+        m.id
+        from buss_message m
+        left join sys_user su on m.send_id=su.id and su.status !=3
+        left join buss_worker_master wm on su.phone=wm.cell_phone and  wm.is_del=0
+        JOIN buss_team_master btm ON btm.team_sys_no = m.team_sys_no AND btm.is_del = 0
+        where m.receive_id=#{receiveId}
+        and m.is_read=0
+        order by (m.type%2=0 and m.is_read=0) desc ,m.id desc
+    </select>
+    <select id="getMessageListV116" resultType="Map">
+        select
+        wm.worker_name as sendName,
+        m.type as type,
+        m.content as content,
+        m.id
+        from buss_message m
+        left join sys_user su on m.send_id=su.id and su.status !=3
+        left join buss_worker_master wm on su.phone=wm.cell_phone and  wm.is_del=0
+        JOIN buss_team_master btm ON btm.team_sys_no = m.team_sys_no AND btm.is_del = 0
+        where m.receive_id=#{receiveId}
+        and m.is_read=0
+        order by (m.type%2=0 and m.is_read=0) desc ,m.id desc
+        limit #{pn},#{ps}
+    </select>
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.project.dao.ProjectAddressMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.project.model.ProjectAddress">
+        <id column="id" property="id"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="address" property="address"/>
+        <result column="lng" property="lng"/>
+        <result column="lat" property="lat"/>
+        <result column="radius" property="radius"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, address, lng, lat, radius, create_date AS createDate, create_user AS createUser
+    </sql>
+
+    <select id="selectAddressByProjectCode" resultType="com.xywg.admin.modular.project.model.ProjectAddress">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM buss_project_address
+        WHERE
+        project_code = #{projectCode}
+    </select>
+
+    <delete id="removeAddressWithProjectCode">
+        DELETE FROM
+        buss_project_address
+        WHERE
+        project_code = #{projectCode}
+    </delete>
+
+    <select id="getProjectAddressByToggleDeptId" resultType="com.xywg.admin.modular.project.model.vo.ProjectAddressVo">
+        SELECT
+        bpa.project_code AS projectCode,
+        bpa.address AS address,
+        bpa.lng,
+        bpa.lat,
+        bpm.project_name AS projectName,
+        ifnull( if(p.contractor_type=16,sum(bpw.id IS NOT NULL ),sum(bpw.organization_code in (SELECT
+        social_credit_number FROM sys_dept WHERE id = #{toggleDeptId} OR pids LIKE CONCAT( '%', #{toggleDeptId}, '%'
+        )))) ,0) AS workerNum,
+        if(p.contractor_type=16,0,1) AS cooType
+        FROM
+        ( SELECT id,project_code, address, lng, lat FROM buss_project_address WHERE id IN ( SELECT min( id ) FROM
+        buss_project_address GROUP BY project_code )) bpa
+        JOIN (
+        SELECT
+        bp.project_code,bp.contractor_type
+        FROM
+        buss_project_sub_contractor bp
+        WHERE
+        id IN
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) p ON bpa.project_code = p.project_code
+        JOIN buss_project_master bpm ON bpm.project_code = bpa.project_code AND bpm.is_del = 0
+        LEFT JOIN buss_project_worker bpw ON bpw.project_code = bpa.project_code AND bpw.is_del = 0
+        WHERE
+        bpm.project_status = (select num from sys_dict where name = '在建' and pid = (select id from sys_dict where pid= 0
+        and name = '项目状态'))
+        GROUP BY bpa.id
+    </select>
+    <select id="getProjectAddressByProjectCode" resultType="com.xywg.admin.modular.project.model.ProjectAddress">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM buss_project_address
+        WHERE
+        project_code = #{projectCode}
+    </select>
+    <select id="queryProjectAddressById" resultType="com.xywg.admin.modular.project.model.ProjectAddress">
+    SELECT
+	pa.id AS id,
+	pa.project_code AS projectCode,
+	pa.address AS address,
+	pa.lng AS lng,
+	pa.lat AS lat,
+	pa.radius AS radius,
+	pa.create_date AS createDate,
+	pa.create_user AS createUser
+FROM
+	buss_project_address pa
+LEFT JOIN buss_project_master pm ON pm.project_code = pa.project_code
+WHERE
+    pa.id > #{id}  and  pm.contractor_org_code = #{organizationCode}
+GROUP BY
+	pa.id
+
+    </select>
+
+</mapper>

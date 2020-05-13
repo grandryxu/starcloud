@@ -1,0 +1,54 @@
+@layout("/common/_container.html"){
+<style>
+    #fileNameBtnId{
+        display: none;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="linkValue" value="${item.link}">
+            <input type="hidden" id="typeValue" value="${item.type}">
+            <input type="hidden" id="chooseTypeValue" value="${item.chooseType}">
+            <div class="row">
+                <div class="col-sm-12 b-r">
+                    <#input id="name" name="文件名称" underline="true" value="${item.name}" disabled="disabled" requiredFlag="true"/>
+                    <#select_sjf id="chooseType" name="轮播图类型" underline="true" onchange="showType()" disabled="disabled"  requiredFlag="true">
+                    @if(1==item.chooseType){
+                    <option value="1" selected>轮播图</option>
+                    @}else{
+                    <option value="2" selected>名言警句</option>
+                    @}
+                    </#select_sjf>
+                    <#select_sjf id="type" name="终端" underline="true"  disabled="disabled">
+                    @if(1==item.type){
+                    <option value="1" selected>企业端</option>
+                    <option value="2" >工人端</option>
+                    <option value="3" >pc端</option>
+                    @}
+                    @if(2==item.type){
+                    <option value="1" >企业端</option>
+                    <option value="2"selected >工人端</option>
+                    <option value="3" >pc端</option>
+                    @}
+                    @if(3==item.type){
+                    <option value="1" >企业端</option>
+                    <option value="2" >工人端</option>
+                    <option value="3" selected>pc端</option>
+                    @}
+                    </#select_sjf>
+                    <#textarea_sjf id="motto" name="名言警句" disabled="disabled" value="${item.motto}" underline=" false"/>
+                    <#input id="url" name="连接地址" underline="true" disabled="disabled" value="${item.url}"/>
+                    <#radioIs name="link" label="可用连接" disabled="true"  value="${item.link}"/>
+                    <#textarea_sjf id="note" name="备注" underline=" false" disabled="disabled" value="${item.note}"/>
+                    <#avatar_sjf id="fileName" name="轮播图片" underline="false" avatarImg="${item.fileName}" disabled="disabled" />
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/banner/banner_info.js"></script>
+@}

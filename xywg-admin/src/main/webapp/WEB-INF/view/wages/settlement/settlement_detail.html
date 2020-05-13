@@ -1,0 +1,33 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>结算单明细</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row">
+                    <input  type="hidden"  id="settlementCode" value="${settlementCode}" />
+                    <div class="col-sm-10">
+                        <div class="inline-search-s">
+                            <label class="label-search-s">名称/编号</label>
+                            <input id="workerNameOrCode" name="名称/编号" type="text" underline="true" maxlength="45"  class="input-search-s"/>
+                        </div>
+                        <div class="inline-search-s ">
+                            <label class="label-search-s">工种名称</label>
+                            <input type="text" class="input-search-s"  name="工种名称" id="workerType" maxlength="50"  underline="true"/>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <#button btnCss="info" name="搜索" id="ensure" icon="fa-search" clickFun="SettlementDetail.search()"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <#table id="settlementDetail" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/settlement/settlement_detail.js"></script>
+@}

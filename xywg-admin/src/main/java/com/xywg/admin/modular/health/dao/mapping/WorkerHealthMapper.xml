@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.health.dao.WorkerHealthMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.health.model.WorkerHealth">
+        <id column="id" property="id" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="heart_rate" property="heartRate" />
+        <result column="blood_oxygen" property="bloodOxygen" />
+        <result column="temperature" property="temperature" />
+        <result column="attitude" property="attitude" />
+        <result column="create_date" property="createDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, id_card_type AS idCardType, id_card_number AS idCardNumber, heart_rate AS heartRate, blood_oxygen AS bloodOxygen, temperature, attitude, create_date AS createDate
+    </sql>
+
+	<select id="getNowHealth" resultType="com.xywg.admin.modular.health.model.WorkerHealth">
+        SELECT
+        heart_rate AS heartRate, blood_oxygen AS bloodOxygen, temperature, attitude
+        FROM
+        buss_worker_health
+        WHERE id_card_type = #{idCardType}
+        and id_card_number = #{idCardNumber}
+        and now() != 1
+        order by create_date desc
+        limit 0,1
+    </select>
+    
+    <select id="getHealthListByDate" resultType="com.xywg.admin.modular.health.model.WorkerHealth">
+        SELECT
+        heart_rate AS heartRate, blood_oxygen AS bloodOxygen, temperature, attitude, create_date AS createDate
+        FROM
+        buss_worker_health
+        WHERE id_card_type = #{idCardType}
+        and id_card_number = #{idCardNumber}
+        and left(create_date,10) = #{nowDate}
+        and now() != 1
+        order by create_date desc
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <select id="getLastHealth" resultType="com.xywg.admin.modular.health.model.WorkerHealth">
+        SELECT
+	wh.blood_oxygen AS bloodOxygen,
+	wh.temperature,
+	(CASE `attitude` WHEN 00 THEN '否' ELSE '是' END) attitude
+FROM
+	buss_worker_health AS wh
+WHERE
+	wh.id_card_type = #{idCardType}
+	AND wh.id_card_number = #{idCardNumber}
+ORDER BY
+	wh.id DESC
+	LIMIT 1
+    </select>
+</mapper>

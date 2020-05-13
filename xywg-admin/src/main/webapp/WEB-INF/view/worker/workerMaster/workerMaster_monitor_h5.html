@@ -1,0 +1,120 @@
+@layout("/common/_container.html"){
+<style>
+    .wrapper-content{
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .ibox-content{
+        overflow: hidden;
+        padding:0;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <div class="ibox-content" align="center">
+        <div>
+            <div style="width: 48%; float: left; " align="center">
+                <video id="video" style="width: 320px !important; height: 240px !important;" controls></video>
+            </div>
+            <div style="width: 48%; float: right; height: 245px;" align="center">
+                <div>
+                    <canvas id="canvas" width="320" height="240"></canvas>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 6px;">
+            <div style="width: 48%; float: left; " align="center">
+                <#button btnCss="info" name="拍照" id="capture" icon="fa-check" clickFun=""/>
+            </div>
+            <div style="width: 48%; float: right;" align="center">
+                <#button btnCss="info" name="确定" id="captureOk" icon="fa-check" clickFun=""/>
+            </div>
+        </div>
+    </div>
+</div>
+<script language="JavaScript">
+
+    //访问用户媒体设备的兼容方法
+    function getUserMedia(constraints, success, error) {
+        if (navigator.mediaDevices.getUserMedia) {
+        	//最新的标准API
+            navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);
+        } else if (navigator.webkitGetUserMedia) {
+        	//webkit核心浏览器
+            navigator.webkitGetUserMedia(constraints,success, error)
+        } else if (navigator.mozGetUserMedia) {
+        	//firfox浏览器
+            navigator.mozGetUserMedia(constraints, success, error);
+        } else if (navigator.getUserMedia) {
+        	//旧版API
+            navigator.getUserMedia(constraints, success, error);
+        }
+    }
+
+    function dataURItoBlob(dataURI) {//图片转成Buffer
+        var byteString = atob(dataURI.split(',')[1]);
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], {type: mimeString});
+    }
+
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+
+    function success(stream) {
+    	//兼容webkit核心浏览器
+        let CompatibleURL = window.URL || window.webkitURL;
+        //将视频流设置为video元素的源
+        console.log(stream);
+        //video.src = CompatibleURL.createObjectURL(stream);
+        video.srcObject = stream;
+        video.play();
+    }
+
+    function error(error) {
+        Feng.info('拍照失败');
+    }
+
+    if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+    	//调用用户媒体设备, 访问摄像头
+        getUserMedia({video : {width: 320, height: 240}}, success, error);
+    } else {
+        Feng.info('不支持访问用户媒体');
+    }
+
+    $('#capture').click(function() {
+        context.drawImage(video, 0, 0, 320, 240);
+    });
+
+    $('#captureOk').click(function() {
+        $('#captureOk').attr('disabled','disabled');
+        let src = canvas.toDataURL("image/jpeg");
+        var blob = dataURItoBlob(src);
+        var myform = new FormData();
+        myform.append('file', blob, 'headImg.jpg');
+        $.ajax({
+            url: Feng.ctxPath + "/ftp/upload",
+            type: "POST",
+            data: myform,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                $('#faceImge', window.parent.document).val(data.path);
+                $('#faceImg', window.parent.document).attr('src', canvas.toDataURL("image/jpeg"));
+                window.parent.WorkerMasterInfoDlg.closeMonitor();
+            },
+            error: function () {
+                Feng.error("上传失败!");
+                $('#file').val("");
+                $('#captureOk').removeAttr('disabled');
+            }
+        });
+    });
+</script>
+@}

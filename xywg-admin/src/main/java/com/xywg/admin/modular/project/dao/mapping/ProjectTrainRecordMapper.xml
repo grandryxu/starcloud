@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.project.dao.ProjectTrainRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.project.model.ProjectTrainRecord">
+        <result column="train_id" property="trainId" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        train_id AS trainId, id_card_type AS idCardType, id_card_number AS idCardNumber
+    </sql>
+
+    <insert id="insertProjectRecord">
+        insert into buss_project_train_record
+        (
+        train_id,
+        id_card_number,
+        id_card_type
+        )VALUES
+        <foreach collection="list" item="item" open="(" separator="),(" close=")">
+            #{id},
+            #{item.idCardNumber},
+            #{item.idCardType}
+        </foreach>
+    </insert>
+
+    <!--查询一个人的培训记录-->
+    <select id="getTrainRecordList" resultType="Map">
+        select
+        pm.project_name as projectName,
+        pr.training_time as trainingTime,
+        pr.training_duration as trainingDuration,
+        pr.training_name as trainingName,
+        pr.training_type_code as trainingTypeCode,
+        pr.trainer as trainer,
+        pr.description as description
+        from buss_project_train_record tr
+        left join buss_project_training pr on tr.train_id=pr.id
+        left join buss_project_master pm on pm.project_code=pr.project_code
+        where tr.id_card_number=#{idCardNumber} and tr.id_card_type=#{idCardType}
+        and pr.is_del=0
+        order by pr.id desc
+    </select>
+
+</mapper>

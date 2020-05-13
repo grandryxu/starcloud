@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.VersionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.Version">
+        <id column="id" property="id"/>
+        <result column="phone_type" property="phoneType"/>
+        <result column="kind" property="kind"/>
+        <result column="url" property="url"/>
+        <result column="version" property="version"/>
+        <result column="flag" property="flag"/>
+        <result column="remark" property="remark"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, phone_type AS phoneType, kind, url, version, flag, remark, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser,
+        version_code AS versionCode
+    </sql>
+
+
+    <select id="getVersion" resultMap="BaseResultMap" parameterType="com.xywg.admin.modular.system.model.Version">
+        SELECT
+        <include refid="fieldName"/>
+        from sys_version where 1==1
+
+        <if test=" id != null and  id !='' ">
+            and id=#{id}
+        </if>
+        <if test=" phoneType != null and  phoneType !='' ">
+            and phone_type=#{phoneType}
+        </if>
+        <if test=" kind != null and  kind !='' ">
+            and kind=#{kind}
+        </if>
+        <if test=" version != null and  version !='' ">
+            and version=#{version}
+        </if>
+        <if test=" flag != null and  flag !='' ">
+            and flag=#{flag}
+        </if>
+    </select>
+
+
+
+    <select id="getLatestVersionInfo" resultMap="BaseResultMap" parameterType="com.xywg.admin.modular.system.model.Version">
+        select
+        <include refid="fieldName"/>
+        from sys_version
+        where id =(SELECT MAX(id) from sys_version where phone_type=#{phoneType} and kind=#{kind})
+    </select>
+
+
+    <sql id="fieldName">
+        id, phone_type, kind, url, version, flag, remark
+    </sql>
+
+    <select id="selectList" resultType="com.xywg.admin.modular.system.model.VersionVo">
+      ( SELECT
+            sv.id AS id,
+            sv.phone_type AS phoneType,
+            sv.kind,
+            sv.url,
+            sv.version,
+            sv.flag,
+            sv.remark,
+            sv.create_date AS createDate,
+            sv.create_user AS `createUser`,
+            '1' AS isNew,
+            version_code AS versionCode
+        FROM
+            sys_version sv
+            JOIN ( SELECT max( id ) AS id FROM sys_version GROUP BY phone_type, kind ) new ON new.id = sv.id
+        WHERE
+            1=1
+        <if test="map.phoneType!=null and map.phoneType!=''">
+            AND sv.phone_type = #{map.phoneType}
+        </if>
+        <if test="map.kind!=null and map.kind!=''">
+            AND sv.kind = #{map.kind}
+        </if>
+        ORDER BY
+            sv.create_date DESC
+        ) UNION
+        (
+        SELECT
+            sv.id AS id,
+            sv.phone_type AS phoneType,
+            sv.kind,
+            sv.url,
+            sv.version,
+            sv.flag,
+            sv.remark,
+            sv.create_date AS createDate,
+            sv.create_user AS `createUser`,
+            '0' AS isNew,
+            version_code AS versionCode
+        FROM
+            sys_version sv
+        WHERE
+            id NOT IN ( SELECT max( id ) AS id FROM sys_version GROUP BY phone_type, kind )
+        <if test="map.phoneType!=null and map.phoneType!=''">
+            AND sv.phone_type = #{map.phoneType}
+        </if>
+        <if test="map.kind!=null and map.kind!=''">
+            AND sv.kind = #{map.kind}
+        </if>
+        ORDER BY
+            sv.create_date DESC
+                )
+    </select>
+
+    <select id="selectNewestVersion" resultType="com.xywg.admin.modular.system.model.VersionVo">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM
+        sys_version
+        WHERE
+        id = (SELECT max(id) FROM sys_version WHERE phone_type = #{phoneType} AND kind = #{kind})
+    </select>
+
+    <select id="getVersionByPhone" resultType="com.xywg.admin.modular.system.model.VersionVo">
+        SELECT
+          ifnull(sv.flag,1) as flag,
+          s.url ,
+          s.version_code AS versionCode ,
+          s.version
+        FROM
+        (SELECT version_code,url,version  FROM sys_version WHERE id = (SELECT max(id) FROM sys_version WHERE phone_type = #{phoneType} AND kind = #{kind})) s
+        LEFT JOIN sys_version sv  ON  sv.phone_type = #{phoneType} AND sv.kind = #{kind} AND sv.version = #{version}
+    </select>
+
+    <select id="hasVersion" resultType="com.xywg.admin.modular.system.model.VersionVo">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM
+        sys_version
+        WHERE
+        phone_type = #{phoneType} AND kind = #{kind} AND version_code = #{versionCode}
+    </select>
+
+</mapper>

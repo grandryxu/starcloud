@@ -1,0 +1,65 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <form class="row" id="searchForm">
+                        <div class="clear-float">
+                            <div class="col-sm-4">
+                                <div class="fn-div">
+                                    <label class="fn-label">项目</label>
+                                    <select class="fn-input" id="projectCode" name="项目" onchange="AccountDetailInfoDlg.updateSelectedWorker()">
+                                        <option value="">请选择</option>
+                                        @for(item in project){
+                                        <option value="${item.projectCode}">${item.projectName}</option>
+                                        @}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="fn-div">
+                                    <label class="fn-label">班组</label>
+                                    <select class="fn-input search-chosen" id="team" name="班组" onchange="AccountDetailInfoDlg.updateSelectedWorker()">
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4" style="padding:1px;">
+                                <div class="fn-div">
+                                    <label class="fn-label">截止时间</label>
+                                    <div class="fn-datepicker" id="datepicker">
+                                        <input class="fn-datepicker-input" id="closingTime" name="establishDate" readonly="readonly" style="width: calc(100% - 75px);" onchange="AccountDetailInfoDlg.updateSelectedWorker()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fn-buttons clear-float">
+                                <div class="col-sm-4">
+                                    <#button name="添加工人" icon="fa-plus" clickFun="AccountDetailInfoDlg.openWorkerList()"/>
+                                    <!--<#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>-->
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                    <div  id="accountDetailesToolbar" role="group">
+                        <#button name="批量写计工方式" icon="fa-plus" clickFun="AccountDetailInfoDlg.batchType()" space="true"/>
+                        <#button name="批量写单价" icon="fa-plus" clickFun="AccountDetailInfoDlg.batchPrice()" space="true"/>
+                        <#button name="批量写工时/数量" icon="fa-plus" clickFun="AccountDetailInfoDlg.batchNumber()" space="true"/>
+                        <#button name="移除工人" icon="fa-plus" clickFun="AccountDetailInfoDlg.deleteWorker()" space="true"/>
+                    </div>
+                    <#table id="accountDetailes"/>
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="AccountDetailInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="AccountDetailInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/accountDetail/accountDetail_info.js"></script>
+@}

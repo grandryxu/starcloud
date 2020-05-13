@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.project.dao.ProjectMasterMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="com.xywg.admin.modular.project.model.ProjectMaster">
+		<id column="id" property="id" />
+		<result column="project_code" property="projectCode" />
+		<result column="build_project_code" property="buildProjectCode" />
+		<result column="contractor_org_code" property="contractorOrgCode" />
+		<result column="general_contractor_code" property="generalContractorCode" />
+		<result column="general_contractor_name" property="generalContractorName" />
+		<result column="project_name" property="projectName" />
+		<result column="project_activity_type" property="projectActivityType" />
+		<result column="project_description" property="projectDescription" />
+		<result column="project_category" property="projectCategory" />
+		<result column="is_major_project" property="isMajorProject" />
+		<result column="owner_name" property="ownerName" />
+		<result column="build_corporation_code" property="buildCorporationCode" />
+		<result column="builder_licence_num" property="builderLicenceNum" />
+		<result column="area_code" property="areaCode" />
+		<result column="total_contract_amt" property="totalContractAmt" />
+		<result column="building_area" property="buildingArea" />
+		<result column="start_date" property="startDate" />
+		<result column="complete_date" property="completeDate" />
+		<result column="project_source" property="projectSource" />
+		<result column="project_status" property="projectStatus" />
+		<result column="lng" property="lng" />
+		<result column="lat" property="lat" />
+		<result column="radius" property="radius" />
+		<result column="create_date" property="createDate" />
+		<result column="create_user" property="createUser" />
+		<result column="update_date" property="updateDate" />
+		<result column="update_user" property="updateUser" />
+		<result column="status" property="status" />
+		<result column="is_del" property="isDel" />
+		<result column="device_type" property="deviceType" />
+		<result column="address" property="address" />
+		<result column="virtual_id" property="virtualId" />
+		<result column="contract_no" property="contractNo"/>
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, project_code AS projectCode, build_project_code AS
+		buildProjectCode,
+		contractor_org_code AS contractorOrgCode,
+		general_contractor_code AS
+		generalContractorCode,
+		general_contractor_name AS
+		generalContractorName, project_name AS
+		projectName,
+		project_activity_type AS projectActivityType,
+		project_description AS
+		projectDescription, project_category AS
+		projectCategory,
+		is_major_project AS isMajorProject, owner_name AS
+		ownerName,
+		build_corporation_code AS buildCorporationCode,
+		builder_licence_num AS
+		builderLicenceNum, area_code AS areaCode,
+		total_contract_amt AS
+		totalContractAmt, building_area AS buildingArea,
+		start_date AS
+		startDate, complete_date AS completeDate, project_source
+		AS
+		projectSource, project_status AS projectStatus, lng, lat, radius,
+		create_date AS createDate, create_user AS createUser, update_date AS
+		updateDate, update_user AS updateUser, status, is_del AS isDel,
+		device_type as deviceType,
+		virtual_id as virtualId,
+		is_synchro AS isSynchro,
+		work_time AS workTime,
+		is_watermark as isWatermark
+	</sql>
+
+	<select id="selectById" resultType="Map">
+		SELECT
+		bpm.build_contacts AS buidContacts,
+	bpm.build_phone AS buildPhone,
+	bpm.contractor_leader AS contractorLeader,
+	bpm.contractor_leader_phone AS contractorLeaderPhone,
+	bpm.project_director AS projectDirector,
+	bpm.project_director_phone AS projectDirectorPhone,
+	bpm.is_civilization AS isCivilization,
+	bpm.is_high_grade AS isHighGrade,
+	bpm.is_government AS isGovernment,
+	bpm.person_liable AS personLiable,
+		bpm.id, bpm.project_code AS projectCode, bpm.build_project_code AS
+		buildProjectCode, bpm.contractor_org_code AS
+		contractorOrgCode, bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name AS projectName, bpm.project_activity_type AS
+		projectActivityType,bpm.address,
+		bpm.project_description AS projectDescription, bpm.project_category AS projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode, bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area AS buildingArea,bpm.device_type AS
+		deviceType ,
+		bpm.start_date AS startDate, bpm.complete_date AS completeDate, bpm.project_source
+		AS projectSource, bpm.project_status AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS isDel,
+		CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName ,
+		virtual_id AS virtualId,bpm.is_synchro AS isSynchro
+		FROM
+		buss_project_master bpm
+		LEFT JOIN ref_area ra ON ra.id = bpm.area_code
+		LEFT JOIN ref_area ras ON ras.id = ra.parentid
+		LEFT JOIN ref_area rap
+		ON rap.id = ras.parentid
+		WHERE bpm.id = #{id}
+	</select>
+
+
+	<select id="selectProjectByProjectCode" resultType="Map">
+		SELECT
+		bpm.id, bpm.project_code AS projectCode, bpm.build_project_code AS
+		buildProjectCode, bpm.contractor_org_code AS
+		contractorOrgCode, bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name AS projectName, bpm.project_activity_type AS
+		projectActivityType,bpm.address,
+		bpm.project_description AS projectDescription, bpm.project_category AS projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode, bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area AS buildingArea,bpm.device_type AS
+		deviceType ,
+		bpm.start_date AS startDate, bpm.complete_date AS completeDate, bpm.project_source
+		AS projectSource, bpm.project_status AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS isDel,
+		CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName,virtual_id AS virtualId
+		FROM
+		buss_project_master bpm
+		LEFT JOIN ref_area ra ON ra.id = bpm.area_code
+		LEFT JOIN ref_area ras ON ras.id = ra.parentid
+		LEFT JOIN ref_area rap
+		ON rap.id = ras.parentid
+		WHERE bpm.project_code = #{projectCode}
+	</select>
+
+
+	<select id="list" resultType="Map"
+		parameterType="com.baomidou.mybatisplus.plugins.Page">
+		select
+		bpm.id, bpm.project_code AS projectCode, bpm.build_project_code AS
+		buildProjectCode, bpm.contractor_org_code AS
+		contractorOrgCode, bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name AS projectName, bpm.project_activity_type AS
+		projectActivityType,
+		bpm.project_description AS projectDescription, bpm.project_category AS projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode, bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area AS buildingArea,
+		bpm.start_date AS startDate, bpm.complete_date AS completeDate, bpm.project_source
+		AS projectSource, bpm.project_status AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS isDel,
+		dict_projectCategory.name AS projectCategoryName ,bpm.device_type AS
+		deviceType ,
+		dict_deviceType.name AS deviceTypeName ,
+		A.organization_code AS cOrganizationCode,bsc.company_name AS cCompanyName,
+		bpsc.id AS psId ,COUNT(bfi.id) AS fileNums
+		from buss_project_master bpm
+		LEFT JOIN sys_dict dict_projectCategory ON dict_projectCategory.num =
+		bpm.project_category AND
+		dict_projectCategory.pid = (select id from sys_dict where name='项目分类' and num = 0)
+		LEFT JOIN sys_dict dict_deviceType ON dict_deviceType.num =
+		bpm.device_type AND dict_deviceType.pid = (select id from sys_dict
+		where name='考勤类型' and num = 0)
+		JOIN (SELECT project_code,organization_code FROM
+		buss_project_sub_contractor WHERE
+		contractor_type = 16 AND organization_code IN (
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS NOT NULL
+		AND (
+		id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+		) AND is_del = 0) A ON A.project_code = bpm.project_code
+		LEFT JOIN buss_project_sub_contractor bpsc ON bpsc.project_code =
+		bpm.project_code AND bpsc.organization_code = A.organization_code AND bpsc.is_del = 0
+		LEFT JOIN buss_file_info bfi ON bfi.type = 'buss_project_sub_contractor'
+		AND bfi.relevance_id = bpsc.id
+		LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code =
+		A.organization_code
+		where bpm.is_del=0
+		<if test="map.condition != null  and map.condition != '' ">
+			and ( (bpm.project_code like concat('%',#{map.condition},'%')) or
+			(bpm.project_name like
+			concat('%',#{map.condition},'%')))
+		</if>
+		<if test="map.projectStatus !=null and  map.projectStatus !=''">
+			and bpm.project_status=#{map.projectStatus}
+		</if>
+		<if test="map.deviceType !=null and  map.deviceType !=''">
+			and bpm.device_type=#{map.deviceType}
+		</if>
+		<if test="map.startDate1!=null and  map.startDate1!=''">
+			and bpm.start_date <![CDATA[>=]]>
+			#{map.startDate1}
+		</if>
+		<if test="map.endDate1!=null and  map.endDate1!=''">
+			and bpm.start_date<![CDATA[<=]]>
+			#{map.endDate1}
+		</if>
+		<if test="map.startDate2!=null and  map.startDate2!=''">
+			and bpm.complete_date <![CDATA[>=]]>
+			#{map.startDate2}
+		</if>
+		<if test="map.endDate2!=null and  map.endDate2!=''">
+			and bpm.complete_date<![CDATA[<=]]>
+			#{map.endDate2}
+		</if>
+		<if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+			and 1=2
+		</if>
+		<if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+			and bpm.project_code in
+			<foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY id
+		ORDER BY id DESC
+	</select>
+
+	<select id="getByProjectName" resultType="Map">
+		SELECT
+		<include refid="Base_Column_List" />
+		from buss_project_master
+		where 1=1
+		<if test="projectName!=null and projectName!=''">
+			and project_name like concat ('%',#{projectName},'%')
+		</if>
+	</select>
+
+	<select id="getProjectByProjectCode" resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM buss_project_master
+		WHERE project_code = #{projectCode}
+	</select>
+
+	<update id="toggleProjectStatus">
+		UPDATE buss_project_master
+		SET project_status = #{projectStatus}
+		WHERE
+		id IN
+		<foreach collection="idList" item="item" open="(" separator=","
+			close=")">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 获取我的关注项目列表 yuanyang -->
+	<select id="getFollowProjectList"
+		resultType="com.xywg.admin.modular.project.model.AppProjectMasterDto">
+		select
+		p.project_code as projectCode,
+		p.project_name as
+		projectName,
+		p.owner_name as ownerName,
+		p.area_code as areaCode,
+		p.address,
+		p.project_status as projectStatus,
+		p.start_date as startDate,
+		p.device_type as deviceType,
+		u.is_concern as isConcern,
+		c.contractor_type as projectType,
+		CONCAT(rap.areaname , ras.areaname ,a.areaname) AS area
+		from sys_user_project u
+		left join buss_project_master p on u.project_code=p.project_code and p.`status`=1 and p.is_del=0
+		LEFT JOIN ref_area a ON p.area_code = a.id
+		LEFT JOIN ref_area ras ON ras.id = a.parentid
+		LEFT JOIN ref_area rap ON rap.id = ras.parentid
+		left join buss_project_sub_contractor c on c.project_code = p.project_code  AND c.status=1 and c.is_del=0
+		where u.is_concern=1
+		and u.user_id=#{id}
+		and c.organization_code = #{organizationCode}
+	</select>
+
+	<!-- 获取我的关注项目列表 cw -->
+	<select id="v116GetFollowProjectList"
+			resultType="com.xywg.admin.modular.project.model.AppProjectMasterDto">
+		select
+		p.project_code as projectCode,
+		p.project_name as
+		projectName,
+		p.owner_name as ownerName,
+		p.area_code as areaCode,
+		p.address,
+		p.project_status as projectStatus,
+		p.start_date as startDate,
+		p.device_type as deviceType,
+		u.is_concern as isConcern,
+		c.contractor_type as projectType,
+		CONCAT(rap.areaname , ras.areaname ,a.areaname) AS area
+		from sys_user_project u
+		left join buss_project_master p on u.project_code=p.project_code and p.`status`=1 and p.is_del=0
+		LEFT JOIN ref_area a ON p.area_code = a.id
+		LEFT JOIN ref_area ras ON ras.id = a.parentid
+		LEFT JOIN ref_area rap ON rap.id = ras.parentid
+		left join buss_project_sub_contractor c on c.project_code = p.project_code  AND c.status=1 and c.is_del=0
+		where u.is_concern=1
+		and u.user_id=#{id}
+		and c.organization_code = #{organizationCode}
+		limit #{index},#{pageSize}
+	</select>
+
+	<select id="getList" resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+		select
+		bpm.id, bpm.project_code
+		AS projectCode, bpm.build_project_code AS
+		buildProjectCode,
+		bpm.contractor_org_code AS
+		contractorOrgCode,
+		bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name
+		AS projectName, bpm.project_activity_type AS
+		projectActivityType,
+		bpm.project_description AS projectDescription, bpm.project_category AS
+		projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name
+		AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode,
+		bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS
+		areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area
+		AS buildingArea,
+		bpm.start_date AS startDate, bpm.complete_date AS
+		completeDate, bpm.project_source
+		AS projectSource, bpm.project_status
+		AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS
+		createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS
+		isDel
+		from buss_project_master bpm
+		JOIN (SELECT project_code FROM
+		buss_project_sub_contractor WHERE
+		contractor_type = 16 AND
+		organization_code IN (
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS NOT NULL
+		AND (
+		id = #{map.deptId} OR pids LIKE
+		CONCAT('%[', #{map.deptId},']%') )
+		)) A ON A.project_code =
+		bpm.project_code
+		where bpm.is_del=0
+		GROUP BY id
+	</select>
+
+
+	<!-- 根据登录者id查询所有项目 -->
+	<select id="getProjectsByUserId"
+		resultType="com.xywg.admin.modular.project.model.AppProjectListByPersonVo">
+		SELECT
+		bpm.id AS projectId,
+		bpm.project_code AS projectCode,
+		bpm.project_name AS
+		projectName,
+		bpm.device_type as deviceType ,
+		IFNULL(bpm.lng,0) AS lng,
+		IFNULL(bpm.lat,0) AS lat,
+		IFNULL(bpm.radius,0)AS radius
+		from buss_project_master bpm
+		JOIN (SELECT
+		project_code FROM
+		buss_project_sub_contractor WHERE
+		organization_code IN
+		(
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS
+		NOT NULL
+		AND (
+		id = #{deptid} OR pids LIKE CONCAT('%[', #{deptid},']%')
+		)
+		)) A ON
+		A.project_code = bpm.project_code
+		where bpm.is_del=0
+		GROUP BY id
+
+
+	</select>
+
+	<!-- 根据登录者id查询所有项目 -->
+	<select id="v116GetProjectsByUserId"
+			resultType="com.xywg.admin.modular.project.model.AppProjectListByPersonVo">
+		SELECT
+		bpm.id AS projectId,
+		bpm.project_code AS projectCode,
+		bpm.project_name AS
+		projectName,
+		bpm.device_type as deviceType ,
+		IFNULL(bpm.lng,0) AS lng,
+		IFNULL(bpm.lat,0) AS lat,
+		IFNULL(bpm.radius,0)AS radius
+		from buss_project_master bpm
+		JOIN (SELECT
+		project_code FROM
+		buss_project_sub_contractor WHERE
+		organization_code IN
+		(
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS
+		NOT NULL
+		AND (
+		id = #{deptid} OR pids LIKE CONCAT('%[', #{deptid},']%')
+		)
+		)) A ON
+		A.project_code = bpm.project_code
+		where bpm.is_del=0
+		GROUP BY id
+		limit #{index},#{pageSize}
+	</select>
+	<!--发送项目数据到实名制 -->
+	<select id="getProjectFromLabor" resultType="com.xywg.admin.modular.smz.model.ProjectMo">
+		select
+		bsc.id as comId,
+		bpm.id as projectId,
+		bpm.project_code as projectCode,
+		bpm.build_project_code as buildProjectCode,
+		bpm.contractor_org_code as contractorOrgcode,
+		bpm.general_contractor_code as generalContractorCode,
+		bpm.project_activity_type as projectActivityType,
+		bpm.project_description as projectDescription,
+		bpm.is_major_project as isMajaorProject,
+		bpsc.contractor_type as contractorType,
+		bpsc.entry_time asentryTime,
+		bpsc.exit_time as exitTime,
+		bpsc.bank_name as bankName,
+		bpsc.bank_number as bankLinkNumber,
+		bpsc.pay_mode as payMode,
+		bpsc.pm_idcard_type aspmIdcardType,
+		bpsc.pm_idcard_number as pmIdcardNumber,
+		bpm.project_name as name,
+		bpm.address as address,
+		bpm.start_date as beginDate,
+		bpm.complete_date as endDate,
+		bpm.start_date as start,
+		bpm.complete_date as end,
+		bpm.building_area as buildSize,
+		bpm.total_contract_amt as buildCost,
+		bpsc.pm_name as projectManager,
+		bpm.project_status as projectProgess,
+		bpsc.pm_phone as manPhone,
+		"" as content,
+		bpm.project_category as type,
+		bpm.area_code as area,
+		bpm.lng as lng,
+		bpm.lat as lat,
+		bpm.build_contacts as buildeContractor,
+		bpm.build_phone as buildeContractorphone,
+		bpm.contractor_leader as leader,
+		bpm.contractor_leader_phone as leaderPhone,
+		bpm.project_director as manager,
+		bpm.project_director_phone as managerPhone,
+		bpm.is_civilization as  civilizedProject,
+		bpm.is_high_grade as goodProject,
+		bpm.is_government as governmentProject
+		from buss_project_master bpm
+		left join buss_project_sub_contractor bpsc on
+		bpm.project_code=bpsc.project_code
+		left join buss_sub_contractor bsc on
+		bsc.organization_code=bpsc.organization_code
+		where bpm.is_del = 0 and bpm.is_synchro =1 and bpm.id in
+		<foreach item="ids" collection="list" open="(" separator=","
+			close=")">
+			#{ids}
+		</foreach>
+		<!-- and left(bpm.area_code,4)='3206' -->
+	</select>
+
+	<!-- 获取可手机考勤的在建项目 -->
+	<select id="getOndoingProjectsByUserId" resultType="com.xywg.admin.modular.project.model.AppProjectListByPersonVo">
+		SELECT
+		bpm.id AS projectId,
+		bpm.project_code AS projectCode,
+		bpm.project_name AS
+		projectName,
+		bpm.device_type as deviceType ,
+		IFNULL(bpm.lng,0) AS lng,
+		IFNULL(bpm.lat,0) AS lat,
+		IFNULL(bpm.radius,0)AS radius
+		from
+		buss_project_master bpm
+		JOIN (SELECT project_code FROM
+		buss_project_sub_contractor WHERE
+		organization_code IN (
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS NOT NULL
+		AND (
+		id = #{deptid} OR pids LIKE CONCAT('%[', #{deptid},']%') )
+		)) A ON
+		A.project_code =
+		bpm.project_code
+		where bpm.is_del=0
+		AND bpm.project_status = (SELECT
+		d.num
+		FROM
+		sys_dict AS d
+		WHERE d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.`name` = '项目状态')
+		AND d.`name`='在建')
+		AND bpm.device_type in (1,2,5,6)
+		GROUP BY id
+	</select>
+
+	<!-- 获取可手机考勤的在建项目 -->
+	<select id="v116GetOndoingProjectsByUserId" resultType="com.xywg.admin.modular.project.model.AppProjectListByPersonVo">
+		SELECT
+		bpm.id AS projectId,
+		bpm.project_code AS projectCode,
+		bpm.project_name AS
+		projectName,
+		bpm.device_type as deviceType ,
+		IFNULL(bpm.lng,0) AS lng,
+		IFNULL(bpm.lat,0) AS lat,
+		IFNULL(bpm.radius,0)AS radius
+		from
+		buss_project_master bpm
+		JOIN (SELECT project_code FROM
+		buss_project_sub_contractor WHERE
+		organization_code IN (
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS NOT NULL
+		AND (
+		id = #{deptid} OR pids LIKE CONCAT('%[', #{deptid},']%') )
+		)) A ON
+		A.project_code =
+		bpm.project_code
+		where bpm.is_del=0
+		AND bpm.project_status = (SELECT
+		d.num
+		FROM
+		sys_dict AS d
+		WHERE d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.`name` = '项目状态')
+		AND d.`name`='在建')
+		AND bpm.device_type in (1,2,5,6)
+		GROUP BY id
+		limit #{index},#{pageSize}
+	</select>
+
+
+	<select id="selectProjectMasterByName" resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+		SELECT id FROM buss_project_master WHERE is_del = 0 AND project_name = #{projectName} AND contractor_org_code = #{contractorOrgCode}
+	</select>
+	
+	<select id="getProjectPositionList" resultType="com.xywg.admin.modular.project.model.vo.ProjectPositionVo">
+		SELECT address,IFNULL(lng,0) as lng,IFNULL(lat,0) as lat,IFNULL(radius,0) as radius
+		FROM buss_project_address 
+		WHERE project_code = #{projectCode}
+	</select>
+
+	<!-- 查询已有的虚拟考勤机最大sn -->
+	<select id="selectMaxVirtualDeviceSn" resultType="String">
+		SELECT
+		max(bd.sn)
+		FROM
+		buss_project_master bpm
+		JOIN buss_device bd ON bd.id = bpm.virtual_id
+	</select>
+
+	<update id="setTime">
+		UPDATE buss_project_master
+		SET work_time = #{workTime}
+		WHERE
+		id = #{id}
+	</update>
+
+	<select id="getWorkTimeById" resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+SELECT
+	id,
+	work_time AS workTime,
+	project_name AS projectName,
+	project_Code AS projectCode
+FROM
+	buss_project_master
+WHERE
+	id = #{id}
+	</select>
+	<select id="getRegisterNo" resultType="String">
+		select organization_code from buss_sub_contractor
+		where is_receive = 1
+	</select>
+	<select id="getProjectInfo" resultMap="BaseResultMap">
+	select id ,project_name from project_master
+	where is_receive = 1
+	</select>
+	<select id="getProjectInfoByCor" resultType="String">
+	select CONCAT(project_id,'') as projectId  from smz_cor_project
+	where 
+	project_id > #{maxId,jdbcType=DECIMAL}
+	and register_no = #{registerNo,jdbcType=VARCHAR}
+	<!-- and project_id <![CDATA[ < ]]> 780 -->
+	order by project_id asc
+	</select>
+	<select id="getProjectId" resultType="String">
+	select distinct CONCAT(project_id,'') as projectId  from smz_cor_project
+	where 
+	project_id <![CDATA[ <= ]]> #{maxId,jdbcType=DECIMAL}
+	and register_no = #{registerNo,jdbcType=VARCHAR}
+	order by project_id asc
+	</select>
+	<select id="getListForSetting" parameterType="com.baomidou.mybatisplus.plugins.Page" resultType="java.util.Map">
+		select
+			id,
+			project_code as projectCode,
+			project_name as projectName,
+			is_synchro as isSynchro,
+			is_watermark as isWaterMark,
+			is_receive as isReceive from buss_project_master
+		where status = #{map.status} and is_del = #{map.isDel}
+		<if test="null != map.projectCode and '' != map.projectCode">
+			and project_code = #{map.projectCode}
+		</if>
+		<if test="null != map.isSynchro and '' != map.isSynchro">
+			and is_synchro = #{map.isSynchro}
+		</if>
+		<if test="null != map.isWatermark and '' != map.isWatermark">
+			and is_watermark = #{map.isWatermark}
+		</if>
+		<if test="null != map.isReceive and '' != map.isReceive">
+			and is_receive = #{map.isReceive}
+		</if>
+	</select>
+	
+	<update id="saveForSetting" parameterType="java.util.Map">
+		update buss_project_master set is_synchro = #{isSynchro}, is_watermark = #{isWaterMark}, is_receive = #{isReceive} where id = #{id}
+	</update>
+
+	<select id="getIsReceiveProjectId" resultType="java.util.Map">
+		select tb1.*, bpm.project_code as projectCode, bpm.contractor_org_code as orgCode, bpm.general_contractor_name as orgName from (
+			select distinct scp.project_id id, rsl.lwt_id lwtId from buss_project_master bpm
+			left join buss_sub_contractor bsc on bpm.contractor_org_code = bsc.organization_code
+			left join smz_cor_project scp on bsc.social_credit_number = scp.register_no
+			left join r_smz_lwt rsl on scp.project_id = rsl.smz_id and rsl.table_name = 'Project'
+			where bpm.is_del = 0 <!--and  bpm.status = 1 and bpm.is_receive = 1 --> and bsc.is_del = 0 and bsc.status = 1 and scp.project_id is not null
+		)tb1 left join buss_project_master bpm on tb1.lwtId = bpm.id
+		<!-- where tb1.id = 778 -->
+	</select>
+	<select id="getZrProjectInfo" resultType="Map">
+	SELECT
+		bpm.*, bpsc.contractor_type,
+		bpsc.bank_name,
+		bpsc.bank_number
+	FROM
+		buss_project_master bpm
+	LEFT JOIN buss_project_sub_contractor bpsc ON (
+		bpm.project_code = bpsc.project_code
+		AND bpm.general_contractor_code = bpsc.organization_code
+	)
+	WHERE
+		bpm.general_contractor_code = ''
+	</select>
+</mapper>

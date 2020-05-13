@@ -1,0 +1,105 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>工伤管理管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" style="margin:0;">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">名称</label>
+                                        <input type="text" class="fn-input search-chosen" id="condition" placeholder="工人名称/证件号码"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input search-chosen" id="projectCode" name="选择项目" onchange="Injury.setClass()">
+                                            <option value="">请选择</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="Injury.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input" id="team" name="班组">
+                                            <option value="">请先选择项目</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">类型</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input" id="type" name="类型">
+                                            <option value="">请选择</option>
+                                            @for(item in type){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+
+                        </form>
+                        <input type="file" style="display:none" id="uploadFileInput" name="file" class="form-control"
+                               onchange="fileUpload()">
+                        <div  id="InjuryTableToolbar" role="group">
+                            @if(shiro.hasPermission("/injury/add")){
+                            <#button name="添加" icon="fa-plus" clickFun="Injury.openAddInjury()"/>
+                            @}
+                            @if(shiro.hasPermission("/injury/update")){
+                            <#button name="修改" icon="fa-edit" clickFun="Injury.openInjuryDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/injury/delete")){
+                            <#button name="删除" icon="fa-remove" clickFun="Injury.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="InjuryTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: none" id="accessoryPictureDiv">
+    <div  style="margin: 5px 10px 10px 10px">
+        <#button name="删除" icon="fa-remove" clickFun="deletePicture()"/>
+    </div>
+    <div id="imagesPicture">
+
+
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/project/injury/injury.js"></script>
+@}

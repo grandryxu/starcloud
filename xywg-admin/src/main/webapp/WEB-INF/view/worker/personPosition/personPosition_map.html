@@ -1,0 +1,47 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>人员轨迹回顾</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" onsubmit="return false;">
+                            <div class="clear-float">
+                                <div class="col-sm-8">
+                                    <div class="fn-div">
+                                        <label class="fn-label">时间段</label>
+                                        <div class="fn-datepicker" id="datepicker">
+                                            <input class="fn-datepicker-input" id="startDate" name="establishDate" readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="endDate" name="establishDate" readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="显示轨迹" id="showLine" icon="fa-search" clickFun="getData();"/>
+                                </div>
+                            </div>
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="allmap" style="height:650px; width:100%;float: left;" ></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=nLpN5iKztxIWsPqgwsyrruUG"></script>
+<script type="text/javascript" src="${ctxPath}/static/modular/worker/personPosition/personPosition_map.js"></script>
+<script>
+    var idCardNumber = '${idCardNumber}';
+    var shImei = '${shImei}';
+</script>
+@}

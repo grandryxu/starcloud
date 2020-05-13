@@ -1,0 +1,361 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="workerMasterForm">
+
+            <input type="hidden" id="id" value="">
+            <input type="hidden" id="isEnterprise" value="${isEnterprise}">
+            <input type="hidden" id="isNeedCheck" value=true>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" requiredFlag="true">
+                    @for(item in dictIdCardType){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                </#select_sjf>
+                <#input_sjf id="idCardNumber" name="证件编号" underline="true" requiredFlag="true" />
+                <div style="text-align: right;">
+                    <OBJECT Name="GT2ICROCX" width="0" height="0"
+                            CLASSID="CLSID:220C3AD1-5E9D-4B06-870F-E34662E2DFEA"
+                            CODEBASE="IdrOcx.cab#version=1,0,1,2">
+                    </OBJECT>
+                    <button type="button" id="search" style="visibility: hidden" class="btn btn-white dropdown-toggle" data-toggle="">
+                        <span>搜索</span>
+                    </button>
+
+                    <input type="button" class="btn btn-white dropdown-toggle" style="color: #FFFFFF; background-color: #4680ff" value="读取身份证" onClick="StartRead();">
+                 
+                </div>
+           	 </div>
+            
+               <div class="col-sm-6">
+                    <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                      		
+                    </label>
+                    <div class="col-sm-3">
+                        <img id="fileImg" src="/static/img/avatar1.png" onerror="this.src='/static/img/avatar1.png'" alt="" style="width:102px; height: 102px;">
+                    </div>
+                    <div class="col-sm-3">
+                    <img id="faceImg" src="/static/img/avatar2.png" onerror="this.src='/static/img/avatar2.png'" alt="" style="width:102px; height: 102px;">
+                        
+                        <input type="hidden" id="headImge" value="" />
+                        <input type="hidden" id="faceImge" value="" />
+                        <input type="hidden" id="isFaceImage" value=""/>
+                    </div>
+                    <div class="col-sm-3" style="margin-top: 13px;">
+                    	<#button btnCss="info" name="拍照" id="ensure" icon="fa-check" clickFun="WorkerMasterInfoDlg.openMonitor()"/>
+                    	<input type="file" style="display:none" id="headImgFile" name="headImgFile" class="form-control"
+                               onchange="fileUpload()">
+                        <#button name="上传" icon="fa-check" clickFun="WorkerMasterInfoDlg.uploadHeadImg()"/>
+                    </div>
+                    
+                    
+                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <#select_sjf id="projectCode" name="项目"  underline="true" disabled="disabled" must="${isEnterprise}"
+                onchange="WorkerMasterInfoDlg.projectCodeChange()">
+                <option value="">请选择</option>            
+                @for(i in project){
+                @if(i.projectCode == projectCode){
+                <option value="${i.projectCode}" selected>${i.projectName}</option>
+                @}else{
+                <option value="${i.projectCode}">${i.projectName}</option>
+                @}
+                @}
+            </#select_sjf>
+            <div style='display:none'>
+            <#radioIs id="isTeamLeader" name="isTeamLeader" label="是否为班组老板" disabled="true"
+            onchange=""/>
+            
+            </div>
+            <input type="hidden" id="teamSysNoValue" value="">
+            <!-- <#select_sjf pid="pTeamLeader" id="teamLeader" name="班组老板" underline="true" disabled="disabled" must="${isEnterprise}">
+           		 <option value="">请选择</option>
+		    </#select_sjf> -->
+		    <#select_sjf pid="pTeam" id="team" name="班组" underline="true"  disabled="disabled" visible="true" must="${isEnterprise}" >
+		        <option value="">请选择</option>
+		          
+		    </#select_sjf>
+                <div style="text-align: right;">
+                    <#button id="classNo" name="添加班组" icon="fa-plus" visible="false" clickFun="TeamMaster.openAddTeamMaster()"/>
+
+                </div>
+		    <#input_sjf id="cardNumber" name="门禁卡号" underline="true" disabled="true" visible="false" parentId="pCardNumber"/>
+
+    <!--   <#select_sjf id="teamSysNo" name="班组" underline="true" disabled="disabled">
+          <option value="">请选择</option>
+      </#select_sjf> -->
+
+    <#input_sjf id="workerName" name="姓名" underline="true" requiredFlag="true" disabled="disabled"/>
+    <#input_sjf id="cellPhone" name="手机号码" underline="true" requiredFlag="true" disabled="disabled"/>
+    <#select_sjf id="nation" name="民族" underline="true" requiredFlag="true" disabled="disabled">
+    @for(item in dictNation){
+    <option value="${item.num}">${item.name}</option>
+    @}
+	</#select_sjf>
+	<#input_sjf id="address" name="住址" underline="true" requiredFlag="true" disabled="disabled"/>
+	<#input_sjf id="birthday" name="出生日期" underline="true"  requiredFlag="true" disabled="disabled"/>
+	<#input_sjf id="startTime" name="身份证有效期开始" requiredFlag="true" underline="true" disabled="disabled"/>
+	<#input_sjf id="endTime" name="身份证有效期结束" requiredFlag="true" underline="true" disabled="disabled"/>
+	<#select_sjf id="politicsType" name="政治面貌" underline="true" disabled="disabled">
+	<option value="">请选择</option>
+	@for(item in dictPoliticsType){
+	<option value="${item.num}">${item.name}</option>
+	@}
+	</#select_sjf>
+	<#select_sjf id="cultureLevelType" name="文化程度" underline="true" disabled="disabled">
+	<option value="">请选择</option>
+	@for(item in dictCultureLevelType){
+	<option value="${item.num}">${item.name}</option>
+	@}
+	</#select_sjf>
+	<#input_sjf id="urgentContractName" name="紧急联系人" underline="true" disabled="disabled"/>
+	
+	<#radioIs name="hasBadMedicalHistory" label="有重大病史" disabled="true" />
+</div>
+
+	<div class="col-sm-6">
+    	<#radioSex name="gender" id="gender" label="性别" requiredFlag="true" disabled="true" value="0"/>
+    	<#select_sjf id="birthPlaceCode" name="籍贯" underline="true" requiredFlag="true" disabled="disabled">
+		    <option value="">请选择</option>
+		    @for(item in dictBirthPlaceCode){
+		    <option value="${item.id}">${item.shortname}</option>
+		    @}
+		</#select_sjf>
+		<#select_sjf id="workTypeCode" name="当前工种"  underline="true" requiredFlag="true" disabled="disabled">
+			<option value="">请选择</option>
+			@for(item in dictWorkTypeCode){
+			<option value="${item.num}">${item.name}</option>
+			@}
+		</#select_sjf>
+
+		<#radioIs name="isJoined" label="加入工会" disabled="true"   />
+		<#input_sjf id="joinedTime" name="加入工会时间" underline="true"   disabled="disabled"/>
+		<#input_sjf id="urgentContractCellphone" name="紧急联系人电话" underline="true" disabled="disabled"/>
+		<#input_sjf id="workDate" name="开始工作日期" underline="true"  disabled="disabled"/>
+		<#textarea_sjf id="note" name="备注" underline=" false" disabled="disabled"/>
+		</div>
+	</div>
+</div>
+<div class="progress progress-striped" id="progressTipArea" style="margin-top: 20px;">
+    <div id="progressBar" style="width: 0%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0"
+         role="progressbar" class="progress-bar progress-bar-info">
+    </div>
+</div>
+
+<div class="row btn-group-m-t">
+    <div class="col-sm-12 tac-sss button-ta-r">
+        <#button btnCss="info" name="提交" id="ensure" icon="fa-check"
+        clickFun="WorkerMasterInfoDlg.addSubmit()"/>
+        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerMasterInfoDlg.close()"/>
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerMaster/workerMaster_info.js"></script>
+
+<Script language="JavaScript">
+    //鼠标移出证件号码查询
+    $("#idCardNumber").blur(function(){
+        console.log($("#idCardNumber").val())
+        if ($("#idCardNumber").val().trim() !=""){
+            $("#search").click();
+        }
+
+    });
+    //移出证件号码回车查询
+    $("#idCardNumber").bind("keydown",function(e){
+        var key = e.which;
+        if(key == 13){
+            $("#search").click();
+        }
+    });
+    function MyGetData()//OCX读卡成功后的回调函数
+    {
+    	$("#fileImg").attr("src", "data:image/jpg;base64," + GT2ICROCX.GetPhotoBuffer());
+    	uploadFaceToFtp("data:image/jpg;base64," + GT2ICROCX.GetPhotoBuffer());
+    	$("#team").attr('disabled', false);
+    	$("#projectCode").attr("disabled", false);
+    	$('#team').chosen({search_contains: true, no_results_text: "暂无结果"});
+    	$('#projectCode').chosen({search_contains: true, no_results_text: "暂无结果"});
+        $("input").attr("disabled", false);
+        $("select").attr("disabled", false);
+        $("#note").attr('disabled', false);
+        
+        $("#idCardType").attr('disabled', true);
+        $("#idCardNumber").attr('disabled', true);
+        $("#workerName").attr('disabled', true);
+        $("#isNeedCheck").val(false);
+        
+        var nationNum = this.getNationNum(GT2ICROCX.NationL);
+        $("#idCardType").val(1);
+        $("#idCardNumber").val(GT2ICROCX.CardNo);
+        $("#workerName").val(GT2ICROCX.Name);
+        $("#address").val(GT2ICROCX.Address);
+        $("#nation").val(nationNum);
+        $("#birthPlaceCode").val(GT2ICROCX.CardNo.substring(0, 2) + "0000");
+        $("#birthday").val(GT2ICROCX.Born.substring(0, 4) + "-" + GT2ICROCX.Born.substring(4, 6) + "-" + GT2ICROCX.Born.substring(6));
+        if (GT2ICROCX.Sex == 1 || GT2ICROCX.Sex == "1") {
+            $("#gender").val(0);
+            $("#inlineRadiogender1").prop("checked", "checked");
+        } else {
+            $("#gender").val(1);
+            $("#inlineRadiogender2").prop("checked", "checked");
+        }
+        $("#startTime").val(GT2ICROCX.ActivityLFrom.substring(0, 4) + "-" + GT2ICROCX.ActivityLFrom.substring(4, 6) + "-" + GT2ICROCX.ActivityLFrom.substring(6));
+        if(GT2ICROCX.ActivityLTo === '长期')
+            $("#endTime").val('9999-12-23');
+        else
+            $("#endTime").val(GT2ICROCX.ActivityLTo.substring(0, 4) + "-" + GT2ICROCX.ActivityLTo.substring(4, 6) + "-" + GT2ICROCX.ActivityLTo.substring(6));
+        
+        getDetailsByCardNum();
+       
+        WorkerMasterInfoDlg.validate();
+        
+        
+    }
+
+    /**
+     * 根据证件类型和证件号查询信息
+     */
+    function getDetailsByCardNum() {
+    	var idCardType = $("#idCardType").val();
+        var idCardNumber = $("#idCardNumber").val();
+        $.ajax({
+        	async: false, 
+            url: Feng.ctxPath + "/workerMaster/searchWorker",
+            data: {
+                idCardType: idCardType,
+                idCardNumber: idCardNumber
+            },
+            type: "POST",　　//数据传输方式
+            dataType: "JSON",　　//数据返回的类型
+            success: function (data) {
+            	if (data.length == 1) {
+            		$("#cellPhone").val(data[0].cellPhone);
+            		$("#workTypeCode").val(data[0].workTypeCode);	
+            		$('#workTypeCode').chosen({search_contains: true, no_results_text: "暂无结果"});
+            		$("#faceImge").val(data[0].face);
+            		$("#faceImg").attr('src',data[0].face != ''?'/labor/'+data[0].face:'/static/img/avatar2.png');
+            	}
+            	
+            }
+        }
+    );
+        
+    }
+
+    function getNationNum(var1) {
+        var num = 1;
+        $.ajax({
+                url: Feng.ctxPath + "/workerMaster/getNationNum",
+                async: false,
+                data: {
+                    nationName: var1
+                },
+                type: "POST",　　//数据传输方式
+                dataType: "JSON",　　//数据返回的类型
+                success: function (data) {
+                    num = data.num;
+                }
+            }
+        );
+        return num;
+    }
+
+    function MyClearData()//OCX读卡失败后的回调函数
+    {
+        $("#idCardType").val(1);
+        $("#idCardNumber").val("");
+        $("#workerName").val("");
+        $("#address").val("");
+        $("#nation").val("");
+        $("#birthPlaceCode").val("");
+        $("#birthday").val("");
+        $("#gender").val(0);
+        $("#inlineRadiogender1").prop("checked", "checked");
+        $("#cardNumber").val("");
+        $("#startTime").val("");
+        $("#endTime").val("");
+    }
+
+    function MyGetErrMsg()//OCX读卡消息回调函数
+    {
+        Status.value = GT2ICROCX.ErrMsg;
+    }
+
+    function StartRead()//开始读卡
+    {
+        //GT2ICROCX.PhotoPath = "c:"
+
+        // GT2ICROCX.Start() //循环读卡
+
+        //单次读卡(点击一次读一次)
+
+        if (GT2ICROCX.GetState() == 0){
+        	GT2ICROCX.ReadCard()
+        }
+    }
+
+    function print()//打印
+    {
+        GT2ICROCX.PrintFaceImage(0, 30, 10)//0 双面，1 正面，2 反面
+    }
+    
+    
+    function uploadFaceToFtp(e) {
+        var blob = dataURItoBlob(e);
+        var myform = new FormData();
+        myform.append('file', blob, 'headImg.jpg');
+        $.ajax({
+            url: Feng.ctxPath + "/ftp/upload",
+            type: "POST",
+            data: myform,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                $('#headImge').val(data.path);
+            },
+            error: function () {
+                Feng.error("上传失败!");
+            }
+        });
+    }
+    
+    
+    function dataURItoBlob(dataURI) {//图片转成Buffer
+        var byteString = atob(dataURI.split(',')[1]);
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], {type: mimeString});
+    }
+
+
+</Script>
+
+<SCRIPT LANGUAGE=javascript FOR=GT2ICROCX EVENT=GetData>//设置回调函数
+MyGetData()
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=GT2ICROCX EVENT=GetErrMsg>//设置回调函数
+MyGetErrMsg()
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=GT2ICROCX EVENT=ClearData>//设置回调函数
+MyClearData()
+</SCRIPT>
+<!-- 2019-5-15 人员画面增加添加班组按钮 -->
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/addMember.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMember.js"></script>
+@}

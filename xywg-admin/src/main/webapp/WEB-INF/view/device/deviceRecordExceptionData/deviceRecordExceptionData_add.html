@@ -1,0 +1,55 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="主键id" underline="true"/>
+                            <#input id="organizationCode" name="所属企业组织机构代码" underline="true"/>
+                            <#input id="projectCode" name="项目id" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号 外部系统与平台对接创建班组后，由系统返回该编号" underline="true"/>
+                            <#input id="deviceSn" name="考勤机" underline="true"/>
+                            <#input id="idCardType" name="" underline="true"/>
+                            <#input id="idCardNumber" name="" underline="true"/>
+                            <#input id="idCard" name="身份证" underline="true"/>
+                            <#input id="deviceId" name="考勤机" underline="true"/>
+                            <#input id="shId" name="安全帽id" underline="true"/>
+                            <#input id="time" name="考勤时间" underline="true"/>
+                            <#input id="type" name="类型0：补考勤 1：正常" underline="true"/>
+                            <#input id="photo" name="照片地址" underline="true"/>
+                            <#input id="lng" name="经度"/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="lat" name="纬度" underline="true"/>
+                            <#input id="source" name="来源1：手环 2：安全帽 3：考勤机 4:手机考勤" underline="true"/>
+                            <#input id="createDate" name="添加人" underline="true"/>
+                            <#input id="createUser" name="添加时间" underline="true"/>
+                            <#input id="updateDate" name="修改时间" underline="true"/>
+                            <#input id="updateUser" name="修改人" underline="true"/>
+                            <#input id="status" name="是否可用 1：是 -1：删除" underline="true"/>
+                            <#input id="remark" name="备注" underline="true"/>
+                            <#input id="exceptionType" name="异常类型：1=注册人不在项目中，2=考勤人不在项目中，3=禁用时考勤数据" underline="true"/>
+                            <#input id="txFace" name="人脸模板" underline="true"/>
+                            <#input id="algVersion" name="" underline="true"/>
+                            <#input id="personDataType" name="" underline="true"/>
+                            <#input id="deviceType" name="考勤类型，3 上班 4下班" underline="true"/>
+                            <#input id="userName" name="" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceRecordExceptionDataInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceRecordExceptionDataInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/device/deviceRecordExceptionData/deviceRecordExceptionData_info.js"></script>
+@}

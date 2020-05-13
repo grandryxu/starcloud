@@ -1,0 +1,72 @@
+@layout("/common/_container.html"){
+<style>
+    #headImageBtnId {
+        display: none;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <div class="tabs-container">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#uploadFile" aria-expanded="false">上传附件</a>
+            </li>
+
+        </ul>
+            <div id="uploadFile" class="tab-pane">
+            <input type="hidden" id="pwId" value="${pwId}" />
+                <div class="panel-body">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-content">
+                            <div class="row row-lg">
+                                <div class="col-sm-12 no-before">
+                                    <div class="hidden" id="uploadContent">
+                                        <div style="margin-top: 20px;">
+                                            <div class="form-group form-group-sss row" style="width: 100%">
+                                                <label class="col-sm-3 control-label control-label-sss">
+                                                    <text style="color: red">*</text>   标签:</label>
+                                                <div class="col-sm-9">
+                                                    <select class="form-control form-control-sss" id="tagType"
+                                                            name="tagType" style="margin: 0">
+                                                        @for(i in tagType){
+                                                        <option value="${i.num}">${i.name}</option>
+                                                        @}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group form-group-sss row"
+                                                 style="width: 100%;margin-top: 20px;">
+                                                <label class="col-sm-3 control-label control-label-sss">
+                                                    <text style="color: red">*</text>
+                                                 		   合同文件:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="file" id="tagFile" name="file"
+                                                           class="form-control">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                     <div id="uploadFileTableToolbar" role="group">
+                                        @if(shiro.hasPermission("/contractFile/add")){
+                                        <#button name="上传" icon="fa-upload" clickFun="uploadFile.selectFile()"/>
+                                        @}
+                                         <#button name="修改标签" icon="fa-update" clickFun="uploadFile.updates()"/>
+                                        @if(shiro.hasPermission("/contractFile/delete")){
+                                        <#button name="删除" icon="fa-upload" clickFun="uploadFile.deletes()"/>
+                                        @}
+                                    </div> 
+                                    <#table id="uploadFileTable"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerMaster/uploadFile_info.js"></script>
+@}

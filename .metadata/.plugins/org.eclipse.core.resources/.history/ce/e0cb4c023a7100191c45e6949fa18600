@@ -1,0 +1,20 @@
+package com.xywg.admin.modular.zr.service;
+
+import com.baomidou.mybatisplus.plugins.Page;
+import com.xywg.admin.modular.smz.dao.IfaLaborMapper;
+import com.xywg.admin.modular.smz.model.IfaLabor;
+import com.xywg.admin.modular.smz.service.IfaLaborService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @Description:
+ * @Author jln
+ */
+@Service
+public abstract class ZrInterfaceServiceImpl implements IZrInterfaceService{
+   
+}

@@ -1,0 +1,108 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>企业信息管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg" id="container-5zxcADS">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <form class="row" id="searchForm">
+                                    <div class="clear-float">
+                                        <div class="col-sm-4">
+                                            <div class="fn-div">
+                                                <label class="fn-label">查询</label>
+                                                <input type="text" class="fn-input" id="condition" placeholder="企业名称/社会信用代码/组织机构编号/法人/联系人姓名/企业联系邮箱" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <div class="fn-div">
+                                                <label class="fn-label">单位性质</label>
+                                                <!-- !search-chosen-->
+                                                <select class="fn-input search-chosen" id="organizationType" name="单位性质" >
+                                                    <option value="">全部</option>
+                                                    @for(item in organizationType){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4 fn-condition">
+                                            <#button name="搜索" icon="fa-search" clickFun="SubContractor.search()"/>
+                                            <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                            <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                            <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                        </div>
+
+                                        <div class="col-sm-4 fn-need-hide">
+                                            <div class="fn-div">
+                                                <label class="fn-label">经营状态</label>
+                                                <select class="fn-input" id="businessStatus" name="经营状态" >
+                                                    <option value="">全部</option>
+                                                    @for(item in businessStatus){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="fn-buttons clear-float fn-need-hide">
+                                            <div class="col-sm-4">
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div  id="SubContractorTableToolbar" role="group">
+                                    @if(shiro.hasPermission("/lxSubContractor/add")){
+                                    <#button name="添加" icon="fa-plus" clickFun="SubContractor.openAddSubContractor()"/>
+                                    @}
+                                    @if(shiro.hasPermission("/lxSubContractor/update")){
+                                    <#button name="修改" icon="fa-edit" clickFun="SubContractor.openSubContractorDetail()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/lxSubContractor/delete")){
+                                    <#button name="删除" icon="fa-remove" clickFun="SubContractor.delete()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/lxSubContractor/changeState")){
+                                    <#button name="启用" icon="fa-check-circle" clickFun="SubContractor.changeState(1)" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/lxSubContractor/changeState")){
+                                    <#button name="禁用" icon="fa-minus-circle" clickFun="SubContractor.changeState(2)" space="true"/>
+                                    @}
+                                    <!--<#button name="新增企业资质" icon="fa-plus" clickFun="SubContractor.openSubContractorCertifications()" space="true"/>-->
+
+                                    <!-- <#button name="导出" icon="fa-download" clickFun="SubContractor.download()" space="true"/>
+                                    <#button name="导入" icon="fa-upload" clickFun="SubContractor.selectFile()" space="true"/>
+                                    <input type="file" style="display:none" id="excelFile" name="excelFile" class="form-control"
+                                           onchange="SubContractor.fileUpload()">
+
+                                    <#button name="下载模板" icon="fa-download" clickFun="SubContractor.mouldDownload()" space="true"/> -->
+
+                                </div>
+                                <#table id="SubContractorTable"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/longxin/lxSubContractor/lxSubContractor.js"></script>
+<script>
+    $('.selectpicker').selectpicker();
+</script>
+@}

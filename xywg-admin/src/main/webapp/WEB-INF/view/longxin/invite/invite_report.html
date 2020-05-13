@@ -1,0 +1,74 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>招标统计</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg" id="container-5zxcADS">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <form class="col-sm-12" id="searchForm">
+                                <div class="clear-float">
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">招标时间</label>
+                                            <div class="fn-datepicker" id="datepicker1">
+                                                <input class="fn-datepicker-input" id="startDate" name="establishDate"
+                                                       readonly="readonly">
+                                                <span class="">-</span>
+                                                <input class="fn-datepicker-input" id="endDate" name="establishDate"
+                                                       readonly="readonly">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">项目名称</label>
+                                            <input type="text" class="fn-input" id="projectName" placeholder="项目名称"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-2">
+                                        <div class="fn-div">
+                                            <label class="fn-label">状态</label>
+                                            <select class="fn-input" id="projectStatus" name="状态">
+                                                <option value="">招标完成</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2 fn-condition">
+                                        <#button name="搜索" icon="fa-search" clickFun="InviteReport.search()"/>
+                                        <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    </div>
+
+
+                                </div>
+                                <div class="fn-buttons clear-float fn-need-hide">
+                                    <div class="col-sm-4">
+
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <#table id="InviteReportTable"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/longxin/invite/invite_report.js"></script>
+<script>
+    $('.selectpicker').selectpicker();
+</script>
+@}

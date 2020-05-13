@@ -1,0 +1,60 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>版本管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">类型</label>
+                                        <select class="fn-input" id="type" name="类型">
+                                            <option value="buss_sub_contractor">企业信息</option>
+                                            <option value="buss_project_master">项目信息</option>
+                                            <option value="buss_project_worker">工人信息</option>
+                                            <option value="buss_device_record">考勤信息</option>
+                                            <option value="buss_team_master">班组信息</option>
+                                            <option value="buss_work_kind">工种信息</option>
+                                            <option value="buss_worker_contract_rule">工人合同</option>
+                                            <option value="buss_device">考勤设备</option>
+                                            <option value="buss_project_training">项目培训</option>
+                                            <option value="buss_project_training_file">项目培训文件</option>
+                                            <option value="buss_project_training_person">培训人员</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4" id = 'hidden' style="display:none;">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                            <option value="">选择项目</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <#button name="搜索" icon="fa-search" clickFun="Synchro.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- <div  id="SynchroTableToolbar" role="group">
+                            <#button name="同步" icon="fa-plus" clickFun="Synchro.operation()" space="true"/>
+                        </div> -->
+                        <#table id="SynchroTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/system/synchro/synchro.js"></script>
+@}

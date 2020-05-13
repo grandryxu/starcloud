@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.EntryExitHistoryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.EntryExitHistory">
+        <id column="id" property="id" />
+        <result column="project_code" property="projectCode" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="date" property="date" />
+        <result column="type" property="type" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, organization_code AS organizationCode, id_card_type AS idCardType, id_card_number AS idCardNumber, date, type, is_del AS isDel
+    </sql>
+
+    <insert id="addHistry" parameterType="com.xywg.admin.modular.company.model.EntryExitHistory">
+        INSERT  INTO
+        buss_entry_exit_history
+        (
+          project_code,
+	      organization_code,
+	      id_card_type,
+	      id_card_number,
+	      `date`,
+	      `type`
+        )VALUES
+        (
+        #{h.projectCode},
+        #{h.organizationCode},
+        #{h.idCardType},
+        #{h.idCardNumber},
+        now(),
+        #{h.type}
+        )
+    </insert>
+    <!-- 批量删除进退场记录 -->
+    <delete id="batchDeleteExitByPwId" parameterType="java.util.List">
+        DELETE a FROM  buss_entry_exit_history as  a
+        WHERE (a.project_code,a.id_card_number) IN
+        (SELECT p.project_code,p.id_card_number FROM buss_project_worker as  p
+        WHERE p.id 	<foreach collection="list" item="id" open="in (" close=")" separator="," >
+        #{id}
+    </foreach>
+        )
+    </delete>
+
+</mapper>

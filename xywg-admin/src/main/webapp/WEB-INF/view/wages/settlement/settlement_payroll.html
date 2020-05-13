@@ -1,0 +1,45 @@
+@layout("/common/_container.html"){
+<style>
+    .fixed-table-toolbar button[name="refresh"]{display: none}
+</style>
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <div class="inline-search-s">
+                <div class="col-sm-11">
+                    <label class="label-search-s">项目</label>
+                    <select class="input-search-s search-chosen" id="projectCode" underline="true" name="项目" onchange="SettlementPayroll.updateSelectedWorker()">
+                        <!--<option value="">请选择</option>-->
+                        @for(item in project){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </select>
+                </div>
+                <div class="col-sm-1">
+                    <#button name="添加工人" icon="fa-plus" clickFun="SettlementPayroll.openAddWorkListHtml()"/>
+                </div>
+            </div>
+            <div  id="settlementPayrollTableToolbar" role="group">
+
+                <#button name="批量奖励" icon="fa-edit" clickFun="SettlementPayroll.batchWrite('rewardAmount')"/>
+
+                <#button name="批量惩罚" icon="fa-edit" clickFun="SettlementPayroll.batchWrite('punishAmount')" space="true"/>
+
+                <#button name="批量结算" icon="fa-edit" clickFun="SettlementPayroll.batchWrite('settleActualAmount')" space="true"/>
+
+                <#button name="移除" icon="fa-remove" clickFun="SettlementPayroll.removeWorker()" space="true"/>
+
+            </div>
+            <#table id="settlementPayrollTable" />
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    @if(shiro.hasPermission("/settlementPayroll/save")){
+                    <#button name="保存" icon="fa-save" clickFun="SettlementPayroll.saveSettlement()" space="true"/>
+                    @}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/settlement/settlement_payroll.js"></script>
+@}

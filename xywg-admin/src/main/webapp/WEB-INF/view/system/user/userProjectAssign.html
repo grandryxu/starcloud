@@ -1,0 +1,61 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目分配</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <form class="col-sm-12" id="searchForm">
+                        <div class="row">
+                            <div class="col-lg-3 col-sm-3">
+                                <div id="tree"></div>
+                            </div>
+                            <div class="col-lg-9 col-sm-9">
+                                <input type="hidden" id="account" value="${user.account}">
+                                <input type="hidden" id="userDeptId" value="${user.deptid}">
+
+                                <div class="row">
+                                    <div class="inline-search-s">
+                                        <label class="label-search-s">名称编码</label>
+                                        <input type="text" class="input-search-s" id="projectName"
+                                               placeholder="项目名称/项目编码"/>
+                                    </div>
+
+                                    <div class="inline-search-s">
+                                        <label class="label-search-s">关联状态</label>
+                                        <select data-placeholder="选择关联状态" id="isRelation" class="input-search-s"    underline="true" name="项目">
+                                            <option value="">请选择关联状态</option>
+                                            <option value="0">未关联</option>
+                                            <option value="1">已关联</option>
+                                        </select>
+                                    </div>
+                                    <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+                                <div  id="ProjectMasterTableToolbar" role="group">
+                                    <label>
+                                        @if(user.isEnterprise == 1){
+                                        企业级
+                                        @}else{
+                                        项目级
+                                        @}
+                                        :${user.name}</label>
+                                    @if(user.isEnterprise == 0){
+                                    <#button name="关联" icon="fa-plus" clickFun="ProjectMaster.relation()"/>
+                                    <#button name="解除关联" icon="fa-delete" clickFun="ProjectMaster.delete()"/>
+                                    <#button name="设为默认" icon="fa-delete" clickFun="ProjectMaster.setDefault()"/>
+                                    @}
+                                </div>
+                                <#table id="ProjectMasterTable"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/user/projectAssign.js"></script>
+@}

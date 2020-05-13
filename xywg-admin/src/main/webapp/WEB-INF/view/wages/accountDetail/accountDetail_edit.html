@@ -1,0 +1,48 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="主键" value="${item.id}" underline="true"/>
+                            <#input id="accountId" name="计工id" value="${item.accountId}" underline="true"/>
+                            <#input id="idCardType" name="身份证类型" value="${item.idCardType}" underline="true"/>
+                            <#input id="idCardNumber" name="身份证号" value="${item.idCardNumber}" underline="true"/>
+                            <#input id="recordDay" name="考勤天" value="${item.recordDay}" underline="true"/>
+                            <#input id="type" name="计工方式  1：计时 2：计量 3 包月" value="${item.type}" underline="true"/>
+                            <#input id="unit" name="单位" value="${item.unit}" underline="true"/>
+                            <#input id="price" name="单价" value="${item.price}" underline="true"/>
+                            <#input id="number" name="计件/工时/数量" value="${item.number}" underline="true"/>
+                            <#input id="totalAmount" name="基本工资" value="${item.totalAmount}" underline="true"/>
+                            <#input id="rewardAmount" name="奖励金额" value="${item.rewardAmount}" underline="true"/>
+                            <#input id="punishAmount" name="惩罚金额" value="${item.punishAmount}" underline="true"/>
+                            <#input id="payAmuont" name="实际应发金额" value="${item.payAmuont}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="startDate" name="工单开始时间" value="${item.startDate}" underline="true"/>
+                            <#input id="endDate" name="工单结束时间" value="${item.endDate}" underline="true"/>
+                            <#input id="isSign" name="是否已签字 1是 0否" value="${item.isSign}" underline="true"/>
+                            <#input id="sign" name="确认签字" value="${item.sign}" underline="true"/>
+                            <#input id="iconSign" name="签字图片缩略图" value="${item.iconSign}" underline="true"/>
+                            <#input id="photo" name="拍照" value="${item.photo}" underline="true"/>
+                            <#input id="iconPhoto" name="图像压缩" value="${item.iconPhoto}" underline="true"/>
+                            <#input id="signDate" name="确认签字时间" value="${item.signDate}" underline="true"/>
+                            <#input id="createDate" name="添加人" value="${item.createDate}" underline="true"/>
+                            <#input id="createUser" name="添加时间" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="note" name="备注" value="${item.note}" />
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/accountDetail/accountDetail_info.js"></script>
+@}

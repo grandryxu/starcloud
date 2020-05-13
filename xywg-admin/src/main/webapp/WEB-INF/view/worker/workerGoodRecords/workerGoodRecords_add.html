@@ -1,0 +1,41 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" underline="true"/>
+                            <#input id="idCardType" name="证件类型 参见人员证件类型字典表" underline="true"/>
+                            <#input id="idCardNumber" name="证件编号" underline="true"/>
+                            <#input id="projectCode" name="项目编号 项目编号，参见项目基础信息中对项目编号的定义" underline="true"/>
+                            <#input id="organizationCode" name="工人在该项目中所属企业组织机构代码" underline="true"/>
+                            <#input id="goodRecordTypeCode" name="奖励类型  参见奖励类型字典" underline="true"/>
+                            <#input id="goodRecordLevelType" name="奖励级别  58=国家级；59=省部级；60=地市级；61=企业级"/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="occurrenceDate" name="奖励时间" underline="true"/>
+                            <#input id="details" name="奖项说明" underline="true"/>
+                            <#input id="createDate" name="新增时间" underline="true"/>
+                            <#input id="createUser" name="添加人" underline="true"/>
+                            <#input id="updateDate" name="修改时间" underline="true"/>
+                            <#input id="updateUser" name="修改人" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="WorkerGoodRecordsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerGoodRecordsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerGoodRecords/workerGoodRecords_info.js"></script>
+@}

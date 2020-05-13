@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xywg.admin.modular.longxin.dao.LxProjectMapper">
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+        id, project_code AS projectCode, address, lng, lat, radius, create_date AS createDate, create_user AS createUser
+    </sql>
+
+    <update id="updateStatus">
+
+        update buss_project_master set  status= 0 where id= #{projectMasterId}
+
+    </update>
+
+    <delete id="deleteByIds">
+
+        delete  from buss_project_master where  id=#{projectMasterId}
+    </delete>
+
+
+	<select id="list" resultType="Map"
+			parameterType="com.baomidou.mybatisplus.plugins.Page">
+		select
+		bpm.id, bpm.project_code AS projectCode, bpm.build_project_code AS
+		buildProjectCode, bpm.contractor_org_code AS
+		contractorOrgCode, bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name AS projectName, bpm.project_activity_type AS
+		projectActivityType,
+		bpm.project_description AS projectDescription, bpm.project_category AS projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode, bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area AS buildingArea,
+		bpm.start_date AS startDate, bpm.complete_date AS completeDate, bpm.project_source
+		AS projectSource, bpm.project_status AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS isDel,
+		dict_projectCategory.name AS projectCategoryName ,bpm.device_type AS
+		deviceType ,
+		dict_deviceType.name AS deviceTypeName ,
+		A.organization_code AS cOrganizationCode,bsc.company_name AS cCompanyName,
+		bpsc.id AS psId ,COUNT(bfi.id) AS fileNums,
+		bpm.address,
+		CONCAT(ra2.areaname, ra1.areaname, ra.areaname) AS areaName,
+		bsc.company_name AS  companyName
+		from buss_project_master bpm
+		LEFT JOIN ref_area ra  on bpm.area_code=ra.id  LEFT JOIN ref_area ra1  on ra1.id=ra.parentid  LEFT join  ref_area ra2  on  ra2.id=ra1.parentid
+		LEFT JOIN sys_dict dict_projectCategory ON dict_projectCategory.num =
+		bpm.project_category AND
+		dict_projectCategory.pid = (select id from sys_dict where name='项目分类' and num = 0)
+		LEFT JOIN sys_dict dict_deviceType ON dict_deviceType.num =
+		bpm.device_type AND dict_deviceType.pid = (select id from sys_dict
+		where name='考勤类型' and num = 0)
+		JOIN (SELECT project_code,organization_code FROM
+		buss_project_sub_contractor WHERE
+		contractor_type = 16 AND organization_code IN (
+		SELECT
+		social_credit_number
+		FROM
+		sys_dept
+		WHERE
+		social_credit_number IS NOT NULL
+		AND (
+		id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+		) AND is_del = 0) A ON A.project_code = bpm.project_code
+		LEFT JOIN buss_project_sub_contractor bpsc ON bpsc.project_code =
+		bpm.project_code AND bpsc.organization_code = A.organization_code AND bpsc.is_del = 0
+		LEFT JOIN buss_file_info bfi ON bfi.type = 'buss_project_sub_contractor'
+		AND bfi.relevance_id = bpsc.id
+		LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code =
+		A.organization_code
+		where bpm.is_del=0
+		<if test="map.condition != null  and map.condition != '' ">
+			and ( (bpm.project_code like concat('%',#{map.condition},'%')) or
+			(bpm.project_name like
+			concat('%',#{map.condition},'%')))
+		</if>
+		<if test="map.projectStatus !=null and  map.projectStatus !=''">
+			and bpm.project_status=#{map.projectStatus}
+		</if>
+		<if test="map.deviceType !=null and  map.deviceType !=''">
+			and bpm.device_type=#{map.deviceType}
+		</if>
+		<if test="map.startDate1!=null and  map.startDate1!=''">
+			and bpm.start_date <![CDATA[>=]]>
+			#{map.startDate1}
+		</if>
+		<if test="map.endDate1!=null and  map.endDate1!=''">
+			and bpm.start_date<![CDATA[<=]]>
+			#{map.endDate1}
+		</if>
+		<if test="map.startDate2!=null and  map.startDate2!=''">
+			and bpm.complete_date <![CDATA[>=]]>
+			#{map.startDate2}
+		</if>
+		<if test="map.endDate2!=null and  map.endDate2!=''">
+			and bpm.complete_date<![CDATA[<=]]>
+			#{map.endDate2}
+		</if>
+		<!--<if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+			and 1=2
+		</if>-->
+		<if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+			and bpm.project_code in
+			<foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY id
+		ORDER BY id DESC
+	</select>
+
+
+
+    <select  id="selectById2" parameterType="java.lang.String" resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+
+      select
+      build_contacts AS buidContacts,
+	build_phone AS buildPhone,
+	contractor_leader AS contractorLeader,
+	contractor_leader_phone AS contractorLeaderPhone,
+	project_director AS projectDirector,
+	project_director_phone AS projectDirectorPhone,
+	is_civilization AS isCivilization,
+	is_high_grade AS isHighGrade,
+	is_government AS isGovernment,
+	person_liable AS personLiable,
+	id, project_code AS projectCode,
+	build_project_code AS buildProjectCode,
+	contractor_org_code AS		contractorOrgCode,
+	general_contractor_code AS generalContractorCode,
+	general_contractor_name AS		generalContractorName,
+	project_name AS projectName,
+	project_activity_type AS		projectActivityType,
+	address,
+	project_description AS projectDescription,
+	project_category AS projectCategory,
+	is_major_project AS		isMajorProject,
+	owner_name AS ownerName,
+	build_corporation_code AS		buildCorporationCode,
+	builder_licence_num AS		builderLicenceNum,
+	area_code AS areaCode, total_contract_amt AS		totalContractAmt,
+	building_area AS buildingArea,device_type AS		deviceType ,
+	start_date AS startDate,
+	complete_date AS completeDate,
+	project_source		AS projectSource,
+	project_status AS		projectStatus, lng, lat, radius, create_date AS createDate,
+		create_user AS createUser, update_date AS		updateDate,
+		 update_user AS updateUser,
+		 status,is_del AS isDel,
+		is_synchro AS isSynchro,
+		project_man_code as projectManCode
+		 from buss_project_master   where id =#{id}
+
+    </select>
+
+
+    <select id="selectById" resultType="java.util.Map">
+        	SELECT
+		bpm.build_contacts AS buidContacts,
+	bpm.build_phone AS buildPhone,
+	bpm.contractor_leader AS contractorLeader,
+	bpm.contractor_leader_phone AS contractorLeaderPhone,
+	bpm.project_director AS projectDirector,
+	bpm.project_director_phone AS projectDirectorPhone,
+	bpm.is_civilization AS isCivilization,
+	bpm.is_high_grade AS isHighGrade,
+	bpm.is_government AS isGovernment,
+	bpm.person_liable AS personLiable,
+		bpm.id, bpm.project_code AS projectCode, bpm.build_project_code AS
+		buildProjectCode, bpm.contractor_org_code AS
+		contractorOrgCode, bpm.general_contractor_code AS generalContractorCode,
+		bpm.general_contractor_name AS
+		generalContractorName, bpm.project_name AS projectName, bpm.project_activity_type AS
+		projectActivityType,bpm.address,
+		bpm.project_description AS projectDescription, bpm.project_category AS projectCategory,
+		bpm.is_major_project AS
+		isMajorProject, bpm.owner_name AS ownerName, bpm.build_corporation_code AS
+		buildCorporationCode, bpm.builder_licence_num AS
+		builderLicenceNum, bpm.area_code AS areaCode, bpm.total_contract_amt AS
+		totalContractAmt, bpm.building_area AS buildingArea,bpm.device_type AS
+		deviceType ,
+		bpm.start_date AS startDate, bpm.complete_date AS completeDate, bpm.project_source
+		AS projectSource, bpm.project_status AS
+		projectStatus, bpm.lng, bpm.lat, bpm.radius, bpm.create_date AS createDate,
+		bpm.create_user AS createUser, bpm.update_date AS
+		updateDate, bpm.update_user AS updateUser, bpm.status, bpm.is_del AS isDel,
+		CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName ,
+		virtual_id AS virtualId,bpm.is_synchro AS isSynchro,bpm.project_man_code as projectManCode
+		FROM
+		buss_project_master bpm
+		LEFT JOIN ref_area ra ON ra.id = bpm.area_code
+		LEFT JOIN ref_area ras ON ras.id = ra.parentid
+		LEFT JOIN ref_area rap
+		ON rap.id = ras.parentid
+		WHERE bpm.id = #{id}
+
+    </select>
+
+
+	<select id="selectAddressByProjectCode" resultType="com.xywg.admin.modular.project.model.ProjectAddress">
+		SELECT
+		<include refid="Base_Column_List"></include>
+		FROM buss_project_address
+		WHERE
+		project_code = #{projectCode}
+	</select>
+
+
+	<select id="selectCompanyListId" resultType="java.lang.String">
+		select bsc.id AS id  from buss_sub_contractor bsc
+		LEFT JOIN lx_invite_bid lib ON bsc.id=lib.company_id AND lib.tender_id= #{zbId}
+		LEFT JOIN  buss_sub_contractor_black_list bscbl ON bsc.organization_code =bscbl.organization_code
+		where lib.company_id is null AND  bscbl.organization_code is null
+	</select>
+
+
+	<select id="selectCompanyList" resultType="com.xywg.admin.modular.company.model.SubContractor">
+		select
+		bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel
+        from
+     	buss_sub_contractor bsc LEFT JOIN lx_invite_bid lib ON bsc.id=lib.company_id AND lib.tender_id= #{zbId}
+     	LEFT JOIN  buss_sub_contractor_black_list bscbl ON bsc.organization_code =bscbl.organization_code
+		where lib.company_id is null   AND  bscbl.organization_code is null
+
+		<if test="map.condition != null  and map.condition != '' ">
+			and (
+			(bsc.company_name like
+			concat('%',#{map.condition},'%')))
+		</if>
+  /*      buss_sub_contractor bsc
+        where NOT EXISTS(select organization_code from buss_worker_black_list t where bsc.social_credit_number = t.organization_code and t.is_del = 0 and t.is_valid = 1 )*/
+ 	</select>
+
+
+
+
+
+	<insert id="insertInvite">
+
+	INSERT INTO lx_invite_bid
+			(tender_id, company_id,status,remark)
+	VALUES   (#{zbId},  #{companyId},  1, '邀标' )
+
+	</insert>
+
+	<select id="selectCompanyListAndYb" resultType="com.xywg.admin.modular.company.model.SubContractor">
+		select
+		bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel
+        from
+     	buss_sub_contractor bsc LEFT JOIN lx_invite_bid lib ON bsc.id=lib.company_id
+		where  lib.tender_id= #{zbId}
+
+		<if test="map.condition != null  and map.condition != '' ">
+			and (
+			(bsc.company_name like
+			concat('%',#{map.condition},'%')))
+		</if>
+
+	</select>
+	<select id="companyDbList" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT
+            lib.company_id AS id,
+            bsc.company_name AS companyName,
+            lt.file_name AS fileName,
+            lib.date AS date
+        FROM
+            lx_invite_bid lib
+        RIGHT JOIN buss_sub_contractor bsc ON bsc.id = lib.company_id
+        LEFT JOIN lx_tender lt ON lt.id = lib.tender_id
+        WHERE
+            lib.status = '5'
+        AND lt.project_id = #{projectId}
+	</select>
+	<select id="selectNumber" resultType="java.lang.Long">
+
+	select count(id) from lx_tender where project_id=#{projectMasterId}
+
+	</select>
+	<select id="selectProjectManCode" resultType="java.lang.Long">
+
+		select count(id) from buss_project_master where  project_man_code=#{projectManCode};
+	</select>
+	<select id="getIdByProjectCode" resultType="java.lang.Object">
+		select id from buss_project_master where project_code=#{projectCode}
+	</select>
+
+	<insert id="insertTender">
+
+	INSERT INTO lx_invite_bid
+			(tender_id, company_id,status,remark)
+	VALUES   (#{zbId},  #{companyId},  1, '投标' )
+
+	</insert>
+
+	<select id="inviteBidCount" resultType="java.lang.Long">
+
+		select count(id) from lx_invite_bid where tender_id=#{zbId} and company_id=#{companyId};
+	</select>
+    <select id="selectProjectCodeByProjectId" resultType="java.util.Map">
+		select
+		project_code AS projectCode
+		from buss_project_master
+		where id=#{projectMasterId}
+	</select>
+</mapper>

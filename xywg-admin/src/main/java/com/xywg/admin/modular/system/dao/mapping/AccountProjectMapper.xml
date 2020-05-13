@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.AccountProjectMapper">
+    <insert id="insert">
+        insert into sys_account_project(account,project_code,organization_code)values
+        <foreach collection="list" separator="," index="index" item="item">
+            (#{item.account},#{item.projectCode},#{item.organizationCode})
+        </foreach>
+    </insert>
+
+    <update id="delete">
+        <foreach collection="list" separator=";" index="index" item="item">
+            update sys_account_project
+            <set>is_del=1</set>
+            where account=#{item.account} and project_code=#{item.projectCode} and
+            organization_code=#{item.organizationCode}
+        </foreach>
+    </update>
+
+    <select id="selectProjectsByAccountAndDeptId"
+            resultType="com.xywg.admin.modular.project.model.ProjectMaster">
+        SELECT bpm.project_code AS projectCode, bpm.project_name AS projectName
+        FROM buss_project_master bpm
+        JOIN (SELECT project_code FROM buss_project_sub_contractor WHERE organization_code IN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{deptId} OR pids LIKE CONCAT('%[', #{deptId},']%') )
+        )
+        AND is_del = 0
+        GROUP BY project_code
+        ) A ON A.project_code = bpm.project_code
+        <if test="isEnterprise == 0">
+        JOIN sys_account_project sap ON sap.project_code = bpm.project_code
+        AND sap.account = #{account}  and  sap.is_del=0
+        AND sap.organization_code in
+        (SELECT social_credit_number FROM sys_dept WHERE social_credit_number IS NOT NULL AND (id = #{deptId}
+        OR pids LIKE CONCAT('%[', #{deptId},']%') ) )
+        </if>
+        WHERE bpm.is_del = 0
+    </select>
+    
+    <insert id="addRelationAndDefault">
+        insert into sys_account_project(account,project_code,organization_code,is_default)values
+        
+            (#{account},#{projectCode},#{organizationCode},1)
+        
+    </insert>
+    <update id="updateDefault">
+        update sys_account_project
+        set is_default = 1
+        where account = #{account}
+        and project_code = #{projectCode}
+        and organization_code = #{organizationCode}
+        
+    </update>
+    
+    <update id="updateNoDefault">
+        update sys_account_project
+        set is_default = 0
+        where account = #{account}
+    </update>
+    
+    <select id="getDefaultProject" resultType = "Map">
+        select 
+        s.project_code,
+        b.project_name
+        from sys_account_project s
+        left join buss_project_master b on s.project_code = b.project_code
+        where s.account = #{account} and s.is_default = 1
+    </select>
+    
+    
+    <select id="selectIsExistRelationProject" resultType = "Integer">
+        select 
+        count(id)
+        from sys_account_project
+        where account = #{account} and is_del = 0
+    </select>
+</mapper>

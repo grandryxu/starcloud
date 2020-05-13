@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.longxin.dao.FixBidMapper">
+
+
+    <select id="selectList" resultType="com.xywg.admin.modular.longxin.model.FixBid">
+        SELECT
+        m.id as id,m.file_name as tenderName,m.resume as tenderDes,s.project_name as projectName,a.status as status,a.flowStatus as flowStatus
+        FROM
+        lx_tender m  LEFT JOIN buss_project_master s on m.project_id = s.id
+	    inner join   (SELECT d.tender_id, max( ifnull( d.status, 0 ) ) status , max( ifnull( d.flowStatus, 0 ) ) flowStatus FROM (
+          SELECT b.tender_id, b.status, c.flowStatus  FROM (
+          SELECT a.tender_id, max( ifnull( a.status, 0 ) ) status  FROM lx_invite_bid a
+          WHERE a.status IN ( 3, 4, 5 )  GROUP BY 	a.tender_id  ) b
+          JOIN lx_invite_bid c ON b.tender_id = c.tender_id  AND b.status = c.status
+          ) d GROUP BY d.tender_id )
+        a on m.id = a.tender_id
+        where 1=1
+		<if test="map.projectName != null and map.projectName != '' ">
+            AND s.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.tenderName != null and map.tenderName != '' ">
+            AND m.file_name like CONCAT('%',#{map.tenderName},'%')
+        </if>
+        ORDER BY m.id DESC
+    </select>
+    
+    <select id="ensureFixMark">
+        update lx_invite_bid set status = 4 where tender_id =  #{tenderId} and company_id =  #{companyId}
+    </select>
+
+
+</mapper>

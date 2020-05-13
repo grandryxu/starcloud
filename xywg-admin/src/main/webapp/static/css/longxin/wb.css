@@ -1,0 +1,38 @@
+.main {
+    padding: 30px;
+}
+
+table td,table th {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid rgba(198, 198, 198, 1);
+}
+.cellBg {
+    background-color: rgba(234, 246, 253, 1);
+}
+.col1 {
+    min-width: 160px;
+}
+.col2 {
+    min-width: 100px;
+}
+.rowsBg {
+    background-color: rgba(0,0,0,.1);
+}
+.tableTitle {
+    padding: 5px 30px 5px 18px;
+    font-size: 18px;
+    color: rgba(42, 130, 228, 1);
+    position: relative;
+    margin: 30px 0 15px;
+}
+.tableTitle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 100%;
+    background-color: rgba(42, 130, 228, 1);
+}

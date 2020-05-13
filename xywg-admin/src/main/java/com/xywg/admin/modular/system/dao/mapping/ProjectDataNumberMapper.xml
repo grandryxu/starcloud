@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.ProjectDataNumberMapper">
+
+    <select id="selectProjectDataNumberList" resultType="Map" parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+        dn.id,
+        dn.project_name AS projectName,
+        dn.data_number AS dataNumber,
+        CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName,
+        dn.create_user AS createUser,
+        dn.create_time AS createTime
+        FROM sys_project_data_number dn
+        LEFT JOIN ref_area ra ON ra.id = dn.area
+        LEFT JOIN ref_area ras ON ras.id = ra.parentid
+        LEFT JOIN ref_area rap ON rap.id = ras.parentid
+        WHERE dn.nt_state = 1
+        <if test="map.projectName != null and map.projectName != ''">
+            AND dn.project_name like CONCAT('%',#{map.projectName},'%')
+        </if>
+        <if test="map.dataNumber != null and map.dataNumber != ''">
+            AND dn.data_number like CONCAT('%',#{map.dataNumber},'%')
+        </if>
+        order by dn.id desc
+    </select>
+
+    <!-- 通过id查询 -->
+    <select id="selectProjectDataNumberById" resultType="com.xywg.admin.modular.system.model.ProjectDataNumber">
+        SELECT
+        dn.id,
+        dn.project_name AS projectName,
+        dn.data_number AS dataNumber,
+        dn.area AS area,
+        CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName
+        FROM sys_project_data_number dn
+        LEFT JOIN ref_area ra ON ra.id = dn.area
+        LEFT JOIN ref_area ras ON ras.id = ra.parentid
+        LEFT JOIN ref_area rap ON rap.id = ras.parentid
+        WHERE dn.nt_state = 1
+        AND dn.id = #{id}
+    </select>
+
+    <!-- 批量删除 -->
+    <update id="delProjectDataNumbers">
+        UPDATE sys_project_data_number
+        SET nt_state = -1,
+        modifyer=#{map.updateUser},
+        modity_time=now()
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+</mapper>

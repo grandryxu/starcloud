@@ -1,0 +1,20 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="projectCode" value="${item.projectCode}">
+            <div class="row">
+                <div class="col-sm-6">
+                            <#input_sjf id="projectName" name="项目名称" value="${item.projectName}" underline="true" disabled="true"/>
+                            <#input_sjf id="type" name="类型" value="${item.type}" underline="true" disabled="true"/>
+                            <#input_sjf id="start" name="上班打卡时间" value="${item.start}" underline="true" disabled="true"/>
+                            <#input_sjf id="end" name="下班打卡时间" value="${item.end}" underline="true" disabled="true"/>
+                            <#input_sjf id="remark" name="备注" value="${item.remark}" disabled="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/timeSet/timeSet_info.js"></script>
+@}

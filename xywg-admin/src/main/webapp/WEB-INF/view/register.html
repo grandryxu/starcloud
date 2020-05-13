@@ -1,0 +1,333 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="${ctxPath}/static/logo.jpg">
+    <title>注册</title>
+</head>
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    h1,
+    h2 {
+        padding: 0;
+        margin: 0;
+    }
+
+    .register__container {
+        background-color: #F5F6FA;
+        min-height: 1080px;
+    }
+
+    .register__title {
+        width: 100%;
+        height: 64px;
+        background-color: #fff;
+    }
+
+    .register__title-main {
+        width: 1200px;
+        height: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .register__h1 {
+        font-size: 32px;
+        font-weight: normal;
+        margin: 32px auto;
+        color: #03081b;
+        text-align: center;
+    }
+
+    .register__main {
+        width: 1200px;
+        margin: 0 auto;
+    }
+
+    .register__back {
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        color: #007cff;
+        padding: 21px 26px;
+        margin-bottom: 2px;
+    }
+
+    .register__back span {
+        margin-left: 18px;
+    }
+
+    .register__form {
+        width: 1200px;
+        height: 656px;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        padding-top: 24px;
+    }
+
+    .register__form-item {
+        width: 560px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: 8px;
+    }
+
+    .register__form-label {
+        display: flex;
+        align-items: center;
+        color: #03081b;
+        font-size: 14px;
+    }
+
+    .register__form-content {
+        width: 400px;
+        position: relative;
+        display: flex;
+
+    }
+
+    .register__form-content input {
+        width: 400px;
+        height: 40px;
+        padding: 8px;
+        outline: none;
+
+    }
+
+    .register__form-must {
+        color: #ff3034;
+    }
+
+    .register__form-select {
+        width: 382px;
+        height: 22px;
+        border: 1px solid #cfd4e1;
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        justify-content: space-between;
+        color: #878a99;
+        position: relative;
+        z-index: 99;
+    }
+
+    .register__form-option {
+        position: absolute;
+        list-style: none;
+        z-index: 9;
+        top: 38px;
+        border-width: 0px;
+        border-style: solid;
+        border-color: #cfd4e1;
+        width: 398px;
+        padding: 0;
+        max-height: 0px;
+        margin: 0;
+        overflow-y: scroll;
+        transition: all 0.1s linear;
+        background-color: #ffffff;
+    }
+
+    .register__form-option li {
+        padding: 8px 8px;
+        width: 366px;
+    }
+
+    .register__form-option li:hover {
+        background-color: #F5F6FA;
+    }
+
+    .register-radio-item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+        width: 40px;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    .register__form-trextarea {
+        resize: none;
+        width: 400px;
+        outline: none;
+        border-color: #cfd4e1;
+        padding: 8px;
+        position: absolute;
+        top: -20px;
+
+    }
+
+    .register__main .register__submit {
+        width: 400px;
+        height: 40px;
+        background-color: #007cff;
+        color: #ffffff;
+
+    }
+
+    .register__submit-box {
+        width: 100%;
+        background-color: #fff;
+        text-align: center;
+        padding: 20px 0;
+    }
+</style>
+
+<body>
+<div class="register__container">
+    <div class="register__title">
+        <div class="register__title-main">
+            <img src="/static/img/logo-black.png">
+        </div>
+    </div>
+    <h1 class="register__h1">
+        注册账号
+    </h1>
+    @layout("/common/_container.html"){
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="form-horizontal" id="subContractorInfoForm">
+
+                <input type="hidden" id="id" value="">
+
+                <div class="row">
+                    <div class="col-sm-6 b-r">
+                        <#input_sjf id="companyName" name="企业名称" underline="true" requiredFlag="true"/>
+                        <#select_sjf id="organizationType" name="单位性质" underline="true">
+                            <option value="">请选择</option>
+                            @for(item in subOrganizationType){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select_sjf>
+                        <div class="form-group form-group-sss" style="padding:6px 0;">
+                            <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                                <text style="color: red">*</text>是否三证合一:
+                            </label>
+                            <div class="col-sm-9" id="cRadio">
+                                <div class="radio radio-info2 radio-inline">
+                                    <input type="radio" id="inlineRadio1" value="1" name="radio" onchange="test(this)" checked>
+                                    <label for="inlineRadio1"> 是</label>
+                                </div>
+
+                                <div class="radio radio-info2 radio-inline">
+                                    <input type="radio" id="inlineRadio2" value="2" name="radio" onchange="test(this)">
+                                    <label for="inlineRadio2"> 否</label>
+                                </div>
+                            </div>
+                        </div>
+                        <#input_sjf id="organizationCode" parentId="pOrganizationCode" requiredFlag="true" name="组织机构编号" underline="true"  />
+                        <#input_sjf id="bizRegisterCode" parentId="pBizRegisterCode" name="营业执照注册号" underline="true" requiredFlag="true" />
+                        <#input_sjf id="socialCreditNumber" parentId="pSocialCreditNumber" name="社会统一信用代码" underline="true" requiredFlag="true"/>
+                        <div class="form-group form-group-sss" style="padding-bottom:10px;">
+                            <label class="col-sm-3 control-label control-label-sss"><text style="color:red;">*</text>地区:</label>
+                            <div class="col-sm-9">
+                                <div data-toggle="distpicker" name="areaCode">
+                                    <select class="form-control form-control-sss" id="provinceCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                                    <select class="form-control form-control-sss" id="cityCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                                    <select class="form-control form-control-sss" id="areaCode" style="width:30%; padding-right:5px; display: inline-block;"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <#input_sjf id="address" name="企业营业地址" underline="true" />
+                        <#select_sjf id="economicNature" name="企业经济性质" underline="true" >
+                            <option value="">请选择</option>
+                            @for(item in subEconomicNature){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select_sjf>
+                        <#input_sjf id="zipCode" name="邮政编码" underline="true"/>
+                        <#input_sjf id="contactPeopleName" name="联系人姓名" underline="true" />
+                        <#input_sjf id="contactPeoplePhone" name="联系人办公电话" underline="true"/>
+                        <#input_sjf id="contactPeopleCellPhone" name="联系人手机号码" underline="true" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <#input_sjf id="representativeName" name="法人姓名" underline="true" />
+                        <#select_sjf id="representativeIdcardType" name="法人证件类型" underline="true" >
+                            <option value="">请选择</option>
+                            @for(item in subRepresentativeIdcardType){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select_sjf>
+                        <#input_sjf id="representativeIdcardNumber" name="法人证件号码" underline="true" />
+                        <#input_sjf id="faxNumber" name="传真号码" underline="true"/>
+                        <#input_sjf id="email" name="企业联系邮箱" underline="true"/>
+                        <#input_sjf id="homeWebsiteUrl" name="企业网址" underline="true"/>
+                        <#select_sjf id="enterpriseMarketType" name="企业市域类别" underline="true" >
+                            <option value="">请选择</option>
+                            注册资本币种
+                        </#select_sjf>
+                        <#input_sjf id="registrationCapital" name="注册资本(万元)" underline="true"/>
+                        <#select_sjf id="capitalCurrency" name="注册资本币种" underline="true">
+                            <option value="">请选择</option>
+                            @for(item in subCapitalCurrency){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select_sjf>
+                        <#input_sjf id="establishDate" name="成立日期" underline="true" />
+                        <#input_sjf id="phoneNumber" name="办公电话"/>
+                        <#select_sjf id="businessStatus" name="企业经营状态" underline="true" >
+                            <option value="">请选择</option>
+                            @for(item in subBusinessStatus){
+                            <option value="${item.num}">${item.name}</option>
+                            @}
+                        </#select_sjf>
+                        <#textarea_sjf id="memo" name="企业备注" underline="true"/>
+                    </div>
+                </div>
+
+                <div class="row btn-group-m-t">
+                    <div class="col-sm-12 tac-sss button-ta-r">
+                        <#button btnCss="info" name="提交注册" id="ensure" icon="fa-check" clickFun="SubContractorInfoDlg.addSubmit()"/>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="${ctxPath}/static/modular/company/subContractor/company_regist.js"></script>
+    @}
+    </div>
+</body>
+<script>
+    function subOrganizationTypeChange(data,value) {
+        console.log(data,value);
+        console.log(data.parentElement.previousElementSibling.getElementsByTagName('span'));
+        data.parentElement.previousElementSibling.getElementsByTagName('span')[0].innerHTML = data.innerHTML;
+        data.parentElement.style.maxHeight = '0px'
+        data.parentElement.style.borderWidth = '0px'
+    }
+
+    function showOption(data) {
+        if (data.nextElementSibling.style.maxHeight == '120px') {
+            data.nextElementSibling.style.maxHeight = '0px'
+            data.nextElementSibling.style.borderWidth = '0px'
+        } else {
+            data.nextElementSibling.style.maxHeight = '120px'
+            data.nextElementSibling.style.borderWidth = '1px'
+        }
+    }
+
+    function switchRadio(data, v) {
+        if (v == 0) {
+            data.getElementsByTagName('img')[0].setAttribute('src', '/static/img/circle-active.png');
+            data.nextElementSibling.getElementsByTagName('img')[0].setAttribute('src', '/static/img/circle.png');
+        } else if (v == 1) {
+            data.getElementsByTagName('img')[0].setAttribute('src', '/static/img/circle-active.png');
+            data.previousElementSibling.getElementsByTagName('img')[0].setAttribute('src', '/static/img/circle.png');
+        }
+    }
+</script>
+
+</html>

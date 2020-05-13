@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.worker.dao.WorkerContractRuleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.worker.model.WorkerContractRule">
+        <id column="id" property="id" />
+        <result column="project_code" property="projectCode" />
+        <result column="sh_imei" property="shImei" />
+        <result column="join_status" property="joinStatus" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="contract_code" property="contractCode" />
+        <result column="contract_period_type" property="contractPeriodType" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="pay_roll_rule_type" property="payRollRuleType" />
+        <result column="unit_type_sys_no" property="unitTypeSysNo" />
+        <result column="unit_price" property="unitPrice" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, sh_imei AS shImei, join_status AS joinStatus, organization_code AS organizationCode, id_card_type AS idCardType, id_card_number AS idCardNumber, contract_code AS contractCode, contract_period_type AS contractPeriodType, start_date AS startDate, end_date AS endDate, pay_roll_rule_type AS payRollRuleType, unit_type_sys_no AS unitTypeSysNo, unit_price AS unitPrice, is_del AS isDel
+    </sql>
+
+    <!--发送工人合同数据到实名制 xss-->
+    <select id="getWorkeContractorFromLabor" resultType="com.xywg.admin.modular.smz.model.WorkerContractorRuleMo">
+        SELECT
+        bpm.id as projectId,
+        bpm.project_code as projectCode,
+        bwcr.organization_code as organizationCode,
+        bwcr.id_card_type as idCardType,
+        bwcr.id_card_number as idCardNumber,
+        bwcr.contract_code as contractCode,
+        bwcr.contract_period_type as contrcatPeriodType,
+        bwcr.start_date as startDate,
+        bwcr.end_date as endDate,
+        bwcr.pay_roll_rule_type as payrollRuletype,
+        bwcr.unit_type_sys_no as unitypeSysno,
+        bwcr.unit_price as unitPrice,
+        bcf.file_path as winBiddingFile,
+        bcf.file_path as attement,
+        bwcr.id as lablorId,
+        bwm.id as userId
+        from buss_worker_contract_rule bwcr
+        left join buss_contract_file bcf on bcf.contract_code=bwcr.contract_code
+        left join buss_project_master bpm on bpm.project_code=bwcr.project_code
+        left join buss_worker_master bwm on bwm.id_card_type=bwcr.id_card_type and bwm.id_card_number =bwcr.id_card_number
+        where bwcr.is_del = 0 and bpm.is_synchro =1 and bwcr.id in
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+        and left(bpm.area_code,4)='3206'
+    </select>
+
+</mapper>

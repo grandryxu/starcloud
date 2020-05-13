@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.report.dao.OverAgeReportMapper">
+
+    <select id="getWorkerList" resultType="com.xywg.admin.modular.report.model.WorkerOverAgeReport">
+        SELECT  tm.team_name as teamName,
+        		w.worker_name as workerName,
+        		w.id_card_number as idCardNumber,
+        		w.birthday,
+        		a.age
+		FROM buss_worker_master w
+		LEFT JOIN buss_project_worker pw ON w.id_card_type = pw.id_card_type AND w.id_card_number = pw.id_card_number
+		LEFT JOIN buss_team_master tm ON pw.team_sys_no = tm.team_sys_no AND tm.is_del = 0
+		LEFT JOIN (
+				SELECT m.id_card_number,m.id_card_type ,ROUND(DATEDIFF(CURDATE(), m.birthday)/365.2422) AS age  
+				FROM buss_worker_master m )a ON a.id_card_type = w.id_card_type AND a.id_card_number = w.id_card_number
+		WHERE a.age >=60  AND pw.is_del = 0 AND w.is_del = 0 and pw.join_status = 2
+		<if test="map.ocList != null and map.ocList.size >0">
+			AND pw.organization_code IN 
+			<foreach collection="map.ocList" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="map.projectCode !=null  and  map.projectCode !=''  ">
+			AND pw.project_code = #{map.projectCode}
+		</if>
+		<if test="map.teamSysNo !=null  and  map.teamSysNo !=''  ">
+			AND pw.team_sys_no like CONCAT('%',#{map.teamSysNo},'%')
+		</if>
+		<if test="map.condition !=null  and  map.condition !=''  ">
+			AND (
+				w.worker_name like CONCAT('%',#{map.condition},'%')
+			 or w.id_card_number like CONCAT('%',#{map.condition},'%')
+			)		
+		</if>
+    </select>
+    
+    
+    <select id="getExportWorkerList" resultType="com.xywg.admin.modular.report.model.WorkerOverAgeReport">
+        SELECT  tm.team_name as teamName,
+        		w.worker_name as workerName,
+        		w.id_card_number as idCardNumber,
+        		w.birthday,
+        		a.age
+		FROM buss_worker_master w
+		LEFT JOIN buss_project_worker pw ON w.id_card_type = pw.id_card_type AND w.id_card_number = pw.id_card_number
+		LEFT JOIN buss_team_master tm ON pw.team_sys_no = tm.team_sys_no AND tm.is_del = 0
+		LEFT JOIN (
+				SELECT m.id_card_number,m.id_card_type ,ROUND(DATEDIFF(CURDATE(), m.birthday)/365.2422) AS age  
+				FROM buss_worker_master m )a ON a.id_card_type = w.id_card_type AND a.id_card_number = w.id_card_number
+		WHERE a.age >=60  AND pw.is_del = 0 AND w.is_del = 0 and pw.join_status = 2
+		<if test="map.ocList != null and map.ocList.size >0">
+			AND pw.organization_code IN 
+			<foreach collection="map.ocList" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="map.projectCode !=null  and  map.projectCode !=''  ">
+			AND pw.project_code = #{map.projectCode}
+		</if>
+		<if test="map.teamSysNo !=null  and  map.teamSysNo !=''  ">
+			AND pw.team_sys_no like CONCAT('%',#{map.teamSysNo},'%')
+		</if>
+		<if test="map.condition !=null  and  map.condition !=''  ">
+			AND (
+				w.worker_name like CONCAT('%',#{map.condition},'%')
+			 or w.id_card_number like CONCAT('%',#{map.condition},'%')
+			)		
+		</if>
+    </select>
+</mapper>

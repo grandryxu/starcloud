@@ -1,0 +1,51 @@
+package com.saier.erp.tpm.zrinterface;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import lombok.ToString;
+
+/**
+ * 考勤设备信息
+ */
+@ToString
+@SuppressWarnings("serial")
+public class ZrDeviceTpm implements Serializable{
+	private Long id;
+	private String name;  //设备名称
+    private Long type;  //设备类型
+    private Long sn;  //设备号
+    private String projectId;  // 工程ID 
+    
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public Long getType() {
+		return type;
+	}
+	public void setType(Long type) {
+		this.type = type;
+	}
+	public Long getSn() {
+		return sn;
+	}
+	public void setSn(Long sn) {
+		this.sn = sn;
+	}
+	public String getProjectId() {
+		return projectId;
+	}
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+    
+}

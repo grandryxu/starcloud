@@ -1,0 +1,112 @@
+package com.xywg.admin.modular.zr.service;
+
+import com.xywg.admin.modular.company.dao.SubContractorMapper;
+import com.xywg.admin.modular.company.model.SubContractor;
+import com.xywg.admin.modular.zr.model.ZrCompanyTpm;
+import com.xywg.admin.modular.zr.utils.HttpClientUtils;
+
+import net.sf.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @Description:
+ * @Author jln
+ */
+@Service
+public class ZrInterfaceServiceImpl implements IZrInterfaceService{
+
+	@Autowired
+	private SubContractorMapper subContractorMapper;
+	@Override
+	public boolean SendCompanyInfo(String stoken) {
+		//获取企业信息
+		SubContractor company = this.subContractorMapper.getCompanyInfo();
+		
+		ZrCompanyTpm zrCompany = new ZrCompanyTpm();
+		zrCompany.setFullName(company.getCompanyName());
+		zrCompany.setSimpleName(company.getCompanyName());
+		zrCompany.setRegistration(company.getAreaCode());
+		zrCompany.setType(1);
+		zrCompany.setCode(company.getOrganizationCode());
+		zrCompany.setUserId("1");
+		zrCompany.setLevel(1);
+		zrCompany.setContact(company.getContactPeopleName());
+		zrCompany.setContactPhone(company.getContactPeopleCellPhone());
+		zrCompany.setDescription(company.getCompanyName());
+		zrCompany.setRegisterCapital(Long.valueOf(50000));
+		
+		String json = JSONObject.fromObject(zrCompany).toString();
+		String url = "/company/save";
+		String jsonResult = HttpClientUtils.sendPost("http://ceshi.smzapi.zhuren360.com" + url, json, stoken);
+		
+		JSONObject obj = new JSONObject().fromObject(jsonResult);//将json字符串转换为json对象
+		if("10000".equals(obj.getString("code"))){
+			System.out.println(obj.getString("id"));
+			return true;
+		}else{
+			return false;
+		}
+	}
+	@Override
+	public void SendProjectInfo(String stoken) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void SendDeviceInfo(String stoken) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void SendUserInfo(String stoken) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void SendAttendance(String stoken) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public boolean SendInjuryInfo(String stoken) {
+		//获取工伤信息
+		List<InjuryTpm> injury = this.injuryAsm.getZrInjuryInfo();
+		for(int i=0;i<injury.size();i++){
+			ZrInjuryTpm zrInjury = new ZrInjuryTpm();
+			//根据实名制id查找中如id
+			String userId = this.deviceAsm.queryKey(injury.get(i).getUserId(), "user");
+			if(userId != null){
+				zrInjury.setProjectMemberId(userId.toString());
+			}else{
+				throw new Exception("没有对应的人员"+injury.get(i).getUserId());
+			}
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	        //获取String类型的时间
+	        String ts = sdf.format(injury.get(i).getInjuryDate());
+			zrInjury.setOccurrenceTime(ts);
+			zrInjury.setPlace(injury.get(i).getInjuryAddress());
+			zrInjury.setMemo(injury.get(i).getInjuryMemo());
+			zrInjury.setProjectId("bc2fd0f22b984cd7bee2d617cfdf0016");
+			
+			String json = JSONObject.fromObject(zrInjury).toString();
+			String url = "/injury/save";
+			String jsonResult = HttpClientUtils.sendPost("http://ceshi.smzapi.zhuren360.com" + url, json, stoken);
+			System.out.println(jsonResult);
+			JSONObject obj = new JSONObject().fromObject(jsonResult);//将json字符串转换为json对象
+			if("10000".equals(obj.getString("code"))){
+				System.out.println(obj.getString("id"));
+			}else{
+				System.out.println(obj.getString("msg"));
+			}
+		}
+		return true;
+		
+	}
+   
+}

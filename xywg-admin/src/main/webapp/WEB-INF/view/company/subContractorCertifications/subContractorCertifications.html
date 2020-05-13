@@ -1,0 +1,119 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>企业资质管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">条件</label>
+                                        <input type="text" class="fn-input" id="condition" placeholder="企业名称/企业组织机构代码/证书名称/证书编号" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">证书类型</label>
+                                        <select class="fn-input" id="certificationType" name="证书类型" >
+                                            <option value="">全部</option>
+                                            @for(item in certificationType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="SubContractorCertifications.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">证书状态</label>
+                                        <select class="fn-input" id="certificationStatus" name="企业资格证书状态" >
+                                            <option value="">全部</option>
+                                            @for(item in certificationStatus){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">开始时间</label>
+                                        <div class="fn-datepicker" id="datepicker1">
+                                            <input class="fn-datepicker-input" id="startDate1" name="establishDate"
+                                                   readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="endDate1" name="establishDate"
+                                                   readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">结束时间</label>
+                                        <div class="fn-datepicker" id="datepicker2">
+                                            <input class="fn-datepicker-input" id="startDate2" name="establishDate"
+                                                   readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="endDate2" name="establishDate"
+                                                   readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">资质状态</label>
+                                        <select class="fn-input" id="qualificationStatus" name="企业资质状态" >
+                                            <option value="">全部</option>
+                                            @for(item in qualificationStatus){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+
+
+                        <div  id="SubContractorCertificationsTableToolbar" role="group">
+                            @if(shiro.hasPermission("/subContractorCertifications/add")){
+                                <#button name="添加" icon="fa-plus" clickFun="SubContractorCertifications.openAddSubContractorCertifications()"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractorCertifications/update")){
+                                <#button name="修改" icon="fa-edit" clickFun="SubContractorCertifications.openSubContractorCertificationsDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractorCertifications/delete")){
+                                <#button name="删除" icon="fa-remove" clickFun="SubContractorCertifications.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="SubContractorCertificationsTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/subContractorCertifications/subContractorCertifications.js"></script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+@}

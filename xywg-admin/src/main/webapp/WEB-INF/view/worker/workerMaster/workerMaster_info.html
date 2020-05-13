@@ -1,0 +1,234 @@
+@layout("/common/_container.html"){
+<style>
+    #headImageBtnId{
+        display: none;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <div class="tabs-container">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#workerMaster" aria-expanded="true">工人详情</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#workerGoodRecords" aria-expanded="false">奖励记录</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#workerBadRecords" aria-expanded="false">不良记录</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#projectTrainings" aria-expanded="false">培训记录</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#settlement" aria-expanded="false">工资流水</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#workerExperience" aria-expanded="false">工作履历</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#workerCertifications" aria-expanded="false">资格证书</a>
+            </li>
+
+        </ul>
+        <div class="tab-content">
+            <div id="workerMaster" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+                            <input type="hidden" id="id" value="${item.id}">
+                            <input type="hidden" id="genderValue" value="${item.gender}">
+                            <input type="hidden" id="politicsTypeValue" value="${item.politicsType}">
+                            <input type="hidden" id="cultureLevelTypeValue" value="${item.cultureLevelType}">
+                            <input type="hidden" id="hasBadMedicalHistoryValue" value="${item.hasBadMedicalHistory}">
+                            <input type="hidden" id="isJoinedValue" value="${item.isJoined}">
+                            <input type="hidden" id="workTypeCodeValue" value="${item.workTypeCode}">
+                            <input type="hidden" id="birthPlaceCodeValue" value="${item.birthPlaceCode}">
+                            <input type="hidden" id="isAuthValue" value="${item.isAuth}">
+                            <input type="hidden" id="isFaceValue" value="${item.isFace}">
+                            <input type="hidden" id="projectCodeValue" value="${item.projectCode}">
+                            <input type="hidden" id="teamSysNoValue" value="${item.teamSysNo}">
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="disabled">
+                                    @for(i in dictIdCardType){
+                                    @if(i.num==item.idCardType){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+                                <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true" disabled="disabled" />
+                                <div style="text-align: right;">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                                    	
+                                </label>
+                                <div class="col-sm-3">
+                                    <img id="fileImg" src="${item.headImage != '' && item.headImage != null ?'/labor/'+item.headImage:'/static/img/avatar1.png'}" onerror="this.src='/static/img/avatar1.png'" alt="" style="width:102px; height: 102px;">
+                                    <input type="hidden" id="faceImage" value=""/>
+                                    <!--<#button btnCss="info" name="拍照" id="ensure" disabled="disabled" icon="fa-check" clickFun="WorkerMasterInfoDlg.openMonitor()"/>-->
+                                </div>
+                                <div class="col-sm-6">
+                                    <img id="faceImg" src="${item.face != '' && item.face != null?'/labor/'+item.face:'/static/img/avatar2.png'}" onerror="this.src='/static/img/avatar2.png'" alt="" style="width:102px; height: 102px;">
+                                    <input type="hidden" id="headImage" value=""/>
+                                    <!--<#button btnCss="info" name="拍照" id="ensure" disabled="disabled" icon="fa-check" clickFun="WorkerMasterInfoDlg.openMonitor()"/>-->
+                                </div>
+                            </div>
+                        </div>
+                            <div class="row">
+                                <div class="col-sm-6 ">
+                                  	<#input_sjf id="projectName" name="项目" value="${project.projectName}" underline="true" disabled="disabled" />
+
+                                   	<#input_sjf id="teamSysNo" name="班组" value="${project.teamName}" underline="true" disabled="disabled" />
+                                    <#input_sjf id="workerName" name="姓名" value="${item.workerName}" underline="true" disabled="disabled" />
+                                    <#select_sjf id="nation" name="民族" underline="true" disabled="disabled">
+                                        @for(i in dictNation){
+                                            @if(""+i.num==item.nation){
+                                            <option value="${i.num}" selected>${i.name}</option>
+                                            @}else{
+                                            <option value="${i.num}">${i.name}</option>
+                                            @}
+                                        @}
+                                    </#select_sjf>
+                                    <#input_sjf id="birthday" name="出生日期" underline="true" value="${item.birthday}" requiredFlag="true" disabled="disabled"/>
+                                    <#input_sjf id="address" name="住址" value="${item.address}" underline="true" disabled="disabled" />
+                                    <#select_sjf id="politicsType" name="政治面貌" underline="true" disabled="disabled">
+                                        <option value=""></option>
+                                        <option value="0">中共党员</option>
+                                        <option value="1">中共预备党员</option>
+                                        <option value="2">共青团员</option>
+                                        <option value="3">群众</option>
+                                    </#select_sjf>
+                                    <#select_sjf id="cultureLevelType" name="文化程度" underline="true" disabled="disabled">
+                                        <option value=""></option>
+                                        @for(item in dictCultureLevelType){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </#select_sjf>
+                                    <#input_sjf id="urgentContractName" name="紧急联系人" value="${item.urgentContractName}" underline="true" disabled="disabled"
+                                    />
+                                    <#radioIs name="hasBadMedicalHistory" label="有重大病史" disabled="true"  value="${item.hasBadMedicalHistory}" />
+                                    <#radioIs name="isAuth" label="实名" disabled="true"  value="${item.isAuth}" />
+                                    <#radioIs name="isFace" label="人脸录入" disabled="true"  value="${item.isFace}" />
+
+                                </div>
+                                <div class="col-sm-6">
+                                    <#input_sjf id="cellPhone" name="手机号码" value="${item.cellPhone}" underline="true" disabled="disabled" />
+                                    <#radioSex name="gender" label="性别" disabled="true"  value="${item.gender}"/>
+                                    <#select_sjf id="birthPlaceCode" name="籍贯" underline="true" disabled="disabled">
+                                        @for(item in dictBirthPlaceCode){
+                                        <option value="${item.id}">${item.shortname}</option>
+                                        @}
+                                    </#select_sjf>
+                                    <#select_sjf id="workTypeCode" name="当前工种" underline="true" disabled="disabled">
+                                        @for(item in dictWorkTypeCode){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </#select_sjf>
+
+
+                                    <#radioIs name="isJoined" label="加入工会" disabled="true"  value="${item.isJoined}" />
+
+
+                                    <#input_sjf id="joinedTime" name="加入工会时间" underline="true" value="${item.joinedTime}"  disabled="disabled"/>
+                                    <#input_sjf id="urgentContractCellphone" name="紧急联系人电话" value="${item.urgentContractCellphone}" underline="true" disabled="disabled"
+                                    />
+                                    <#input_sjf id="workDate" name="开始工作日期" underline="true"  value="${item.workDate}"   disabled="disabled"/>
+                                    <#textarea_sjf id="note" name="备注" underline="false"   value="${item.note}"  disabled="disabled"/>
+                                </div>
+                                <div class="col-sm-12">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="workerGoodRecords" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="row row-lg">
+                            <div class="col-sm-12 no-before">
+                                <#table id="WorkerGoodRecordsTable" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div id="workerBadRecords" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="row row-lg">
+                            <div class="col-sm-12 no-before">
+                                <#table id="WorkerBadRecordsTable" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="projectTrainings" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="row row-lg">
+                            <div class="col-sm-12 no-before">
+                                <#table id="ProjectTrainingsTable" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settlement" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-content">
+                            <div class="container-fluid">
+                                    <div class="panel-group" id="accordion">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="workerExperience" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-content">
+                            <div class="row row-lg">
+                                <div class="col-sm-12 no-before">
+                                    <#table id="WorkExperienceTable" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="workerCertifications" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-content">
+                            <div class="row row-lg">
+                                <div class="col-sm-12 no-before">
+                                    <div id="certifications" class="tab-pic-sss"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerMaster/workerMaster_info.js"></script>
+<script>
+    // $(function () {
+    //     $('#collapseOne').collapse('show')
+    // });
+</script>
+@}

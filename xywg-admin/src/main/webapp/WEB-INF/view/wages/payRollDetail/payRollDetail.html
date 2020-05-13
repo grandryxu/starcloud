@@ -1,0 +1,118 @@
+@layout("/common/_container.html"){
+<link rel="stylesheet" href="${ctxPath}/static/js/plugins/layui/css/layui.css" media="all">
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>工资详情管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input search-chosen" id="projectCode" name="项目"
+                                                onchange="PayRoll.projectOnChange()">
+                                            <option value="">选择项目</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <select class="fn-input" id="team" name="班组">
+                                            <option value="">请选择</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="PayRoll.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+
+                                <!--截止时间:
+                                <#TimeCon id="startTime" name="开始时间" isTime="false" pattern="YYYY-MM-DD" />-
+                                <#TimeCon id="endTime" name="结束时间" isTime="false" pattern="YYYY-MM-DD" />-->
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">创建时间</label>
+                                        <div class="fn-datepicker" id="datepicker">
+                                            <input class="fn-datepicker-input" id="startDate" name="establishDate"
+                                                   readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="endDate" name="establishDate"
+                                                   readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+                        <input type="file" style="display:none" id="excelFile" name="excelFile"
+                               class="form-control"
+                               onchange="fileUpload()">
+
+                        <div  id="PayRollDetailTableToolbar" role="group">
+                            <#button name="添加" icon="fa-plus" clickFun="PayRoll.openAddPayRollDetail()"/>
+                            <#button name="修改" icon="fa-edit" clickFun="PayRoll.openPayRollDetail()" space="true"/>
+                            <#button name="删除" icon="fa-remove" clickFun="PayRoll.delete()" space="true"/>
+                            <#button name="提交" icon="fa-save" clickFun="PayRoll.submit()" space="true"/>
+                            <!--<#button name="上传附件" icon="fa-uoload" clickFun="PayRoll.upload()" space="true"/>-->
+                            @if(isEnterprise == 1){
+                            <#button name="审核" icon="fa-check-square-o" clickFun="PayRoll.toExamine()" space="true"/>
+                            <#button name="复审" icon="fa-check-square" clickFun="PayRoll.review()" space="true"/>
+                            <#button name="工资发放" icon="fa-credit-card" clickFun="PayRoll.grantPayRoll()" space="true"/>
+                            @}
+                            <#button name="导出" icon="fa-download" clickFun="PayRoll.export()" space="true"/>
+                        </div>
+                        <form method="post" enctype="multipart/form-data" id="form1">
+                            <input type="file" style="display:none" id="uploadFileInput" name="file"
+                                   class="form-control" multiple
+                                   onchange="fileUpload()">
+                        </form>
+                        <#table id="PayRollDetailTable"/>
+                    </div>
+
+                    <!-- 图片展示区域 -->
+                    <div style="display: none" id="accessoryPictureDiv">
+                        <div  style="margin: 5px 10px 10px 10px">
+                            <#button name="删除" icon="fa-remove" clickFun="deletePicture()"/>
+                        </div>
+                        <div id="imagesPicture" style="margin-bottom: 5px">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--<div class="layui-form-item" id="checkHtml" style="display: none">-->
+<!--<label>单选框</label>-->
+<!--<div>-->
+<!--<select id="review">-->
+<!--<input type="radio" name="sex" value="1" title="通过" checked="">-->
+<!--<input type="radio" name="sex" value="0" title="不通过">-->
+<!--</select>-->
+<!--</div>-->
+<!--</div>-->
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/plugins/layui/layui.js" charset="utf-8"></script>
+<script src="${ctxPath}/static/modular/wages/payRollDetail/payRollDetail.js"></script>
+@}

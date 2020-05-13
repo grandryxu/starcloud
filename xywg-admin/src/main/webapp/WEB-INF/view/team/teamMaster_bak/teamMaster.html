@@ -1,0 +1,50 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>班组管理管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <!-- <div class="col-sm-3">
+                                <#NameCon id="teamCode" name="班组编号" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#NameCon id="peojectCode" name="项目编号" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#NameCon id="peojectName" name="项目名称" />
+                            </div> -->
+                            <div class="col-sm-3">
+                                <#NameCon id="name" name="联系人" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#NameCon id="phone" name="联系方式" />
+                            </div>
+                            <div class="col-sm-3">
+                                <#button name="搜索" icon="fa-search" clickFun="TeamMaster.search()"/>
+                            </div>
+                        </div>
+                        <div  id="TeamMasterTableToolbar" role="group">
+                            @if(shiro.hasPermission("/teamMaster/add")){
+                                <#button name="添加" icon="fa-plus" clickFun="TeamMaster.openAddTeamMaster()"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/update")){
+                                <#button name="修改" icon="fa-edit" clickFun="TeamMaster.openTeamMasterDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/teamMaster/delete")){
+                                <#button name="删除" icon="fa-remove" clickFun="TeamMaster.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="TeamMasterTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster.js"></script>
+@}

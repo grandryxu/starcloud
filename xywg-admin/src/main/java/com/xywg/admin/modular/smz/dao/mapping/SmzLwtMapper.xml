@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.smz.dao.SmzLwtMapper">
+
+	<!-- 保存实名制、劳务通主键关系 -->
+	<insert id="saveSmzLwt" parameterType="com.xywg.admin.modular.smz.model.SmzLwt">
+		insert into r_smz_lwt(smz_id,lwt_id,table_name)
+		values(#{s.smzId},#{s.lwtId},#{s.tableName})
+	</insert>
+	
+	<!-- 根据实名制ID、表名查询劳务通ID -->
+	<select id="getLwtIdBySmzId" resultType="com.xywg.admin.modular.smz.model.SmzLwt">
+		select
+		r.id,
+		r.lwt_id as lwtId,
+		r.smz_id as smzId,
+		r.table_name as tableName
+		from
+		r_smz_lwt r
+		where r.table_name = #{t}
+		<if test="s != null and s != 0">
+			and r.smz_id = #{s}
+		</if>
+	</select>
+	<insert id="saveRegisterNoProjectId" parameterType="com.xywg.admin.modular.smz.model.SmzCorProject">
+		insert into smz_cor_project (REGISTER_NO,PROJECT_ID)
+		values(#{s.registerNo},#{s.projectId})
+	</insert>
+	<select id="getProjectMaxId" resultType="Long">
+	select MAX(project_id) as project_id from smz_cor_project
+	where fix_value = 'project'
+	<if test="registerNo != null">
+	and register_no = #{registerNo,jdbcType=VARCHAR}
+	</if>
+	</select>
+	<insert id="saveScp" parameterType="com.xywg.admin.modular.smz.model.SmzCorProject">
+	insert into smz_cor_project(fix_value,PROJECT_ID,register_no)
+		values(#{s.fixValue},#{s.projectId},#{s.registerNo})
+	</insert>
+	<update id="updateScp">
+	update smz_cor_project set project_id = #{s.projectId}
+	where fix_value = #{s.fixValue}
+	and register_no = #{s.registerNo}
+	</update>
+</mapper>

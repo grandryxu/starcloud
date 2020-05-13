@@ -1,0 +1,75 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目信息管理</h5>
+            </div>
+            <input id="pageType" type="hidden" value="${pageType}"/>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="col-sm-11">
+                                <div class="inline-search-s">
+                                    <label class="label-search-s">名称</label>
+                                    <input type="text" class="input-search-s" style="width:350px;" id="condition" placeholder="" />
+                                </div>
+                                <div class="inline-search-s">
+                                    <label class="label-search-s">单位性质</label>
+                                    <select id="projectStatus" name="项目状态" class="label-search-s" underline="true">
+                                        <option value="">请选择</option>
+                                        @for(item in projectStatus){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </select>
+                                </div>
+                                <div class="inline-search-s">
+                                    <label class="label-search-s">起止时间：</label>
+                                    <div class="" id="datepicker" style="display:inline-block;">
+                                        <input class="input-search-s" id="startDate" name="establishDate"
+                                               type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                        <span class="">-</span>
+                                        <input class="input-search-s" id="endDate" name="establishDate"
+                                               type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-1 ta-right">
+                                <#button name="搜索" icon="fa-search" clickFun=""/>
+                                <#reset name="重置" icon="fa-search" formId="searchForm"/>
+                            </div>
+
+                        </form>
+
+                        <input type="file" style="display:none" id="excelFile" name="excelFile" class="form-control"
+                               onchange="fileUpload()">
+                        <div class="hidden-xs" id="ProjectMasterTableToolbar" role="group">
+                            @if(shiro.hasPermission("/projectMaster/add")){
+                                <#button name="添加" icon="fa-plus" clickFun="ProjectMaster.openAddProjectMaster()"/>
+                            @}
+                            @if(shiro.hasPermission("/projectMaster/update")){
+                                <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/projectMaster/delete")){
+                                <#button name="删除" icon="fa-remove" clickFun="ProjectMaster.delete()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/safetyHelmet/list")){
+                                <#button name="安全帽管理" icon="fa-navicon" clickFun="ProjectMaster.openSafetyHelmetManager()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/device/list")){
+                            <#button name="考勤机管理" icon="fa-navicon" clickFun="ProjectMaster.openDeviceManager()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/upload/laborContract")){
+                            	<#button name="上传劳动合同" icon="fa-navicon" clickFun="ProjectMaster.uploadLaborContract()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="ProjectMasterTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/cooperationProjectMaster/cooperationProjectMaster.js"></script>
+@}

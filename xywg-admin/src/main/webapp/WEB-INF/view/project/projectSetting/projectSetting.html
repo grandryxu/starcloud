@@ -1,0 +1,81 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目设置</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" onsubmit="return false;">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                            <option value="">选择项目</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">同步数据</label>
+                                        <select class="fn-input" id="isSynchro" name="同步实名制">
+                                            <option value="">请选择</option>
+                                            <option value="0">否</option>
+                                            <option value="1">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="ProjectSetting.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">拉取数据</label>
+                                        <select class="fn-input" id="isReceive" name="拉取实名制">
+                                            <option value="">请选择</option>
+                                            <option value="0">否</option>
+                                            <option value="1">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">添加水印</label>
+                                        <select class="fn-input" id="isWatermark" name="添加水印">
+                                            <option value="">请选择</option>
+                                            <option value="0">否</option>
+                                            <option value="1">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+
+                        <#table id="ProjectSettingTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/project/projectSetting/projectSetting.js"></script>
+@}
+

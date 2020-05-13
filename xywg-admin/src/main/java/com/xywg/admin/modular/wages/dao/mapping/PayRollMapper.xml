@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.PayRollMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.PayRoll">
+        <id column="id" property="id"/>
+        <result column="pay_roll_code" property="payRollCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="team_sys_no" property="teamSysNo"/>
+        <result column="pay_month" property="payMonth"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="save_status" property="saveStatus"/>
+        <result column="pay_status" property="payStatus"/>
+        <result column="contractor_project_code" property="contractorProjectCode"/>
+        <result column="sub_contractor_project_code" property="subContractorProjectCode"/>
+        <result column="attach_files" property="attachFiles"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="construct_valid" property="constructValid"/>
+        <result column="construct_date" property="constructDate"/>
+        <result column="contract_valid" property="contractValid"/>
+        <result column="contract_date" property="contractDate"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="salary_person" property="salaryPerson"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, pay_roll_code AS payRollCode, project_code AS projectCode, organization_code AS organizationCode, team_sys_no AS teamSysNo, pay_month AS payMonth, type, status, save_status AS saveStatus, pay_status AS payStatus, contractor_project_code AS contractorProjectCode, sub_contractor_project_code AS subContractorProjectCode, attach_files AS attachFiles, total_amount AS totalAmount, construct_valid AS constructValid, construct_date AS constructDate, contract_valid AS contractValid, contract_date AS contractDate, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, salary_person AS salaryPerson, is_del AS isDel
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO buss_pay_roll
+        ( project_code , pay_roll_code, team_sys_no, pay_month, `type`,save_status ,pay_status
+        ,organization_code,contractor_project_code , sub_contractor_project_code ,create_date ,create_user
+        ,salary_person,actual_amount,total_amount)
+        VALUES
+        (#{projectCode}, #{payRollCode}, #{teamSysNo},
+        <if test="type == 1">
+            #{payMonth},
+        </if>
+        <if test="type == 2">
+            now(),
+        </if>
+        #{type} ,#{saveStatus} ,1 ,(SELECT organization_code FROM buss_team_master WHERE team_sys_no =
+        #{teamSysNo}) , '---' , '---' ,now(),#{createUser} ,#{salaryPerson},#{actualAmount},#{totalAmount})
+    </insert>
+
+    <select id="list" resultType="com.xywg.admin.modular.wages.model.PayRollVo">
+        SELECT
+        bpr.id, bpr.pay_roll_code AS payRollCode, bpr.project_code AS projectCode, bpr.organization_code AS
+        organizationCode, bpr.team_sys_no AS teamSysNo,
+        bpr.pay_month AS payMonth, bpr.type, bpr.status, bpr.save_status AS saveStatus, bpr.pay_status AS payStatus,
+        bpr.contractor_project_code AS contractorProjectCode, bpr.sub_contractor_project_code AS
+        subContractorProjectCode,
+        bpr.attach_files AS attachFiles, bpr.total_amount AS totalAmount, bpr.construct_valid AS constructValid,
+        bwm.name AS constructValidName ,
+        bpr.construct_date AS constructDate,
+        bpr.contract_valid AS contractValid,
+        bwm2.name AS contractValidName,
+        bpr.contract_date AS contractDate, bpr.create_date AS createDate,
+        bpr.create_user AS createUser,
+        bpr.update_date AS updateDate, bpr.update_user AS updateUser, bpr.salary_person AS salaryPerson, bpr.is_del AS
+        isDel ,
+        sum(bprd.pay_amount) AS payAmount , sum(bprd.actual_amount) AS actualAmount ,sum(bprd.balance_amount) AS
+        balanceAmount ,
+        bpm.project_name AS projectName ,btm.team_name AS teamName ,
+        (select count(1) from buss_file_info where type = 'buss_pay_roll'
+        AND relevance_id = bpr.id ) AS fileNums ,
+        if(M.social_credit_number is null,0,1) AS isGeneralContractorOperation ,
+        bsc.company_name AS companyName
+        FROM
+        buss_pay_roll bpr
+        LEFT JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) M ON M.social_credit_number = bpr.organization_code
+        LEFT JOIN buss_sub_contractor bsc ON bsc.organization_code = bpr.organization_code
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) A ON A.social_credit_number = bpr.organization_code
+        </if>
+        JOIN buss_pay_roll_detail bprd ON bpr.pay_roll_code = bprd.pay_roll_code
+        JOIN buss_project_master bpm ON bpm.project_code = bpr.project_code
+        JOIN buss_team_master btm ON btm.team_sys_no = bpr.team_sys_no
+        LEFT JOIN sys_user bwm ON bpr.construct_valid = bwm.id
+        LEFT JOIN sys_user bwm2 ON bpr.contract_valid = bwm2.id
+        WHERE bpr.is_del = 0
+    <!--    <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>-->
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and bpr.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != ''">
+            AND bpr.project_code = #{map.projectCode}
+        </if>
+        <if test="map.teamSysNo !=null and map.teamSysNo != ''">
+            AND bpr.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.startTime !=null and map.startTime != ''">
+            AND bpr.create_date >= #{map.startTime}
+        </if>
+        <if test="map.endTime !=null and map.endTime != ''">
+            AND LEFT(bpr.create_date,10) <![CDATA[<=]]> #{map.endTime}
+        </if>
+        GROUP BY bpr.id
+        ORDER BY id DESC
+    </select>
+
+
+    <!-- 根据工资单id 查询工资单-->
+    <select id="selectDetailByPayRollCode" parameterType="com.baomidou.mybatisplus.plugins.Page"
+            resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT
+        bprd.id,
+        bprd.pay_roll_code AS payRollCode,
+        bprd.id_card_type AS idCardType,
+        bprd.id_card_number AS idCardNumber,
+        bprd.worker_type AS workerType,
+        bprd.price,
+        bprd.days,
+        bprd.amount,
+        bprd.reward_amount AS rewardAmount,
+        bprd.punish_amount AS punishAmount,
+        bprd.pay_amount AS payAmount,
+        bprd.actual_amount AS actualAmount,
+        bprd.balance_amount AS balanceAmount,
+        bprd.time,
+        bprd.pay_status AS payStatus,
+        bprd.sign,
+        bprd.icon_sign AS iconSign,
+        bprd.photo,
+        bprd.icon_photo AS iconPhoto,
+        bprd.certificate_type AS certificateType,
+        bprd.create_date AS createDate,
+        bprd.create_user AS createUser,
+        bprd.update_date AS updateDate,
+        bprd.update_user AS updateUser,
+        bprd.pay_person AS payPerson,
+        bprd.remark,
+        bprd.confirm_time AS confirmTime,
+        bprd.balance_date AS balanceDate,
+        bprd.pay_roll_bank_card_number AS payRollBankCardNumber,
+        bprd.pay_roll_bank_name AS payRollBankName,
+        bprd.pay_roll_bank_code AS payRollBankCode,
+        bprd.pay_total_amount AS payTotalAmount,
+        bprd.settle_total_amount AS settleTotalAmount,
+        bprd.is_del AS isDel ,
+        bprd.worker_type AS workerType,
+        bwm.worker_name AS workerName,
+        bd.name AS idCardName,
+        bdt.name AS workKindName
+        FROM
+        buss_pay_roll_detail bprd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type
+        AND bwm.id_card_number = bprd.id_card_number
+        AND bwm.is_del = 0
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' AND num = 0) ) bd ON
+        bd.num = bprd.id_card_type
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' AND num = 0) ) bdt
+        ON bdt.num = bprd.worker_type
+        WHERE
+        bprd.pay_roll_code = #{map.payRollCode} AND bprd.is_del = 0
+        <if test="map.condition !=null and map.condition !='' ">
+            AND ((bwm.worker_name LIKE CONCAT('%',#{map.condition},'%')) OR (bprd.id_card_number LIKE
+            CONCAT('%',#{map.condition},'%')))
+        </if>
+        <if test="map.workerType !=null and map.workerType !='' ">
+            AND bprd.worker_type = #{map.workerType}
+        </if>
+
+    </select>
+
+    <!-- 根据工资单id 查询工资单-->
+    <select id="selectDetailByPayRollCodeNoPage" parameterType="com.baomidou.mybatisplus.plugins.Page"
+            resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT
+        bwm.id,
+        bprd.pay_roll_code AS payRollCode,
+        bprd.id_card_type AS idCardType,
+        bprd.id_card_number AS idCardNumber,
+        bprd.worker_type AS workerType,
+        bprd.price,
+        bprd.days,
+        bprd.amount,
+        bprd.reward_amount AS rewardAmount,
+        bprd.punish_amount AS punishAmount,
+        bprd.pay_amount AS payAmount,
+        bprd.actual_amount AS actualAmount,
+        bprd.balance_amount AS balanceAmount,
+        bprd.time,
+        bprd.pay_status AS payStatus,
+        bprd.sign,
+        bprd.icon_sign AS iconSign,
+        bprd.photo,
+        bprd.icon_photo AS iconPhoto,
+        bprd.certificate_type AS certificateType,
+        bprd.create_date AS createDate,
+        bprd.create_user AS createUser,
+        bprd.update_date AS updateDate,
+        bprd.update_user AS updateUser,
+        bprd.pay_person AS payPerson,
+        bprd.remark,
+        bprd.confirm_time AS confirmTime,
+        bprd.balance_date AS balanceDate,
+        bprd.pay_roll_bank_card_number AS payRollBankCardNumber,
+        bprd.pay_roll_bank_name AS payRollBankName,
+        bprd.pay_roll_bank_code AS payRollBankCode,
+        bprd.pay_total_amount AS payTotalAmount,
+        bprd.settle_total_amount AS settleTotalAmount,
+        bprd.is_del AS isDel ,
+        bprd.worker_type AS workerType,
+        bwm.worker_name AS workerName,
+        bd.name AS idCardName,
+        bdt.name AS workKindName
+        FROM
+        buss_pay_roll_detail bprd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type
+        AND bwm.id_card_number = bprd.id_card_number
+        AND bwm.is_del = 0
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' AND num = 0) ) bd ON
+        bd.num = bprd.id_card_type
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' AND num = 0) ) bdt
+        ON bdt.num = bprd.worker_type
+        WHERE
+        bprd.pay_roll_code = #{map.payRollCode} AND bprd.is_del = 0
+        <if test="map.condition !=null and map.condition !='' ">
+            AND ((bwm.worker_name LIKE CONCAT('%',#{map.condition},'%')) OR (bprd.id_card_number LIKE
+            CONCAT('%',#{map.condition},'%')))
+        </if>
+        <if test="map.workerType !=null and map.workerType !='' ">
+            AND bprd.worker_type = #{map.workerType}
+        </if>
+
+    </select>
+
+    <update id="deleteIds">
+        UPDATE buss_pay_roll
+        SET is_del = 1
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+
+    <update id="submit">
+        UPDATE buss_pay_roll
+        SET save_status = 2
+        WHERE FIND_IN_SET(id,#{ids})
+    </update>
+
+    <update id="grantPayRoll">
+        UPDATE buss_pay_roll
+        SET status = 50 ,pay_status = if((select sum(balance_amount) from buss_pay_roll_detail bprd join (select * from buss_pay_roll) bpr ON bpr.id = #{id} AND bpr.pay_roll_code = bprd.pay_roll_code )=0,3,2)
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据项目，工资单类型获取工资单列表-->
+    <select id="getPayRollListByProjectCodeAndType" resultType="map">
+        select
+        pr.id as id,
+        pm.project_name as projectName,
+        sum(prd.pay_amount) as payAmount,
+        sum(prd.actual_amount) as actualAmount,
+        sum(prd.balance_amount) as balanceAmount,
+        pr.status as status,
+        pr.create_date AS createDate,
+        pr.save_status AS saveStatus
+        from buss_pay_roll pr
+        left join buss_pay_roll_detail prd on prd.pay_roll_code=pr.pay_roll_code
+        left join buss_project_master pm on pm.project_code=pr.project_code
+        where 1=1
+        <if test="teamSysNo!=null and teamSysNo!=''">
+            and pr.team_sys_no=#{teamSysNo}
+        </if>
+        <if test="projectCode!=null and projectCode!=''">
+            and pr.project_code=#{projectCode}
+        </if>
+        <if test="id!=null and id!=''">
+            and pr.team_sys_no in
+            (
+            select
+            tm.team_sys_no
+            from sys_user su
+            left join buss_worker_master wm on su.phone=wm.cell_phone
+            left join buss_team_member tm on tm.id_card_number=wm.id_card_number and tm.id_card_type=wm.id_card_type
+            where su.id=#{id}
+            and tm.team_worker_type=0
+            )
+        </if>
+        <if test="type!=null and type!=''">
+            and pr.type=#{type}
+        </if>
+        and pr.is_del=0
+        GROUP BY pr.id
+        ORDER BY pr.id DESC 
+    </select>
+
+    <!-- 根据项目，工资单类型获取工资单列表-->
+    <select id="v116GetPayRollListByProjectCodeAndType" resultType="map">
+        select
+        pr.id as id,
+        pm.project_name as projectName,
+        sum(prd.pay_amount) as payAmount,
+        sum(prd.actual_amount) as actualAmount,
+        sum(prd.balance_amount) as balanceAmount,
+        pr.status as status,
+        pr.create_date AS createDate,
+        pr.save_status AS saveStatus
+        from buss_pay_roll pr
+        left join buss_pay_roll_detail prd on prd.pay_roll_code=pr.pay_roll_code
+        left join buss_project_master pm on pm.project_code=pr.project_code
+        where 1=1
+        <if test="teamSysNo!=null and teamSysNo!=''">
+            and pr.team_sys_no=#{teamSysNo}
+        </if>
+        <if test="projectCode!=null and projectCode!=''">
+            and pr.project_code=#{projectCode}
+        </if>
+        <if test="id!=null and id!=''">
+            and pr.team_sys_no in
+            (
+            select
+            tm.team_sys_no
+            from sys_user su
+            left join buss_worker_master wm on su.phone=wm.cell_phone
+            left join buss_team_member tm on tm.id_card_number=wm.id_card_number and tm.id_card_type=wm.id_card_type
+            where su.id=#{id}
+            and tm.team_worker_type=0
+            )
+        </if>
+        <if test="type!=null and type!=''">
+            and pr.type=#{type}
+        </if>
+        and pr.is_del=0
+        GROUP BY pr.id
+        ORDER BY pr.id DESC
+        limit #{index},#{pageSize}
+    </select>
+
+    <update id="examineSalary">
+        UPDATE buss_pay_roll
+        SET
+        <if test="status == 2">
+            construct_valid = #{userId} ,
+            construct_date = now() ,
+        </if>
+        <if test="status == 3">
+            contract_valid = #{userId} ,
+            contract_date = now() ,
+        </if>
+        status = #{status}
+        WHERE id= #{id}
+    </update>
+
+    <update id="updateDetailsPayPerson">
+        UPDATE buss_pay_roll_detail
+        SET pay_person = #{accountName}
+        WHERE
+        pay_roll_code = (SELECT pay_roll_code FROM buss_pay_roll WHERE id = #{id})
+    </update>
+
+    <select id="getPayRollByOrganizationCode" resultType="com.xywg.admin.modular.wages.model.dto.PayRollDto">
+        <!-- 获取自己公司要审核的工资单 -->
+        SELECT id , projectName , payAmount , actualAmount ,balanceAmount ,STATUS , createDate FROM
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        AND bprd.save_status = 2
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id) N
+        ORDER BY id DESC
+    </select>
+
+    <select id="v116GetPayRollByOrganizationCode" resultType="com.xywg.admin.modular.wages.model.dto.PayRollDto">
+        <!-- 获取自己公司要审核的工资单 -->
+        SELECT id , projectName , payAmount , actualAmount ,balanceAmount ,STATUS , createDate FROM
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        AND bprd.save_status = 2
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id) N
+        ORDER BY id DESC
+        limit #{index},#{pageSize}
+    </select>
+
+    <!-- 查询待审核的工资单个数 -->
+    <select id="getToAuditPayRollCount" resultType="com.xywg.admin.modular.bad.dto.BadRecordsResultVO">
+     SELECT
+        COUNT(1) AS toAuditPayRollCount
+        FROM 
+       <!-- 作为参建单位 -->
+        (SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        WHERE
+        bprd.is_del = 0
+        AND bprd.organization_code = #{organizationCode}
+        AND (bprd.STATUS != 50)
+        AND bprd.save_status = 2
+        GROUP BY
+        bprd.id
+        UNION ALL
+        <!-- 作为总包单位 -->
+        SELECT
+        bprd.id,
+        bpm.project_name AS projectName,
+        sum( ifnull( b.pay_amount, 0 ) ) AS payAmount,
+        sum( ifnull( b.actual_amount, 0 ) ) AS actualAmount,
+        sum( ifnull( b.balance_amount, 0 ) ) AS balanceAmount,
+        bprd.STATUS,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll bprd
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bprd.project_code
+        LEFT JOIN buss_pay_roll_detail b ON b.pay_roll_code = bprd.pay_roll_code
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = #{organizationCode}
+        AND bpsc.project_code = bprd.project_code
+        AND bpsc.contractor_type = 16
+        WHERE
+        bprd.organization_code IN ( SELECT construction_code FROM buss_sub_contractor_construction WHERE contractor_code
+        = #{organizationCode}
+        )
+        AND (bprd.STATUS = 2 OR bprd.STATUS = 3)
+        AND bprd.is_del = 0
+        GROUP BY
+        bprd.id) t
+    </select>
+
+    <select id="getPayRollById" resultType="com.xywg.admin.modular.wages.model.PayRollFlow">
+        SELECT
+          bpr.pay_roll_code AS payRollCode,
+          bpr.project_code AS projectCode,
+          bpr.organization_code AS organizationCode,
+          bprd.id_card_type AS idCardType,
+          bprd.id_card_number AS idCardNumber,
+          bprd.pay_amount AS payAmount,
+          bprd.actual_amount AS actualAmount,
+          bprd.balance_amount AS balanceAmount
+        FROM
+          buss_pay_roll bpr
+        LEFT JOIN  buss_pay_roll_detail bprd ON bprd.pay_roll_code = bpr.pay_roll_code
+        WHERE
+          bpr.id = #{id}
+        GROUP BY bprd.id_card_type , bprd.id_card_number
+    </select>
+
+    <select id="selectByPayRollCode" resultType="com.xywg.admin.modular.wages.model.PayRoll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_pay_roll
+        WHERE
+        pay_roll_code = #{payRollCode}
+    </select>
+</mapper>

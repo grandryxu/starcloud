@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.PayRollDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.PayRollDetail">
+        <id column="id" property="id"/>
+        <result column="pay_roll_code" property="payRollCode"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="worker_type" property="workerType"/>
+        <result column="price" property="price"/>
+        <result column="days" property="days"/>
+        <result column="amount" property="amount"/>
+        <result column="reward_amount" property="rewardAmount"/>
+        <result column="punish_amount" property="punishAmount"/>
+        <result column="pay_amount" property="payAmount"/>
+        <result column="actual_amount" property="actualAmount"/>
+        <result column="balance_amount" property="balanceAmount"/>
+        <result column="time" property="time"/>
+        <result column="pay_status" property="payStatus"/>
+        <result column="sign" property="sign"/>
+        <result column="icon_sign" property="iconSign"/>
+        <result column="photo" property="photo"/>
+        <result column="icon_photo" property="iconPhoto"/>
+        <result column="certificate_type" property="certificateType"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="pay_person" property="payPerson"/>
+        <result column="remark" property="remark"/>
+        <result column="living_cost" property="livingCost"/>
+        <result column="all_livingcost" property="allLivingcost"/>
+        <result column="confirm_time" property="confirmTime"/>
+        <result column="balance_date" property="balanceDate"/>
+        <result column="pay_roll_bank_card_number" property="payRollBankCardNumber"/>
+        <result column="pay_roll_bank_name" property="payRollBankName"/>
+        <result column="pay_roll_bank_code" property="payRollBankCode"/>
+        <result column="pay_total_amount" property="payTotalAmount"/>
+        <result column="settle_total_amount" property="settleTotalAmount"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, pay_roll_code AS payRollCode, id_card_type AS idCardType, id_card_number AS idCardNumber, worker_type AS workerType, price, days, amount, reward_amount AS rewardAmount, punish_amount AS punishAmount, pay_amount AS payAmount, actual_amount AS actualAmount, balance_amount AS balanceAmount, time, pay_status AS payStatus, sign, icon_sign AS iconSign, photo, icon_photo AS iconPhoto, certificate_type AS certificateType, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, pay_person AS payPerson, remark, living_cost AS livingCost, all_livingcost AS allLivingcost, confirm_time AS confirmTime, balance_date AS balanceDate, pay_roll_bank_card_number AS payRollBankCardNumber, pay_roll_bank_name AS payRollBankName, pay_roll_bank_code AS payRollBankCode, pay_total_amount AS payTotalAmount, settle_total_amount AS settleTotalAmount, is_del AS isDel
+    </sql>
+
+    <select id="getSalaryDetailByWorkerInfo" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT count(LEFT(A.time,7)) AS days,A.id_card_type AS idCardType, A.id_card_number AS idCardNumber,
+        bwm.worker_name AS workerName, bd.name AS
+        idCardName, bdt.name AS workKindName ,bwm.work_type_code AS workerType
+        FROM
+        (
+        <foreach collection="teamWokers" item="item" open="(" separator=") UNION ALL(" close=")">
+            SELECT
+            bdr.time ,bdr.id_card_type ,bdr.id_card_number
+            FROM
+            buss_device_record bdr
+            WHERE
+            bdr.project_code = #{projectCode} AND bdr.team_sys_no = #{teamSysNo}
+            AND bdr.id_card_type = #{item.idCardType} AND bdr.id_card_number = #{item.idCardNumber}
+            <if test="month !=null and month!= ''">
+                AND (bdr.time >= #{paramsToFindSalaryDetail.month} AND bdr.time
+                <![CDATA[<]]>
+                CONCAT(LEFT(now(),5),LPAD(Right(#{paramsToFindSalaryDetail.month},2)+1,2,0)))
+            </if>
+            <if test="month ==null || month== ''">
+                AND (bdr.time >= LEFT(now(),4))
+            </if>
+        </foreach>
+        ) A
+        JOIN buss_worker_master bwm ON bwm.id_card_type = A.id_card_type
+        AND bwm.id_card_number = A.id_card_number and bwm.is_del = 0
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' AND num = 0) ) bd ON
+        bd.num = A.id_card_type
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' AND num = 0) ) bdt
+        ON bdt.num = bwm.work_type_code
+        GROUP BY A.id_card_type , A.id_card_number
+
+    </select>
+
+    <select id="list" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo"
+            parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT count(day) AS days, idCardType , idCardNumber , workerName , idCardName , workKindName , workerType ,
+        price FROM
+        (
+        SELECT LEFT(A.time,10) AS day,A.id_card_type AS idCardType, A.id_card_number AS idCardNumber,
+        A.worker_name AS workerName, bd.name AS
+        idCardName, bwk.name AS workKindName ,bpw.work_type_code AS workerType , ifnull(bwk.amount,0) AS price
+        FROM
+        (
+        <foreach collection="paramsToFindSalaryDetail.teamWorkers" item="item" open="(" separator=") UNION ALL("
+                 close=")">
+            SELECT
+            bdr.time ,bwmm.id_card_type ,bwmm.id_card_number ,bdr.project_code , bdr.team_sys_no , bwmm.worker_name
+            FROM
+            buss_worker_master bwmm
+            LEFT JOIN buss_device_record bdr ON bdr.id_card_type = bwmm.id_card_type AND bdr.id_card_number =
+            bwmm.id_card_number AND
+            bdr.project_code = #{paramsToFindSalaryDetail.projectCode} AND bdr.team_sys_no =
+            #{paramsToFindSalaryDetail.teamSysNo}
+            <if test="paramsToFindSalaryDetail.month != null and paramsToFindSalaryDetail.month!= ''">
+                AND (bdr.time >= #{paramsToFindSalaryDetail.month} AND bdr.time
+                <![CDATA[<]]>
+                CONCAT(LEFT(now(),5),LPAD(Right(#{paramsToFindSalaryDetail.month},2)+1,2,0)))
+            </if>
+            <if test="paramsToFindSalaryDetail.month == null or paramsToFindSalaryDetail.month== ''">
+                AND (bdr.time >= LEFT(now(),4))
+            </if>
+            WHERE
+            bwmm.id_card_type = #{item.idCardType} AND bwmm.id_card_number = #{item.idCardNumber}
+        </foreach>
+        ) A
+        JOIN buss_project_worker bpw ON bpw.id_card_type = A.id_card_type AND bpw.id_card_number = A.id_card_number AND bpw.is_del = 0
+        AND bpw.project_code = #{paramsToFindSalaryDetail.projectCode}
+        LEFT JOIN buss_work_kind bwk ON bwk.organization_code = (SELECT organization_code FROM buss_team_master btm
+        WHERE btm.team_sys_no = #{paramsToFindSalaryDetail.teamSysNo}) AND bwk.num = bpw.work_type_code
+        and bwk.status = 1
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' ) ) bd ON
+        bd.num = A.id_card_type
+        GROUP BY
+        A.id_card_type , A.id_card_number ,LEFT(A.time,10)
+        ) N
+        GROUP BY idCardType , idCardNumber
+    </select>
+
+    <!--list 无分页 -->
+    <select id="getSalaryDetailByWorkerInfoNoPages" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT count(day) AS days, idCardType , idCardNumber , workerName , idCardName , workKindName , workerType ,
+        price FROM
+        (
+        SELECT LEFT(A.time,10) AS day,A.id_card_type AS idCardType, A.id_card_number AS idCardNumber,
+        A.worker_name AS workerName, bd.name AS
+        idCardName, bwk.name AS workKindName ,bpw.work_type_code AS workerType , ifnull(bwk.amount,0) AS price
+        FROM
+        (
+        <foreach collection="paramsToFindSalaryDetail.teamWorkers" item="item" open="(" separator=") UNION ALL("
+                 close=")">
+            SELECT
+            bdr.time ,bwmm.id_card_type ,bwmm.id_card_number ,bdr.project_code , bdr.team_sys_no , bwmm.worker_name
+            FROM
+            buss_worker_master bwmm
+            LEFT JOIN buss_device_record bdr ON bdr.id_card_type = bwmm.id_card_type AND bdr.id_card_number =
+            bwmm.id_card_number AND
+            bdr.project_code = #{paramsToFindSalaryDetail.projectCode} AND bdr.team_sys_no =
+            #{paramsToFindSalaryDetail.teamSysNo}
+            <if test="paramsToFindSalaryDetail.month != null and paramsToFindSalaryDetail.month!= ''">
+                AND (bdr.time >= #{paramsToFindSalaryDetail.month} AND bdr.time
+                <![CDATA[<]]>
+                CONCAT(LEFT(now(),5),LPAD(Right(#{paramsToFindSalaryDetail.month},2)+1,2,0)))
+            </if>
+            <if test="paramsToFindSalaryDetail.month == null or paramsToFindSalaryDetail.month== ''">
+                AND (bdr.time >= LEFT(now(),4))
+            </if>
+            WHERE
+            bwmm.id_card_type = #{item.idCardType} AND bwmm.id_card_number = #{item.idCardNumber}
+        </foreach>
+        ) A
+        JOIN buss_project_worker bpw ON bpw.id_card_type = A.id_card_type AND bpw.id_card_number = A.id_card_number AND bpw.is_del = 0
+        AND bpw.project_code = #{paramsToFindSalaryDetail.projectCode}
+        LEFT JOIN buss_work_kind bwk ON bwk.organization_code = (SELECT organization_code FROM buss_team_master btm
+        WHERE btm.team_sys_no = #{paramsToFindSalaryDetail.teamSysNo}) AND bwk.num = bpw.work_type_code
+        and bwk.status = 1
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' ) ) bd ON
+        bd.num = A.id_card_type
+        GROUP BY
+        A.id_card_type , A.id_card_number ,LEFT(A.time,10)
+        ) N
+        GROUP BY idCardType , idCardNumber
+    </select>
+
+
+    <insert id="insertDetailList">
+        INSERT INTO
+        buss_pay_roll_detail(pay_roll_code ,id_card_type , id_card_number ,worker_type , amount , reward_amount ,
+        punish_amount , pay_amount ,actual_amount ,balance_amount ,create_date , create_user ,days , price ,pay_status)
+        VALUES
+        <foreach collection="payRollDetailList" item="item" open="(" separator="),(" close=")">
+            (SELECT pay_roll_code FROM buss_pay_roll WHERE id =
+            #{id}),#{item.idCardType},#{item.idCardNumber},#{item.workerType},#{item.amount},#{item.rewardAmount},#{item.punishAmount},#{item.payAmount},#{item.actualAmount},#{item.balanceAmount},now(),#{createUser},
+            <if test="item.days != ''">
+                #{item.days},
+            </if>
+            <if test="item.days == ''">
+                0,
+            </if>
+            <if test="item.price != ''">
+                #{item.price},
+            </if>
+            <if test="item.price == ''">
+                0,
+            </if>
+            0
+        </foreach>
+    </insert>
+
+
+    <select id="getDetailList" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo"
+            parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+          bprd.id, bprd.pay_roll_code AS payRollCode, bprd.id_card_type AS idCardType, bprd.id_card_number AS idCardNumber, bprd.worker_type AS workerType,
+           bprd.price, bprd.days, bprd.amount, bprd.reward_amount AS rewardAmount, bprd.punish_amount AS punishAmount, bprd.pay_amount AS payAmount,
+           bprd.actual_amount AS actualAmount, bprd.balance_amount AS balanceAmount, bprd.time, bprd.pay_status AS payStatus, bprd.sign,
+           bprd.icon_sign AS iconSign, bprd.photo, bprd.icon_photo AS iconPhoto, bprd.certificate_type AS certificateType, bprd.create_date AS createDate,
+            bprd.create_user AS createUser, bprd.update_date AS updateDate, bprd.update_user AS updateUser, bprd.pay_person AS payPerson, bprd.remark,
+            bprd.confirm_time AS confirmTime, bprd.balance_date AS balanceDate, bprd.pay_roll_bank_card_number AS payRollBankCardNumber, bprd.pay_roll_bank_name AS payRollBankName,
+            bprd.pay_roll_bank_code AS payRollBankCode, bprd.pay_total_amount AS payTotalAmount, bprd.settle_total_amount AS settleTotalAmount, bprd.is_del AS isDel
+        FROM
+          buss_pay_roll_detail bprd
+           JOIN buss_pay_roll bpr ON bpr.pay_roll_code = bprd.pay_roll_code
+           WHERE is_del = 0
+    </select>
+
+    <update id="toggleStatus">
+        UPDATE buss_pay_roll
+        SET
+        <if test="status == 2">
+            construct_valid = #{userId} ,
+            construct_date = now() ,
+        </if>
+        <if test="status == 3">
+            contract_valid = #{userId} ,
+            contract_date = now() ,
+        </if>
+        status = #{status}
+        WHERE
+        FIND_IN_SET(id,#{ids})
+    </update>
+
+    <update id="grantPayRoll">
+        UPDATE buss_pay_roll_detail
+        SET
+        pay_person = #{name} ,
+        time = now() ,
+        pay_status = 20
+        WHERE pay_roll_code = (select pay_roll_code from buss_pay_roll where id = #{id})
+    </update>
+
+    <select id="getPayRollDetailById" resultType="Map">
+        SELECT
+	bwm.head_image AS headImage,
+	bwm.worker_name AS workerName,
+	bprd.id ,
+	bprd.id_card_type AS idCardType,
+	bprd.id_card_number AS idCardNumber,
+	bprd.pay_amount AS payAmount,
+	bprd.actual_amount AS actualAmount,
+	bprd.balance_amount AS balanceAmount,
+IF
+	( bprd.sign IS NOT NULL, 1, 0 ) AS isSign,
+IF
+	( bprd.sign IS NOT NULL, bprd.sign, NULL ) AS sign,
+IF
+	( bprd.sign IS NOT NULL, bprd.icon_sign, NULL ) AS iconSign,
+IF
+	( bprd.sign IS NOT NULL, bprd.photo, NULL ) AS photo,
+IF
+	( bprd.sign IS NOT NULL, bprd.icon_photo, NULL ) AS iconPhoto,
+	bprd.remark AS remark
+FROM
+	buss_pay_roll bpr
+	right join buss_pay_roll_detail bprd on bpr.pay_roll_code = bprd.pay_roll_code
+	LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type
+	AND bwm.id_card_number = bprd.id_card_number
+WHERE
+	bpr.id = #{id}
+    </select>
+
+    <select id="v116GetPayRollDetailById" resultType="Map">
+        SELECT
+        bwm.head_image AS headImage,
+        bwm.worker_name AS workerName,
+        bprd.id ,
+        bprd.id_card_type AS idCardType,
+        bprd.id_card_number AS idCardNumber,
+        bprd.pay_amount AS payAmount,
+        bprd.actual_amount AS actualAmount,
+        bprd.balance_amount AS balanceAmount,
+        IF
+        ( bprd.sign IS NOT NULL, 1, 0 ) AS isSign,
+        IF
+        ( bprd.sign IS NOT NULL, bprd.sign, NULL ) AS sign,
+        IF
+        ( bprd.sign IS NOT NULL, bprd.icon_sign, NULL ) AS iconSign,
+        IF
+        ( bprd.sign IS NOT NULL, bprd.photo, NULL ) AS photo,
+        IF
+        ( bprd.sign IS NOT NULL, bprd.icon_photo, NULL ) AS iconPhoto,
+        bprd.remark AS remark
+        FROM
+        buss_pay_roll bpr
+        right join buss_pay_roll_detail bprd on bpr.pay_roll_code = bprd.pay_roll_code
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type
+        AND bwm.id_card_number = bprd.id_card_number
+        WHERE
+        bpr.id = #{id}
+        limit #{index},#{pageSize}
+    </select>
+
+    <update id="payRollDetailSign">
+        UPDATE buss_pay_roll_detail
+        SET
+        sign = #{sign} ,
+        <if test="remark !=null and remark != ''">
+            remark = #{remark} ,
+        </if>
+        photo = #{photo},
+        icon_sign = CONCAT("icon/",#{sign}) , icon_photo = CONCAT("icon/",#{photo})
+        WHERE
+        id = #{id}
+    </update>
+
+    <select id="getPayRollDetailListByWorkerListAndTeamSysNo"
+            resultType="com.xywg.admin.modular.wages.model.dto.PayRollDetailDto">
+        SELECT  bwma.worker_name AS workerName , bwma.id_card_type AS idCardType  , bwma.id_card_number AS idCardNumber ,
+        ifnull(E.addPayAmount,0) AS addPayAmount,ifnull(E.addActualAmount,0) AS addActualAmount ,ifnull(E.addBalanceAmount,0) AS addBalanceAmount ,
+        ifnull(E.payroll_detail_ids,"") AS payrollDetailIds
+        FROM
+        (
+        <foreach collection="workerList" item="item" open="(" separator=") UNION ALL (" close=")">
+            SELECT id_card_type,id_card_number,worker_name FROM buss_worker_master WHERE id_card_type = #{item.idCardType} AND id_card_number =
+            #{item.idCardNumber} AND is_del = 0
+        </foreach>
+        ) bwma
+        LEFT JOIN
+        (select  GROUP_CONCAT(A.id) AS payroll_detail_ids ,A.id_card_type AS idCardType , A.id_card_number AS idCardNumber ,
+        sum(A.pay_amount) AS addPayAmount , sum(A.actual_amount) AS addActualAmount , sum(A.balance_amount) AS
+        addBalanceAmount
+        FROM
+        (
+        <foreach collection="workerList" item="item" open="(" separator=") UNION ALL (" close=")">
+            SELECT
+            id,
+            id_card_type,
+            id_card_number,
+            pay_amount,
+            actual_amount,
+            balance_amount
+            FROM
+            (
+            SELECT
+            bprd.id ,
+            bprd.id_card_type,
+            bprd.id_card_number,
+            bprd.pay_amount,
+            bprd.actual_amount,
+            bprd.balance_amount,
+            bprd.create_date
+            FROM
+            buss_pay_roll_detail bprd
+            JOIN buss_pay_roll bpr ON bpr.pay_roll_code = bprd.pay_roll_code
+            WHERE
+            bpr.team_sys_no = #{teamSysNo}
+            AND bprd.id_card_type = #{item.idCardType}
+            AND bprd.id_card_number = #{item.idCardNumber}
+            AND bprd.is_del = 0
+            AND bprd.balance_amount > 0
+            AND bpr.status = 50
+            AND bprd.pay_status = 0
+            ) D
+            WHERE
+            D.id NOT IN (SELECT GROUP_CONCAT(payroll_detail_ids) FROM buss_settlement)
+        </foreach>
+        ) A
+        GROUP BY A.id_card_type , A.id_card_number
+        ) E ON bwma.id_card_type = E.idCardType AND bwma.id_card_number = E.idCardNumber
+    </select>
+
+    <select id="v116GetPayRollDetailListByWorkerListAndTeamSysNo"
+            resultType="com.xywg.admin.modular.wages.model.dto.PayRollDetailDto">
+        SELECT  bwma.worker_name AS workerName , bwma.id_card_type AS idCardType  , bwma.id_card_number AS idCardNumber ,
+        ifnull(E.addPayAmount,0) AS addPayAmount,ifnull(E.addActualAmount,0) AS addActualAmount ,ifnull(E.addBalanceAmount,0) AS addBalanceAmount ,
+        ifnull(E.payroll_detail_ids,"") AS payrollDetailIds
+        FROM
+        (
+        <foreach collection="workerList" item="item" open="(" separator=") UNION ALL (" close=")">
+            SELECT id_card_type,id_card_number,worker_name FROM buss_worker_master WHERE id_card_type = #{item.idCardType} AND id_card_number =
+            #{item.idCardNumber} AND is_del = 0
+        </foreach>
+        ) bwma
+        LEFT JOIN
+        (select  GROUP_CONCAT(A.id) AS payroll_detail_ids ,A.id_card_type AS idCardType , A.id_card_number AS idCardNumber ,
+        sum(A.pay_amount) AS addPayAmount , sum(A.actual_amount) AS addActualAmount , sum(A.balance_amount) AS
+        addBalanceAmount
+        FROM
+        (
+        <foreach collection="workerList" item="item" open="(" separator=") UNION ALL (" close=")">
+            SELECT
+            id,
+            id_card_type,
+            id_card_number,
+            pay_amount,
+            actual_amount,
+            balance_amount
+            FROM
+            (
+            SELECT
+            bprd.id ,
+            bprd.id_card_type,
+            bprd.id_card_number,
+            bprd.pay_amount,
+            bprd.actual_amount,
+            bprd.balance_amount,
+            bprd.create_date,
+            ifnull( bsd.create_date, 0 ) AS lastDate
+            FROM
+            buss_pay_roll_detail bprd
+            JOIN buss_pay_roll bpr ON bpr.pay_roll_code = bprd.pay_roll_code
+            LEFT JOIN buss_settlement_detail bsd ON bsd.id = ( SELECT max( bsd.id ) FROM buss_settlement_detail bsd
+            left join buss_settlement bs on bsd.settlement_code = bs.settlement_code
+            WHERE
+            id_card_type = #{item.idCardType} AND id_card_number = #{item.idCardNumber} and bs.team_sys_no =
+            #{teamSysNo} AND bsd.is_del = 0 and bs.is_del = 0
+            )
+            WHERE
+            bpr.team_sys_no = #{teamSysNo}
+            AND bprd.id_card_type = #{item.idCardType}
+            AND bprd.id_card_number = #{item.idCardNumber}
+            AND bprd.is_del = 0
+            AND bprd.balance_amount > 0
+            AND bpr.status = 50
+            AND bprd.pay_status = 0
+            ) D
+            WHERE
+            D.create_date > D.lastDate
+        </foreach>
+        ) A
+        GROUP BY A.id_card_type , A.id_card_number
+        ) E ON bwma.id_card_type = E.idCardType AND bwma.id_card_number = E.idCardNumber
+        limit #{index},#{pageSize}
+    </select>
+
+    <select id="getPayRollFlowDetailListByProjectCodeAndTeamSysNo"
+            resultType="Map">
+        SELECT
+        bwm.head_image AS headImage ,
+        bwm.worker_name AS workerName ,
+        bprd.id_card_type AS idCardType ,
+        bprd.id_card_number AS idCardNumber ,
+        sum(if(bprd.type=1,bprd.pay_amount,0)) AS payAmount ,
+        sum(bprd.actual_amount) AS actualAmount ,
+        if(((sum(if(bprd.type=1,bprd.pay_amount,0)) - sum(bprd.actual_amount) )>0),(sum(if(bprd.type=1,bprd.pay_amount,0)) - sum(bprd.actual_amount) ),0) AS balanceAmount ,
+        bwm.is_auth AS isAuth
+        FROM
+        buss_pay_roll_flow bprd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type AND bwm.id_card_number =
+        bprd.id_card_number
+        WHERE
+        bprd.is_del = 0
+        AND bprd.project_code = #{projectCode}
+        GROUP BY bprd.id_card_type , bprd.id_card_number
+    </select>
+    <select id="getPayRollFlowDetailListByProjectCodeAndTeamSysNoV116"
+            resultType="Map">
+        SELECT
+        bwm.head_image AS headImage ,
+        bwm.worker_name AS workerName ,
+        bprd.id_card_type AS idCardType ,
+        bprd.id_card_number AS idCardNumber ,
+        sum(if(bprd.type=1,bprd.pay_amount,0)) AS payAmount ,
+        sum(bprd.actual_amount) AS actualAmount ,
+        if(((sum(if(bprd.type=1,bprd.pay_amount,0)) - sum(bprd.actual_amount) )>0),(sum(if(bprd.type=1,bprd.pay_amount,0)) - sum(bprd.actual_amount) ),0) AS balanceAmount ,
+        bwm.is_auth AS isAuth
+        FROM
+        buss_pay_roll_flow bprd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type AND bwm.id_card_number =
+        bprd.id_card_number
+        WHERE
+        bprd.is_del = 0
+        AND bprd.project_code = #{projectCode}
+        GROUP BY bprd.id_card_type , bprd.id_card_number
+        limit #{pn},#{ps}
+    </select>
+
+    <select id="getPayRollFlowDetailListByWorkerAndTeamSysNo"
+            resultType="com.xywg.admin.modular.wages.model.dto.PayRollDetailDto">
+        SELECT
+        bprd.pay_amount AS payAmount ,
+        bprd.actual_amount AS actualAmount ,
+        bprd.balance_amount AS balanceAmount ,
+        bprd.create_date AS createDate
+        FROM
+        buss_pay_roll_flow bprd
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = bprd.id_card_type AND bwm.id_card_number = bprd.id_card_number
+        LEFT JOIN buss_pay_roll bpr ON bpr.pay_roll_code = bprd.pay_roll_code
+        WHERE
+        bprd.is_del = 0 AND bpr.team_sys_no = #{teamSysNo} AND bprd.id_card_type = #{idCardType} AND bprd.id_card_number =
+        #{idCardNumber}
+    </select>
+
+    <insert id="addDetailList">
+        INSERT INTO
+        buss_pay_roll_detail(pay_roll_code ,id_card_type , id_card_number ,worker_type , amount , reward_amount ,
+        punish_amount , pay_amount ,actual_amount ,balance_amount ,create_date , create_user ,days , price ,pay_status)
+        VALUES
+        <foreach collection="detailList" item="item" open="(" separator="),(" close=")">
+            (SELECT pay_roll_code FROM buss_pay_roll WHERE id =
+            #{id}),#{item.idCardType},#{item.idCardNumber},#{item.workerType},#{item.amount},#{item.rewardAmount},#{item.punishAmount},#{item.payAmount},#{item.actualAmount},#{item.balanceAmount},now(),#{createUser},#{item.days},#{item.price}
+            ,0
+        </foreach>
+    </insert>
+
+    <!--获取最新工资记录-->
+    <select id="getLastPayRoll" resultType="Map">
+            select
+            prd.id as id,
+            prd.actual_amount as actualAmount,
+            pm.project_name as projectName,
+            prd.create_date as time,
+            pr.type as type
+            from buss_pay_roll_detail prd
+            left join buss_pay_roll pr on pr.pay_roll_code=prd.pay_roll_code
+            left join buss_project_master pm on pm.project_code= pr.project_code
+            where prd.id_card_number=#{idCardNumber} and prd.id_card_type=#{idCardType} and pr.pay_status!=1
+            order by prd.id desc LIMIT 1
+    </select>
+
+    <!--根据项目编号人员信息查询工资表详细-->
+    <select id="getPayrollDetailListByWorkerAndProjectCode"
+            resultType="com.xywg.admin.modular.wages.model.dto.PayrollSettlementDetail">
+        SELECT
+            d.pay_amount AS payAmount ,
+            d.actual_amount AS actualAmount ,
+            d.balance_amount AS balanceAmount ,
+            d.create_date AS createDate,
+            "1" as documentType
+        FROM     buss_pay_roll_detail d
+        LEFT JOIN buss_pay_roll r ON r.pay_roll_code = d.pay_roll_code
+        WHERE
+            d.is_del = 0  and r.is_del=0
+			AND r.project_code = #{projectCode}
+			AND d.id_card_type = #{idCardType}
+			AND d.id_card_number =#{idCardNumber}
+    </select>
+
+    <select id="getPayRollDetailId" parameterType="com.xywg.admin.modular.wages.model.SettlementDetail"
+            resultType="long">
+        select id FROM buss_pay_roll_detail where is_del=0  and  id_card_type=#{idCardType} and  id_card_number=#{idCardNumber}  and  pay_status=0
+    </select>
+
+    <update id="updateSingleMap">
+          UPDATE buss_pay_roll_detail SET amount=#{amount}, reward_amount=#{rewardAmount}, punish_amount=#{punishAmount},
+          pay_amount=#{payAmount}, actual_amount=#{actualAmount}, balance_amount=#{balanceAmount} WHERE id=#{id}
+    </update>
+
+
+    <update id="updatePayStatus">
+        UPDATE buss_pay_roll_detail set pay_status=50,update_user=#{updateUser},update_date=now() where is_del=0
+        and pay_status=0 and id IN
+        <foreach collection="dataSet" close=")" open="(" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateBatchPayStatus">
+        UPDATE buss_pay_roll_detail set pay_status=#{payStatus},update_user=#{updateUser},update_date=now()
+        where is_del=0 and pay_status=50 and id IN
+        <foreach collection="ids" close=")" open="(" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="isAllSign" resultType="com.xywg.admin.modular.wages.model.dto.PayRollDto">
+        SELECT
+        bpr.id AS id,
+        if(COUNT(bprd.sign)= count(1),1,0) AS isAllSign
+        FROM
+        buss_pay_roll bpr
+        LEFT JOIN buss_pay_roll_detail bprd ON bprd.pay_roll_code = bpr.pay_roll_code
+        WHERE
+        bpr.pay_roll_code = (SELECT pay_roll_code FROM buss_pay_roll_detail WHERE id = #{id})
+    </select>
+
+    <update id="updateStatusAfterReview">
+        UPDATE buss_pay_roll
+        SET status = 50
+        WHERE id = #{id}
+    </update>
+
+    <select id="getPayrollAndSettlementDetailListByWorkerAndProjectCode"
+            resultType="com.xywg.admin.modular.wages.model.PayRollFlow">
+        SELECT
+        pay_amount AS payAmount ,
+        actual_amount AS actualAmount ,
+        balance_amount AS balanceAmount ,
+        create_date AS createDate,
+        type as documentType
+        FROM
+        buss_pay_roll_flow
+        WHERE
+        project_code = #{projectCode} AND id_card_type = #{idCardType} AND id_card_number = #{idCardNumber}
+        ORDER BY id DESC
+    </select>
+
+    <select id="v116GetPayrollAndSettlementDetailListByWorkerAndProjectCode"
+            resultType="com.xywg.admin.modular.wages.model.PayRollFlow">
+        SELECT
+        pay_amount AS payAmount ,
+        actual_amount AS actualAmount ,
+        balance_amount AS balanceAmount ,
+        create_date AS createDate,
+        type as documentType
+        FROM
+        buss_pay_roll_flow
+        WHERE
+        project_code = #{projectCode} AND id_card_type = #{idCardType} AND id_card_number = #{idCardNumber}
+        ORDER BY id DESC
+         limit #{index},#{pageSize}
+    </select>
+
+
+    <select id="getDetailExportList" resultType="map">
+        SELECT
+        bpr.id, bpr.pay_roll_code AS payRollCode, bpr.project_code AS projectCode, bpr.organization_code AS
+        organizationCode, bpr.team_sys_no AS teamSysNo,
+        bpr.pay_month AS payMonth, bpr.type, bpr.status, bpr.save_status AS saveStatus, bpr.pay_status AS payStatus,
+        bpr.contractor_project_code AS contractorProjectCode, bpr.sub_contractor_project_code AS
+        subContractorProjectCode,
+        bpr.attach_files AS attachFiles, bpr.total_amount AS totalAmount, bpr.construct_valid AS constructValid,
+        bwm.name AS constructValidName ,
+        bpr.construct_date AS constructDate,
+        bpr.contract_valid AS contractValid,
+        bwm2.name AS contractValidName,
+        bpr.contract_date AS contractDate, bpr.create_date AS createDate,
+        bpr.create_user AS createUser,
+        bpr.update_date AS updateDate, bpr.update_user AS updateUser, bpr.salary_person AS salaryPerson, bpr.is_del AS
+        isDel ,
+        sum(bprd.pay_amount) AS payAmount , sum(bprd.actual_amount) AS actualAmount ,sum(bprd.balance_amount) AS
+        balanceAmount ,
+        bpm.project_name AS projectName ,btm.team_name AS teamName
+        FROM
+        buss_pay_roll bpr
+        JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) A ON A.social_credit_number = bpr.organization_code
+        JOIN buss_pay_roll_detail bprd ON bpr.pay_roll_code = bprd.pay_roll_code
+        JOIN buss_project_master bpm ON bpm.project_code = bpr.project_code
+        JOIN buss_team_master btm ON btm.team_sys_no = bpr.team_sys_no
+        LEFT JOIN sys_user bwm ON bpr.construct_valid = bwm.id
+        LEFT JOIN sys_user bwm2 ON bpr.contract_valid = bwm2.id
+        WHERE bpr.is_del = 0
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and bpr.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != ''">
+            AND bpr.project_code = #{map.projectCode}
+        </if>
+        <if test="map.teamSysNo !=null and map.teamSysNo != ''">
+            AND bpr.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.startTime !=null and map.startTime != ''">
+            AND bpr.create_date >= #{map.startTime}
+        </if>
+        <if test="map.endTime !=null and map.endTime != ''">
+            AND LEFT(bpr.create_date,10) <![CDATA[<=]]> #{map.endTime}
+        </if>
+        GROUP BY bpr.id
+        ORDER BY id DESC
+    </select>
+
+    <!-- 结算单发放的时候更新工资单详情的pay_status为20 -->
+    <update id="updatePayStatusToTwenty">
+        UPDATE buss_pay_roll_detail
+        SET pay_status = 20
+        WHERE
+        FIND_IN_SET(id,(SELECT payroll_detail_ids FROM buss_settlement WHERE id = #{id}))
+    </update>
+</mapper>

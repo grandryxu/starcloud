@@ -1,0 +1,168 @@
+@layout("/common/_container.html"){
+<style>
+    .wrapper-content{
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .ibox-content{
+        overflow: hidden;
+        padding:0;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <div class="ibox-content" align="center">
+        <div>
+            <div style="width: 48%; float: left; " align="center">
+                <div id="webcam"></div>
+            </div>
+            <div style="width: 48%; float: right; height: 245px;" align="center">
+                <div>
+                    <img id="showImg" src="/static/img/photo_img.png" style="width: 320px; height: 240px;" />
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 6px;">
+            <div style="width: 48%; float: left; " align="center">
+                <#button btnCss="info" name="拍照" id="capture" icon="fa-check" clickFun=""/>
+            </div>
+            <div style="width: 48%; float: right;" align="center">
+                <#button style="margin-top: 5px;" btnCss="info" name="确定" id="captureOk" icon="fa-check" clickFun=""/>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/plugins/jQuery-webcam-master/jquery.webcam.min.js"></script>
+<script language="JavaScript">
+    var pos = 0, ctx = null, saveCB, image = [];
+    var blobImg;
+    var canvas = document.createElement("canvas");
+    canvas.setAttribute('width', 320);
+    canvas.setAttribute('height', 240);
+
+    if (canvas.toDataURL) {
+        ctx = canvas.getContext("2d");
+        image = ctx.getImageData(0, 0, 320, 240);
+        saveCB = function(data) {
+            var col = data.split(";");
+            var img = image;
+            for(var i = 0; i < 320; i++) {
+                var tmp = parseInt(col[i]);
+                img.data[pos + 0] = (tmp >> 16) & 0xff;
+                img.data[pos + 1] = (tmp >> 8) & 0xff;
+                img.data[pos + 2] = tmp & 0xff;
+                img.data[pos + 3] = 0xff;
+                pos+= 4;
+            }
+            if (pos >= 4 * 320 * 240) {
+                ctx.putImageData(img, 0, 0);
+                //tackPhoto(canvas.toDataURL("image/png"));
+                blobImg = canvas.toDataURL("image/jpeg");
+                $('#showImg').attr('src', blobImg);
+                pos = 0;
+            }
+        };
+    } else {
+        saveCB = function(data) {
+            image.push(data);
+            pos+= 4 * 320;
+            if (pos >= 4 * 320 * 240) {
+                //tackPhoto(image.join('|'));
+                blobImg = image.join('|');
+                $('#showImg').attr('src', blobImg);
+                pos = 0;
+            }
+        };
+    }
+
+    jQuery("#webcam").webcam({
+        width: 320,
+        height: 240,
+        mode: "callback",
+        swffile: "/static/js/plugins/jQuery-webcam-master/jscam_canvas_only.swf", // canvas only doesn't implement a jpeg encoder, so the file is much smaller
+        onTick: function(remain) {
+            if (0 == remain) {
+                jQuery("#status").text("Cheese!");
+            } else {
+                jQuery("#status").text(remain + " seconds remaining...");
+            }
+        },
+        onSave: function(data) {
+            saveCB(data);
+            // Work with the picture. Picture-data is encoded as an array of arrays... Not really nice, though =/
+        },
+        onCapture: function () {
+            webcam.save();
+        },
+        debug: function (type, string) {
+            // Write debug information to console.log() or a div, ...
+        },
+        onLoad: function () {
+            // Page load
+            var cams = webcam.getCameraList();
+            for(var i in cams) {
+                jQuery("#cams").append("<li>" + cams[i] + "</li>");
+            }
+        }
+    });
+
+    $('#capture').click(function() {
+        webcam.capture();
+    });
+
+    $('#captureOk').click(function() {
+        if(blobImg && blobImg != '') {
+            tackPhoto(blobImg);
+        }else{
+            Feng.info("请先拍照");
+        }
+    });
+
+    function tackPhoto(src) {
+        $('#capture').attr('disabled','disabled');
+        $('#captureOk').attr('disabled','disabled');
+        var blob = dataURItoBlob(src);
+        var myform = new FormData();
+        myform.append('file', blob, 'headImg.jpg');
+        $.ajax({
+            url: Feng.ctxPath + "/ftp/upload",
+            type: "POST",
+            data: myform,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                if(data.code == 200) {
+                    $('#headImage', window.parent.document).val(data.path);
+                    $('#faceImge', window.parent.document).val(data.path);
+                    $('#isFaceImage', window.parent.document).val(1);
+                    $('#faceImg', window.parent.document).attr('src', src);
+                    window.parent.WorkerMasterInfoDlg.closeMonitor();
+                }else{
+                    Feng.info(data.message);
+                    $('#capture').removeAttr('disabled');
+                    $('#captureOk').removeAttr('disabled');
+                }
+            },
+            error: function (data) {
+                Feng.error("上传失败!" + data.responseJSON.message + "!");
+               // Feng.error(data.responseText."上传失败!");
+                $('#file').val("");
+                $('#capture').removeAttr('disabled');
+                $('#captureOk').removeAttr('disabled');
+            }
+        });
+    }
+
+    function dataURItoBlob(dataURI) {//图片转成Buffer
+        var byteString = atob(dataURI.split(',')[1]);
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], {type: mimeString});
+    }
+</script>
+@}

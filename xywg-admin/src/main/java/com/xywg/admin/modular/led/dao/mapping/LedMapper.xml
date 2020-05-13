@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.led.dao.LedMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.led.model.Led">
+        <id column="id" property="id"/>
+        <result column="imei" property="imei"/>
+        <result column="display_type" property="displayType"/>
+        <result column="display_speed" property="displaySpeed"/>
+        <result column="stay_time" property="stayTime"/>
+        <result column="screen_width" property="screenWidth"/>
+        <result column="screen_height" property="screenHeight"/>
+        <result column="font_color" property="fontColor"/>
+        <result column="font_size" property="fontSize"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="client_name" property="clientName"/>
+        <result column="display_text" property="displayText"/>
+        <result column="flag" property="flag"/>
+        <result column="status" property="status"/>
+        <result column="jo_flag" property="joFlag"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, imei, display_type AS displayType, display_speed AS displaySpeed, stay_time AS stayTime, screen_width AS screenWidth, screen_height AS screenHeight, font_color AS fontColor, font_size AS fontSize, project_code AS projectCode, client_name AS clientName, display_text AS displayText, flag, status, jo_flag AS joFlag
+    </sql>
+
+    <select id="getLedByImei" resultType="com.xywg.admin.modular.led.model.Led">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_led
+        WHERE
+        imei = #{imei}
+        <if test="id!=null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <delete id="deletes">
+        DELETE FROM
+        buss_led
+        WHERE
+        FIND_IN_SET(id,#{ids})
+    </delete>
+
+    <select id="selectList" resultType="com.xywg.admin.modular.led.model.Led">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_led
+        WHERE 1=1
+        <if test="map.condition != null and map.condition != ''">
+        AND (imei LIKE CONCAT('%',#{map.condition},'%') OR client_name LIKE CONCAT('%',#{map.condition},'%'))
+        </if>
+        ORDER BY id DESC
+    </select>
+</mapper>

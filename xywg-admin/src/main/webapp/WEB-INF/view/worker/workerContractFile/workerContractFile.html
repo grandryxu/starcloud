@@ -1,0 +1,63 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>附件管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" onsubmit="return false;">
+                           <div class="clear-float">
+                            <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">查询</label>
+                                        <input type="text" class="fn-input" id="condition" placeholder="姓名/证件号/劳务公司/施工单位/班组老板" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                            <option value="">请选择项目</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">类型</label>
+                                        <select class="fn-input search-chosen" id="status" name="类型">
+                                            <option value="">请选择类型</option>
+                                            <option value="待工程处审核">待工程处审核</option>
+                                            <option value="待总部审核">待总部审核</option>
+                                        </select>
+                                    </div>
+                                </div> -->
+                                  <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="WorkerContractFile.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+                              </div>
+                        </form>
+                        <div id="WorkerContractFileTableToolbar" role="group">
+	                         @if(shiro.hasPermission("/contractFile/review0")){
+	                         <#button name="工程部审核" icon="fa-upload" clickFun="WorkerContractFile.review(0)"/>
+	                         @}
+	                         @if(shiro.hasPermission("/contractFile/review1")){
+	                         <#button name="总部审核" icon="fa-upload" clickFun="WorkerContractFile.review(1)"/>
+	                         @}
+	                     </div>
+	                    <#table id="WorkerContractFileTable"/>
+                   		</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerContractFile/workerContractFile.js"></script>
+@}

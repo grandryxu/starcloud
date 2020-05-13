@@ -1,0 +1,71 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>合同查看</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm" style="margin:0;">
+                            <div class="clear-float">
+                           		 <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">名称</label>
+                                        <input type="text" class="fn-input search-chosen" id="condition" placeholder="根据工人姓名和身份证"/>
+                                    </div>
+                                </div>
+                            	<div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input search-chosen" id="projectCode" name="选择项目" onchange="Contract.setClass()">
+                                            <option value="">请选择</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 ">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input" id="team" name="班组">
+                                            <option value="">请先选择项目</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">类型</label>
+                                        <!-- !search-chosen-->
+                                        <select class="fn-input search-chosen" id="tag" name="选择标签" >
+                                            <option value="">请选择</option>
+                                            <option value="0">工人和班组合同</option>
+                                            <option value="1">工人和施工方合同</option>
+                                            <option value="2">施工方和班组合同</option>
+                                            <option value="3">退场协议</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            <div class="col-sm-4 fn-condition">
+                                <#button name="搜索" icon="fa-search" clickFun="Contract.search()"/>
+                                <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                            </div>
+                            </div>
+                         
+                        </form>
+                        <#table id="ContractTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/project/contract/contract.js"></script>
+@}

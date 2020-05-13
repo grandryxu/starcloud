@@ -1,0 +1,46 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="subContractorInfoForm">
+        
+            <input type="hidden" id="bidId" value="${bidId}">
+
+            <div class="row">
+            																													
+                   <table width="100%" >
+           			 <tr>
+               			 <th>名称：</th>
+               			 <th>类别：</th>
+                		<th>描述：</th>
+                		<th>价格：</th>
+           			 </tr>
+           			 @for(var i = 0; priceTempSize > i; i++){
+            		<tr id="tr">
+                		<td><input class="form-control" aria-required="true" name='name' disabled='disabled'  type="text" value='${priceTemp[i].name}' /></td>
+               			<td><input class="form-control" name='type' disabled='disabled'  type="text" value='${priceTemp[i].type}' /></td>
+                		<td><input class="form-control" name='desc' disabled='disabled'	type="text" value='${priceTemp[i].desc}' /></td>
+                		@if(priceSize > 0){
+                		<td><input class="form-control" aria-required="true" name="price" type="text" disabled='disabled' value='${prices[i]}'></td>
+                		@}else{
+                		<td><input class="form-control" aria-required="true" name="price" type="text" disabled='disabled' value=''></td>
+                		@}
+            		</tr>
+            		@}
+     				</table>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 tac-sss button-ta-r">
+                	@if(!flag){
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SubContractorInfoDlg.addSubmit()"/>
+                    @}
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SubContractorInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/longxin/invite/invite_price_add.js"></script>
+
+@}

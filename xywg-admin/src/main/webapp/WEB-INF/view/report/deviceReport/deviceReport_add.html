@@ -1,0 +1,71 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" underline="true"/>
+                            <#input id="projectCode" name="项目编号" underline="true"/>
+                            <#input id="organizationCode" name="企业组织机构代码" underline="true"/>
+                            <#input id="companyName" name="企业名称" underline="true"/>
+                            <#input id="idCardType" name="证件类型" underline="true"/>
+                            <#input id="idCardNumber" name="证件编号" underline="true"/>
+                            <#input id="workerName" name="工人姓名" underline="true"/>
+                            <#input id="projectName" name="项目名称" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号" underline="true"/>
+                            <#input id="teamName" name="班组名称" underline="true"/>
+                            <#input id="time" name="统计所在月份" underline="true"/>
+                            <#input id="totalCount" name="总工时" underline="true"/>
+                            <#input id="totalDate" name="出勤天数" underline="true"/>
+                            <#input id="day01" name="" underline="true"/>
+                            <#input id="day02" name="" underline="true"/>
+                            <#input id="day03" name="" underline="true"/>
+                            <#input id="day04" name="" underline="true"/>
+                            <#input id="day05" name="" underline="true"/>
+                            <#input id="day06" name="" underline="true"/>
+                            <#input id="day07" name="" underline="true"/>
+                            <#input id="day08" name="" underline="true"/>
+                            <#input id="day09" name=""/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="day10" name="" underline="true"/>
+                            <#input id="day11" name="" underline="true"/>
+                            <#input id="day12" name="" underline="true"/>
+                            <#input id="day13" name="" underline="true"/>
+                            <#input id="day14" name="" underline="true"/>
+                            <#input id="day15" name="" underline="true"/>
+                            <#input id="day16" name="" underline="true"/>
+                            <#input id="day17" name="" underline="true"/>
+                            <#input id="day18" name="" underline="true"/>
+                            <#input id="day19" name="" underline="true"/>
+                            <#input id="day20" name="" underline="true"/>
+                            <#input id="day21" name="" underline="true"/>
+                            <#input id="day22" name="" underline="true"/>
+                            <#input id="day23" name="" underline="true"/>
+                            <#input id="day24" name="" underline="true"/>
+                            <#input id="day25" name="" underline="true"/>
+                            <#input id="day26" name="" underline="true"/>
+                            <#input id="day27" name="" underline="true"/>
+                            <#input id="day28" name="" underline="true"/>
+                            <#input id="day29" name="" underline="true"/>
+                            <#input id="day30" name="" underline="true"/>
+                            <#input id="day31" name="" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceReportInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceReportInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/report/deviceReport/deviceReport_info.js"></script>
+@}

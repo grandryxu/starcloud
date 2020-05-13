@@ -1,0 +1,241 @@
+@layout("/common/_container.html"){
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=G8Gd8tZvStagwsAL6HX01acf93BenlEk"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/AreaRestriction/1.2/src/AreaRestriction_min.js"></script>
+<style type="text/css">
+    body, html, #subMap {
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: "微软雅黑";
+    }
+
+    .myZoomCtrl {
+        width: 400px;
+    }
+
+    .myZoomCtrl-select {
+        width: 400px;
+        height: 40px;
+    }
+
+    .myZoomCtrl-select select {
+        width: 400px;
+        height: 40px;
+        padding: 0 10px;
+        margin: 0;
+        /*很关键：将默认的select选择框样式清除*/
+        border:0;
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        background: #313d4f url("../../static/img/search.png") right no-repeat;
+        color: white;
+    }
+
+    .myZoomCtrl-select select option {
+        height: 20px;
+        color: white;
+    }
+
+    .myZoomCtrl-info {
+        width: 400px;
+        background: white;
+    }
+
+    .projectInfo {
+        width: 100%;
+        height: 115px;
+        padding: 15px;
+        border-bottom: 1px solid #e7e9ed;
+    }
+
+    .projectInfo img {
+        width: 15px;
+        height: 15px;
+        margin-right: 12px;
+    }
+
+    .projectInfo .projectInfo-name {
+        margin-bottom: 10px;
+    }
+
+    .projectInfo .projectInfo-address {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .projectInfo-type-num label {
+        padding-left: 2px;
+    }
+
+    .projectInfo-type {
+        display: inline-block;
+        position: relative;
+        left: 220px;
+    }
+
+    .projectInfo-num {
+        display: inline-block;
+        position: relative;
+        left: 230px;
+    }
+
+    .projectCount .padding0 {
+        float: left;
+        width: 50%;
+        text-align: center;
+        padding: 15px 50px;
+    }
+
+    .projectCount .padding0 .badge-color {
+        width: 8px;
+        height: 4px;
+        border-radius: 2px;
+        margin-right: 8px;
+        display: inline-block;
+    }
+
+    .badge-color-blue {
+        background: #4680ff;
+    }
+
+    .badge-color-orange {
+        background: #ff8c31;
+    }
+
+    .projectCount-count {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .sevenDayDevice {
+        clear: both;
+        border-top: 1px solid #e7e9ed;
+        padding-top: 20px;
+    }
+
+    .sevenDayDevice-echart {
+        width: 400px;
+        height: 300px;
+    }
+
+    .animate-slide {
+        width: 400px;
+        background: #e7e9ed;
+    }
+
+    .animate-slide div {
+        max-width: 400px;
+        height: 25px;
+        text-align: center;
+        margin: 0;
+    }
+
+    .animate-slide img {
+        width: 15px;
+        height: 15px;
+    }
+
+    .myZoomCtrl-select .chosen-container.chosen-container-single{
+
+    }
+</style>
+
+<!-- 百度地图 -->
+<div id="subMap"></div>
+
+<div id="myZoomCtrl" style="display: none">
+    <div class="myZoomCtrl-select">
+        <select id="projectCode" name="请选择项目" class="" onchange="projectChange()">
+            <option value="">选择项目</option>
+            @for(item in project){
+            <option value="${item.projectCode}">${item.projectName}</option>
+            @}
+        </select>
+    </div>
+
+    <div class="myZoomCtrl-info" id="myZoomCtrl-info" style="display: none">
+        <div class="projectInfo">
+            <div class="projectInfo-name">
+                <img src="../../static/img/project.png"><label style="font-size: 14px;font-weight: bold"
+                                                               id="projectName">湖南多工地项目二</label>
+            </div>
+            <div class="projectInfo-address">
+                <img src="../../static/img/address.png">
+                <label style="font-size: 12px;" id="address"></label>
+            </div>
+            <div class="projectInfo-type-num">
+                <div class="projectInfo-type">
+                    <label>参建类型:</label><label id="cooType"></label>
+                </div>
+                <div class="projectInfo-num">
+                    <label>人数:</label><label id="workerNum"></label>
+                </div>
+            </div>
+        </div>
+        <div class="projectCount">
+            <div class="padding0 projectCount-join">
+                <div>
+                    <div class="badge-color badge-color-blue"></div>
+                    <label>进场工人数</label></div>
+                <div class="projectCount-count" id="totalJoin">0</div>
+            </div>
+            <div class="padding0 projectCount-device">
+                <div>
+                    <div class="badge-color badge-color-orange"></div>
+                    <label>今日考勤</label></div>
+                <div class="projectCount-count" id="totalDevice">0</div>
+            </div>
+        </div>
+
+        <div class="sevenDayDevice">
+            <div class="sevenDayDevice-echart" id="sevenDayDevice"></div>
+        </div>
+    </div>
+
+    <div class="animate-slide">
+        <div class="animate-slide-up" style="display:none;" id="animate-slide-up"><img src="../../static/img/up.png">
+        </div>
+        <div class="animate-slide-down" style="display:none;" id="animate-slide-down"><img
+                src="../../static/img/down.png"></div>
+    </div>
+    <!--    <div class="top-s3 clear-float">
+            <div class="col-sm-6 col-sm-6-left">
+                <div class="box-s left-s bdwhite">
+                    <div id="workerAge" style="width: 100%;height:400px;"></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-sm-6-right">
+                <div class="box-s right-s bdwhite">
+                    <div id="workerNativePlace" style="width: 100%;height:400px;"></div>
+                </div>
+            </div>
+        </div>-->
+
+    <!-- <div class="row">
+        <div class="col-sm-6">
+            <div id="workerType" style="width: 100%;height:600px;"  ></div>
+        </div>
+    </div> -->
+    <!-- <div class="row">
+        <div class="col-sm-12">
+            <div id="workerAttendance" style="width: 100%;height:600px;"  ></div>
+        </div>
+
+    </div> -->
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts-en.common.js"></script>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.js"></script>
+<script src="http://gallery.echartsjs.com/dep/echarts/map/js/china.js"></script>
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerType.js"></script> -->
+<!--<script src="${ctxPath}/static/modular/blackboard/echarts-workerNativePlace.js"></script>
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerAge.js"></script>-->
+<script src="${ctxPath}/static/modular/blackboard/echarts-sevenDayDevice.js"></script>
+<script src="${ctxPath}/static/modular/subAddress/subAddress.js"></script>
+
+
+@}

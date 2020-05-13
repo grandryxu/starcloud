@@ -1,0 +1,63 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="payRollCode" value="${payRollCode}"/>
+            <input type="hidden" id="type" value="${type}" />
+            <input type="hidden" id="id" value="${id}" />
+            <form class="col-sm-11" id="searchForm">
+                <div class="clear-float">
+                    <div class="col-sm-4">
+                        <div class="fn-div">
+                            <label class="fn-label">查询</label>
+                            <input type="text" class="fn-input" id="condition" placeholder="名称/证件编号" />
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="fn-div">
+                            <label class="fn-label">工种</label>
+                            <select class="fn-input" id="workerType" name="工种" >
+                                <option value="">全部</option>
+                                @for(item in workerType){
+                                <option value="${item.num}">${item.name}</option>
+                                @}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 fn-condition">
+                        <#button name="搜索" icon="fa-search" clickFun="PayRollDetailInfoDlg.search()"/>
+                        <#reset name="重置" icon="fa-search" formId="searchForm"/>
+                    </div>
+                </div>
+            </form>
+
+            <div  id="DetailByAccountToolbar" role="group">
+                <#button name="批量写工资" icon="fa-plus" clickFun="DetailByAccount.batchAmount()"/>
+                <#button name="批量写奖励" icon="fa-plus" clickFun="DetailByAccount.batchRewardAmount()"/>
+                <#button name="批量写惩罚" icon="fa-plus" clickFun="DetailByAccount.batchPunishAmount()"/>
+                <#button name="批量写实发" icon="fa-plus" clickFun="DetailByAccount.batchActualAmount()"/>
+            </div>
+            <#table id="DetailByAccount"/>
+
+            <div  id="DetailByTimeToolbar" role="group">
+                <#button name="批量写工资" icon="fa-plus" clickFun="DetailByWorkerType.batchAmount()"/>
+                <#button name="批量写奖励" icon="fa-plus" clickFun="DetailByWorkerType.batchRewardAmount()"/>
+                <#button name="批量写惩罚" icon="fa-plus" clickFun="DetailByWorkerType.batchPunishAmount()"/>
+                <#button name="批量写实发" icon="fa-plus" clickFun="DetailByWorkerType.batchActualAmount()"/>
+            </div>
+            <#table id="DetailByTime"/>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button name="暂存" id="ensure" icon="fa-check" clickFun="PayRollDetailInfoDlg.close()"/>
+                    <#button name="提交" id="ensure" icon="fa-check" clickFun="PayRollDetailInfoDlg.submit()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/payRollDetail/payRollDetail_edit.js"></script>
+@}

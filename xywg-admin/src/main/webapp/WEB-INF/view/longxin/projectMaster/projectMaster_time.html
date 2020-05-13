@@ -1,0 +1,33 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+
+        <div class="tab-content" id="ProjectMasterInfoForm">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+
+                            <input type="hidden" id="id" value="${item.id}">
+                            <input type="hidden" id="projectCode" value="${item.projectCode}">
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                    <#input_sjf id="projectName" name="项目名称" underline="true" requiredFlag="true" value="${item.projectName}" disabled="disabled"/>
+                                    <#input_sjf id="workTime" name="工数计算时间(时/工)" underline="true" requiredFlag="true"  value="${item.workTime}" />
+                                </div>
+
+
+<div class="row btn-group-m-t">
+    <div class="col-sm-12 button-ta-r" style="text-align:center;margin-top: 20px">
+        <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterInfoDlg.setTime()"/>
+        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterInfoDlg.close()"/>
+    </div>
+</div>
+
+</div>
+
+                        </div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster_time.js"></script>
+@}

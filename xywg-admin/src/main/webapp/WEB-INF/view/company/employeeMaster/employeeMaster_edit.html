@@ -1,0 +1,120 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="employeeMasterForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="cultureLevelTypeValue" value="${item.cultureLevelType}">
+            <input type="hidden" id="idCardTypeValue" value="${item.idCardType}">
+            <input type="hidden" id="nationValue" value="${item.nation}">
+            <input type="hidden" id="isAuthValue" value="${item.isAuth}">
+            <input type="hidden" id="isFaceValue" value="${item.isFace}">
+            <input type="hidden" id="jobTypeValue" value="${item.jobType}">
+            <input type="hidden" id="jobStatusValue" value="${item.jobStatus}">
+            <input type="hidden" id="organizationCodeValue" value="${item.organizationCode}">
+            <input type="hidden" id="professionalTypeValue" value="${item.professionalType}">
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="disabled">
+                    @for(i in dictIdCardType){
+                    @if(i.num==item.idCardType){
+                    <option value="${i.num}" selected>${i.name}</option>
+                    @}else{
+                    <option value="${i.num}">${i.name}</option>
+                    @}
+                    @}
+                </#select_sjf>
+                <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true"  disabled="disabled"/>
+            </div>
+            <div class="col-sm-6">
+                <#avatar_sjf id="headImagePath" name="头像" underline="false" avatarImg="${item.headImagePath}" />
+            </div>
+        </div>
+            <div class="row">
+                <div class="col-sm-6">
+
+
+                    <#input_sjf id="employeeName" name="姓名" value="${item.employeeName}" underline="true" disabled="disabled"/>
+                    <#select_sjf id="organizationCode" name="公司" underline="true"  disabled="disabled"  requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(item in companys){
+                        <option value="${item.socialCreditNumber}">${item.companyName}</option>
+                        @}
+                    </#select_sjf>
+                        <#select_sjf id="jobType" name="聘用方式"  requiredFlag="true" >
+                        <option value="">请输入</option>
+                        <option value="0">全职</option>
+                        <option value="1">其他</option>
+                    </#select_sjf>
+
+                    <#select_sjf id="professionalLevel" name="职称等级" underline="true"  requiredFlag="true" onchange="professionalLevelChange()" >
+                        <option value="0">请选择</option>
+                        @for(i in dictProfessionalLevel){
+                        @if(i.num==item.professionalLevel){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                        <#select_sjf id="professionalType" name="职称" underline="true" requiredFlag="true" value="${item.professionalType}" >
+                        <option value="">请选择</option>
+                    </#select_sjf>
+                    <#radioSex name="gender" id="gender" label="性别"  requiredFlag="true"  value="${item.gender}"/>
+
+                    <#select_sjf id="cultureLevelType" name="文化程度"  underline="true" >
+                        <option value=""></option>
+                        @for(item in dictCultureLevelType){
+                        <option value="${item.num}" selected>${item.name}</option>
+                        @}
+                    </#select_sjf>
+
+                    <#select_sjf id="nation" name="民族" underline="true" >
+                        @for(i in dictNation){
+                        @if(""+i.num==item.nation){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+
+
+                    <!--<#select_sjf id="jobStatus" name="状态" onchange="jobStatusChange()"  requiredFlag="true">-->
+                    <!--<option value="">请输入</option>-->
+                    <!--<option value="0">离职</option>-->
+                    <!--<option value="1">在职</option>-->
+                    <!--<option value="2">退休</option>-->
+                    <!--</#select_sjf>-->
+                </div>
+
+                <div class="col-sm-6">
+
+                    <#input_sjf id="cellPhone" name="手机号码" value="${item.cellPhone}"  underline="true" />
+                    <#input_sjf id="job" name="岗位职务"  underline="true" value="${item.job}"/>
+
+
+                    <#input_sjf id="workDate" name="开始工作日期" underline="true"  value="${item.workDate}"  />
+                    <#input_sjf id="birthday" name="出生日期" underline="true"  requiredFlag="true" value="${item.birthday}"/>
+                    <#input_sjf id="address" name="住址" value="${item.address}" underline="true" />
+
+                    <!--<#input_sjf id="hireDate" name="入职日期" underline="true"  value="${item.workDate}"  requiredFlag="true" value="${item.hireDate}"/>-->
+                    <!--<#input_sjf id="terminationDate" name="离职日期" underline="true"  value="${item.workDate}"  value="${item.terminationDate}"/>-->
+                    <!--<#input_sjf id="retireDate" name="退休日期" underline="true"  value="${item.workDate}"   value="${item.retireDate}"/>-->
+                    <#textarea_sjf id="remark" name="备注信息" underline="true" value="${item.remark}"/>
+
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 tac-sss button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="EmployeeMasterInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="EmployeeMasterInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/employeeMaster/employeeMaster_info.js"></script>
+@}

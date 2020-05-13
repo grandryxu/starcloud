@@ -1,0 +1,35 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="fn-div">
+                        <label class="fn-label">投标产品</label>
+                        <select class="fn-input" id="productName" name="投标产品" onchange="createTable(this.value)">
+                            @for(item in productList){
+                                @if(item==priceName){
+                                    <option value="${item}" selected>${item}</option>
+                                @}else{
+                                    <option value="${item}">${item}</option>
+                                @}
+                            @}
+                        </select>
+                    </div>
+                </div>
+                <table width="100%" id="priceCompareTable">
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    var priceTable = JSON.parse('${priceTable}');
+    var priceName = '${priceName}';
+
+
+</script>
+<script src="${ctxPath}/static/modular/longxin/invite/priceCompareDetail.js"></script>
+@}

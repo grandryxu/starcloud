@@ -1,0 +1,203 @@
+package com.xywg.admin.task;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.handler.IJobHandler;
+import com.xxl.job.core.handler.annotation.JobHandler;
+import com.xywg.admin.modular.company.service.ISubContractorService;
+import com.xywg.admin.modular.device.service.IDeviceRecordService;
+import com.xywg.admin.modular.device.service.IDeviceService;
+import com.xywg.admin.modular.project.service.IProjectMasterService;
+import com.xywg.admin.modular.project.service.IProjectTrainingService;
+import com.xywg.admin.modular.smz.model.IfaLabor;
+import com.xywg.admin.modular.smz.service.IfaLaborService;
+import com.xywg.admin.modular.smz.utils.HttpClientUtils;
+import com.xywg.admin.modular.system.service.IWorkKindService;
+import com.xywg.admin.modular.team.service.ITeamMasterService;
+import com.xywg.admin.modular.worker.service.IWorkerContractRuleService;
+import com.xywg.admin.modular.worker.service.IWorkerMasterService;
+
+import net.sf.json.JSONObject;
+
+@JobHandler(value="SendDataToZRTaskHandler")
+@Component
+public class SendDataToZRTaskHandler extends IJobHandler {
+
+	private static final Log LOG = LogFactory.getLog(SendDataToZRTaskHandler.class);
+	
+	private static Properties systemParams = new Properties();
+	
+	/**
+	 * 加载配置文件
+	 */
+	static {
+		try {
+			systemParams.load(SendDataToZRTaskHandler.class.getClassLoader().getResourceAsStream("zr.properties"));
+		} catch (IOException e) {
+			LOG.error("zr.properties" + "配置文件加载失败");
+		}
+	}
+	
+	/**
+	 * 获取配置文件信息
+	 * @author jln
+	 * @param key
+	 * @return
+	 */
+	protected String getSystemStringParam(String key) {
+		return systemParams.getProperty(key);
+	}
+	
+	/**
+	 * 
+	 * @description 登录实名制获取token
+	 * @author chupp
+	 * @date 2018年4月27日
+	 * @return
+	 *
+	 */
+	@SuppressWarnings("unchecked")
+	protected Map<String,String> loginSMZ() {
+		String httpUrlPrefix = this.getSystemStringParam("httpUrlPrefix");
+		String loginUrl = this.getSystemStringParam("loginUrl");
+		String userName = this.getSystemStringParam("userName");
+		String password = this.getSystemStringParam("password");
+		Map<String,Object> map = new HashMap<>();
+		map.put("userName", userName);
+		map.put("password", password);
+		String result = HttpClientUtils.post(httpUrlPrefix + loginUrl, map);
+		Map<String,Object> m = (Map<String,Object>) JSONObject.toBean(JSONObject.fromObject(result), Map.class);
+		Map<String,String> headers = new HashMap<>();
+		headers.put("token", (String) m.get("token"));
+		return headers;
+	}
+	
+    @Override
+    public ReturnT<String> execute(String s) throws Exception {
+    	Map<String, String> m = loginSMZ();
+    	
+    	// 发送公司数据对接到实名制
+		List<Long> subContractorList=ifaLaborService.getIdList("buss_sub_contractor");
+		if(subContractorList.size()>0){
+			boolean flag=subContractorService.getCompanyFromLabor(subContractorList,m);
+			if(flag){
+				ifaLaborService.del("buss_sub_contractor");
+			}
+		}
+
+
+		//发送项目数据对接到实名制
+		List<Long> projectList=ifaLaborService.getIdList("buss_project_master");
+		if(projectList.size()>0){
+			boolean flag=projectMasterService.getProjectFromLabor(projectList,m);
+			if(flag){
+				ifaLaborService.del("buss_project_master");
+			}
+		}
+
+		//发送班组数据对接到实名制
+		List<Long> teamList = ifaLaborService.getIdList("buss_team_master");
+		if (teamList.size() > 0) {
+			boolean flag = teamMasterService.getTeamFromLabor(teamList,m);
+			if (flag) {
+				ifaLaborService.del("buss_team_master");
+			}
+		}
+		
+		//发送工种
+		List<Long> workKindList = ifaLaborService.getIdList("buss_work_kind");
+		if (workKindList.size() > 0) {
+			boolean flag = workKindService.getWorkKindSendSMZ(m);
+			if (flag) {
+				ifaLaborService.del("buss_work_kind");
+			}
+		}
+
+		//发送工人项目关系数据对接到实名制
+		List<Long> personList=ifaLaborService.getIdList("buss_project_worker");
+		if(personList.size()>0){
+			boolean flag=workerMasterService.getPersonFromLabor(personList,m);
+			if(flag){
+				ifaLaborService.del("buss_project_worker");
+			}
+		}
+
+		//发送工人劳动合同数据对接到实名制
+		List<Long> workerContractorList=ifaLaborService.getIdList("buss_worker_contract_rule");
+		if(workerContractorList.size()>0){
+			boolean flag=workerContractRuleService.getWorkeContractorFromLabor(workerContractorList,m);
+			if(flag){
+				ifaLaborService.del("buss_worker_contract_rule");
+			}
+		}
+
+		//发送考勤设备数据对接到实名制
+		List<Long> deviceList=ifaLaborService.getIdList("buss_device");
+		if(deviceList.size()>0){
+			boolean flag=deviceService.getDeviceFromLabor(deviceList,m);
+			if(flag){
+				ifaLaborService.del("buss_device");
+			}
+		}
+		//发送考勤数据对接到实名制
+		List<Long> deviceRecordList=ifaLaborService.getIdList("buss_device_record");
+		if(deviceRecordList.size()>0){
+			int lastNumber=ifaLaborService.getLastNumber("buss_device_record");
+			deviceRecordService.getDeviceRecordFromLabor(lastNumber,m);
+		}else{
+			IfaLabor ifaLabor=new IfaLabor("buss_device_record", (long) 0);
+			ifaLaborService.insert(ifaLabor);
+		}
+		
+		//发送培训数据对接到实名制
+		List<Long> trainList=ifaLaborService.getIdList("buss_project_training");
+		if(trainList.size()>0){
+			boolean flag=projectTrainingService.getProjectTrainFromLabor(trainList,m);
+			if(flag){
+				ifaLaborService.del("buss_project_training");
+			}
+		}
+
+		//发送培训附件数据对接到实名制
+		List<Long> trainFileList=ifaLaborService.getIdList("buss_project_training_file");
+		if(trainFileList.size()>0){
+			boolean flag=projectTrainingService.getProjectTrainFileFromLabor(trainFileList,m);
+			if (flag){
+				ifaLaborService.del("buss_project_training_file");
+			}
+		}
+
+		//发送培训工人关系数据到实名制
+		List<Long> trainWorkerList=ifaLaborService.getIdList("buss_project_training_person");
+		if(trainWorkerList.size()>0){
+			boolean flag=projectTrainingService.getProjectTrainWorkerFromLabor(trainWorkerList,m);
+			if(flag){
+				ifaLaborService.del("buss_project_training_person");
+			}
+		}
+
+
+		//发送盐城考勤数据到实名制对接到实名制
+		List<Long> deviceRecordListYC=ifaLaborService.getIdList("buss_device_record_yc");
+		if(deviceRecordListYC.size()>0){
+			int lastNumber=ifaLaborService.getLastNumber("buss_device_record_yc");
+			boolean b = deviceRecordService.getDeviceRecordFromLaborYC(lastNumber,m);
+		}else {
+			IfaLabor ifaLabor = new IfaLabor("buss_device_record_yc", (long) 0);
+			ifaLaborService.insert(ifaLabor);
+		}
+		
+		
+        return SUCCESS;
+    }
+}

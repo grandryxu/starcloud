@@ -1,0 +1,72 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="workerGoodRecordsForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <input type="hidden" id="type" value="1">
+                    <#select_sjf id="projectCode" name="所属项目" underline="true" requiredFlag="true" onchange="WorkerGoodRecordsInfoDlg.projectChange()">
+                        <option value=''>请选择</option>
+                        @for(item in project){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="projectCode1" name="项目编号" underline="true" disabled="true"/>
+
+                    <div class="form-group form-group-sss">
+                        <label class="col-sm-3 control-label control-label-sss" style="margin-top:-5px;">
+                            姓名:</label>
+                        <div class="col-sm-9">
+                            <p class="select-disabled-p">
+                                <select class="input-search-s search-chosen" id="workerId" name="姓名" onchange="WorkerGoodRecordsInfoDlg.workerChange(this)"
+                                        requiredFlag="true" style="width: 100%">
+                                    <option value=''>请选择</option>
+                                </select>
+                            </p>
+                        </div>
+                    </div>
+
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="true">
+                        <option value=''>请选择</option>
+                        @for(item in dictIdCardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="idCardNumber" name="证件编号" underline="true" disabled="true"/>
+                    <#input_sjf id="companyName" name="所属单位" underline="true" disabled="true"/>
+                    <input id="organizationCode" type="hidden"/>
+
+                </div>
+                <div class="col-sm-6">
+                    <#select_sjf id="goodRecordTypeCode" name="奖励类型" underline="true" requiredFlag="true" >
+                        <option value=''>请选择</option>
+                        @for(item in dictGoodRecordTypeCode){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="goodRecordLevelType" name="奖励级别" underline="true" requiredFlag="true" >
+                        <option value=''>请选择</option>
+                        @for(item in dictGoodRecordLevelType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="occurrenceDate" name="奖励时间" underline="true"  requiredFlag="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                    <#textarea_sjf id="details" name="奖项说明" underline="true" />
+                </div>
+            </div>
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="WorkerGoodRecordsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerGoodRecordsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/workerGoodRecords/workerGoodRecords_info.js"></script>
+@}

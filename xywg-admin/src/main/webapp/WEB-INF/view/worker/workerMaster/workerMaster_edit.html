@@ -1,0 +1,174 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="workerMasterForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="politicsTypeValue" value="${item.politicsType}">
+            <input type="hidden" id="cultureLevelTypeValue" value="${item.cultureLevelType}">
+            <input type="hidden" id="workTypeCodeValue" value="${item.workTypeCode}">
+            <input type="hidden" id="birthPlaceCodeValue" value="${item.birthPlaceCode}">
+            <input type="hidden" id="projectCodeValue" value="${item.projectCode}">
+            <input type="hidden" id="teamSysNoValue" value="${item.teamSysNo}">
+   			<input type="hidden" id="pwId" value="${pwId}">
+            <input type="hidden" id="isEnterprise" value="${isEnterprise}">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="disabled">
+                    @for(i in dictIdCardType){
+                    @if(i.num==item.idCardType){
+                    <option value="${i.num}" selected>${i.name}</option>
+                    @}else{
+                    <option value="${i.num}">${i.name}</option>
+                    @}
+                    @}
+                    </#select_sjf>
+                    <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true" disabled="disabled" />
+                    <div style="text-align: right;">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <label class="col-sm-3 control-label control-label-sss" style="padding-top:5px;">
+                
+                </label>
+                <div class="col-sm-3">
+                       <img id="fileImg" src="${item.headImage != '' && item.headImage != null?'/labor/'+item.headImage:'/static/img/avatar1.png'}" onerror="this.src='/static/img/avatar1.png'" alt="" style="width:102px; height: 102px;"> 
+                    </div>
+                <div class="col-sm-3">
+                <img id="faceImg" src="${item.face != '' && item.face != null ?'/labor/'+item.face:'/static/img/avatar2.png'}" onerror="this.src='/static/img/avatar2.png'" alt="" style="width:102px; height: 102px;">
+                    
+                    <input type="hidden" id="headImge" value="${item.headImage}"/>
+                    <input type="hidden" id="faceImge" value="${item.face}"/>
+                    <input type="hidden" id="isFaceImage" value="${item.isFace}"/>
+                   </div> 
+                    <div class="col-sm-3" style="margin-top: 13px;">
+                    <#button btnCss="info" name="拍照" id="ensure" icon="fa-check" clickFun="WorkerMasterInfoDlg.openMonitor()"/>
+                    <input type="file" style="display:none" id="headImgFile" name="headImgFile" class="form-control"
+                               onchange="fileUpload()">
+                    <#button name="上传" icon="fa-check" clickFun="WorkerMasterInfoDlg.uploadHeadImg()"/>
+                </div>
+            </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 ">
+                    <#select_sjf id="projectCode" name="项目" class="search-chosen" underline="true" must="${isEnterprise}" 
+                    onchange="WorkerMasterInfoDlg.projectCodeChange()">
+                        <option value="">请选择</option>
+                        @for(i in project){
+                        @if(i.projectCode == item.projectCode){
+                        <option value="${i.projectCode}" selected>${i.projectName}</option>
+                        @}else{
+                        <option value="${i.projectCode}">${i.projectName}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    <div style='display:none'>
+                	<#radioIs id="isTeamLeader" name="isTeamLeader" label="是否为班组老板" value = "${item.isTeamLeader}"  onchange=""/>
+                	</div>
+
+                	<!-- <#select_sjf pid="pTeamLeader" id="teamLeader" name="班组老板" underline="true" >
+                    	<option value="">请选择</option>
+                	</#select_sjf> -->
+               		<#select_sjf pid="pTeam" id="team" name="班组" class="search-chosen"  must="${isEnterprise}" underline="true" visible="true"
+               		onchange="WorkerMasterInfoDlg.teamChange()">
+		            	<option value="">请选择</option>
+		            	 @for(i in teams){
+                        @if(i.teamSysNo == teamSysNo){
+                        <option value="${i.teamSysNo}" selected>${i.teamName}</option>
+                        @}else{
+                        <option value="${i.teamSysNo}">${i.teamName}</option>
+                        @}
+                        @}
+		        	</#select_sjf>
+                    <div style="text-align: right;">
+                        <#button id="classNo" name="添加班组" icon="fa-plus" visible="false" clickFun="TeamMaster.openAddTeamMaster()"/>
+
+                    </div>
+		        	
+				<#input_sjf id="cardNumber" name="门禁卡号" value="${item.cardNumber}" underline="true"/>
+                    
+                  <!--  <#select_sjf id="teamSysNo" name="班组" class="search-chosen" underline="true" disabled="disabled">
+                        <option value="">请选择</option>
+                    </#select_sjf> --> 
+                    <#input_sjf id="workerName" name="姓名" value="${item.workerName}" underline="true" disabled="disabled"/>
+                    <#input_sjf id="cellPhone" name="手机号码" value="${item.cellPhone}" underline="true" requiredFlag="true"/>
+                    <#select_sjf id="nation" name="民族" underline="true" requiredFlag="true">
+                        @for(i in dictNation){
+                        @if(""+i.num==item.nation){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="birthday" name="出生日期" underline="true" value="${item.birthday}" requiredFlag="true" />
+                    <#input_sjf id="startTime" name="身份证有效期开始" value="${item.startTime}" underline="true" disabled="disabled"/>
+                    <#input_sjf id="endTime" name="身份证有效期结束" value="${item.endTime}" underline="true" disabled="disabled"/>
+                    <#input_sjf id="address" name="住址" value="${item.address}" underline="true"  requiredFlag="true"/>
+                    <#select_sjf id="politicsType" name="政治面貌" underline="true" >
+                        <option value="0">中共党员</option>
+                        <option value="1">中共预备党员</option>
+                        <option value="2">共青团员</option>
+                        <option value="3">群众</option> <ff->50</ff->
+                    </#select_sjf>
+
+                    <#select_sjf id="cultureLevelType" name="文化程度" underline="true" >
+                        @for(item in dictCultureLevelType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="urgentContractName" name="紧急联系人" value="${item.urgentContractName}" underline="true"
+                    />
+                    <#radioIs name="hasBadMedicalHistory" label="有重大病史"   value="${item.hasBadMedicalHistory}" />
+                </div>
+                <div class="col-sm-6">
+                    
+                    <#radioSex name="gender" id="gender" label="性别"  requiredFlag="true"  value="${item.gender}"/>
+                    <#select_sjf id="birthPlaceCode" name="籍贯" underline="true" requiredFlag="true">
+                        @for(item in dictBirthPlaceCode){
+                        <option value="${item.id}">${item.shortname}</option>
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="workTypeCode" name="当前工种" underline="true" requiredFlag="true" >
+                        @for(item in dictWorkTypeCode){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+
+
+                    <#radioIs name="isJoined" label="加入工会"  value="${item.isJoined}" />
+
+
+                    <#input_sjf id="joinedTime" name="加入工会时间" underline="true" value="${item.joinedTime}" />
+                    <#input_sjf id="urgentContractCellphone" name="紧急联系人电话" value="${item.urgentContractCellphone}" underline="true"
+                    />
+                    <#input_sjf id="workDate" name="开始工作日期" underline="true"  value="${item.workDate}"   />
+                    <#textarea_sjf id="note" name="备注" underline="false"   value="${item.note}"  />
+
+
+                </div>
+                <div class="col-sm-12">
+                </div>
+            </div>
+            <div class="progress progress-striped" id="progressTipArea" style="margin-top: 20px;">
+                <div id="progressBar" style="width: 0%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0"
+                     role="progressbar" class="progress-bar progress-bar-info">
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="WorkerMasterInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerMasterInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerMaster/workerMaster_info.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/addMember.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMember.js"></script>
+@}

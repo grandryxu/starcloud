@@ -1,0 +1,72 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="versionInfoForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#select_sjf id="phoneType" name="手机类型" underline="true" disabled="disabled">
+                        <option value="">选择手机类型</option>
+                        <option value="1"
+                            @if(item.phoneType == 1){
+                                selected
+                            @}
+                        >IOS
+                        </option>
+                        <option value="2"
+                                @if(item.phoneType == 2){
+                                selected
+                                @}
+                        >安卓
+                        </option>
+                    </#select_sjf>
+                    <#select_sjf id="kind" name="App端" underline="true" disabled="disabled">
+                        <option value="">选择App端</option>
+                        <option value="1"
+                                @if(item.kind == 1){
+                                selected
+                                @}
+                        >企业端</option>
+                        <option value="2"
+                                @if(item.kind == 2){
+                                selected
+                                @}
+                        >工人端</option>
+                    </#select_sjf>
+                    <#select_sjf id="flag" name="是否强制更新" underline="true">
+                        <option value="">选择是否强制更新</option>
+                        <option value="1"
+                                @if(item.flag == 1){
+                                selected
+                                @}
+                        >强制更新</option>
+                        <option value="2"
+                                @if(item.flag == 2){
+                                selected
+                                @}
+                        >不强制更新</option>
+                    </#select_sjf>
+                </div>
+
+                <div class="col-sm-6">
+                    <#input_sjf id="url" name="下载路径" value="${item.url}" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="version" name="版本" value="${item.version}" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="versionCode" name="版本code" value="${item.versionCode}" underline="true"/>
+                    <#input_sjf id="remark" name="备注" value="${item.remark}" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="VersionInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="VersionInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/version/version_info.js"></script>
+@}

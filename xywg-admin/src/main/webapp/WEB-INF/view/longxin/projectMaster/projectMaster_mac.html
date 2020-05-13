@@ -1,0 +1,33 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+
+        <div class="tab-content" id="ProjectMasterInfoForm">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+
+                            <input type="text"  hidden id="projectCode" value="${projectCode}" >
+
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                   <!-- <#input_sjf id="projectName" name="项目名称" underline="true" requiredFlag="true" value="" disabled="disabled"/>-->
+                                    <#input_sjf id="macCode" name="Mac编号" underline="true" requiredFlag="true"  value="" />
+                                </div>
+
+
+<div class="row btn-group-m-t">
+    <div class="col-sm-12 button-ta-r" style="text-align:center;margin-top: 20px">
+        <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterInfoDlg.submitMac()"/>
+        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterInfoDlg.close()"/>
+    </div>
+</div>
+
+</div>
+
+                        </div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster_mac.js"></script>
+@}

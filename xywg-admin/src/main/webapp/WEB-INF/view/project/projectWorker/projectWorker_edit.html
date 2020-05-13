@@ -1,0 +1,63 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" value="${item.id}" underline="true"/>
+                            <#input id="projectCode" name="项目编号" value="${item.projectCode}" underline="true"/>
+                            <#input id="organizationCode" name="所属企业组织机构代码" value="${item.organizationCode}" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号" value="${item.teamSysNo}" underline="true"/>
+                            <#input id="idCardType" name="证件类型 参见人员证件类型字典表" value="${item.idCardType}" underline="true"/>
+                            <#input id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true"/>
+                            <#input id="shImei" name="安全帽" value="${item.shImei}" underline="true"/>
+                            <#input id="joinStatus" name="状态 1:待进场  2：进场  3：退场" value="${item.joinStatus}" underline="true"/>
+                            <#input id="workTypeCode" name="当前工种 参见工种字典表中工种编号" value="${item.workTypeCode}" underline="true"/>
+                            <#input id="cellPhone" name="手机号码 工人当前手机号码" value="${item.cellPhone}" underline="true"/>
+                            <#input id="issueCardTime" name="制卡时间" value="${item.issueCardTime}" underline="true"/>
+                            <#input id="entryTime" name="工人进场时间" value="${item.entryTime}" underline="true"/>
+                            <#input id="exitTime" name="工人退场时间" value="${item.exitTime}" underline="true"/>
+                            <#input id="completeCardTime" name="销卡时间" value="${item.completeCardTime}" underline="true"/>
+                            <#input id="cardNumber" name="门禁卡号" value="${item.cardNumber}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="cardType" name="门禁卡类型 卡的类型
+1=正式卡,
+3=临工卡(指的短期进入工地工作的卡，默认这类工人不会记入工资结算)" value="${item.cardType}" underline="true"/>
+                            <#input id="hasContract" name="是否有劳动合同 0=无，
+1=有
+是否与劳务企业签有劳动合同" value="${item.hasContract}" underline="true"/>
+                            <#input id="contractCode" name="工人劳动合同编号" value="${item.contractCode}" underline="true"/>
+                            <#input id="workerAccommodationType" name="工人住宿类型 0=场外住宿,
+1=场内住宿" value="${item.workerAccommodationType}" underline="true"/>
+                            <#input id="workerRole" name="工人角色 1=Employe=职员
+2=Worker=工人" value="${item.workerRole}" underline="true"/>
+                            <#input id="payRollBankCardNumber" name="工资银行卡号" value="${item.payRollBankCardNumber}" underline="true"/>
+                            <#input id="payRollBankName" name="发放工资银行名称" value="${item.payRollBankName}" underline="true"/>
+                            <#input id="hasBuyInsurance" name="有无购买工伤或意外伤害保险	 0=No=无,
+1=Yes=有" value="${item.hasBuyInsurance}" underline="true"/>
+                            <#input id="createDate" name="添加人" value="${item.createDate}" underline="true"/>
+                            <#input id="createUser" name="添加时间" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="evaluate" name="评价" value="${item.evaluate}" underline="true"/>
+                            <#input id="isDel" name="是否删除" value="${item.isDel}" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectWorkerInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectWorkerInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectWorker/projectWorker_info.js"></script>
+@}

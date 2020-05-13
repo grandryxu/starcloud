@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.longxin.dao.LxTenderProcessRelationMapper">
+
+
+    <insert id="addRelation"  parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation">
+
+
+        insert into lx_tender_process_relation (process_id ,buss_id,type)
+
+        values(#{processId},#{bussId},#{type})
+
+    </insert>
+    <select id="geteTenderRelationByBussId"
+            parameterType="com.xywg.admin.modular.longxin.model.LxTender" resultType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation">
+        select process_id as processId, buss_id as bussId from lx_tender_process_relation
+
+        where buss_id in (${id}) and type = 2
+
+
+
+    </select>
+    
+     <insert id="addFixRelation"  parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation">
+
+
+        insert into lx_fix_process_relation (process_id ,buss_id,type)
+
+        values(#{processId},#{bussId}, #{type})
+
+    </insert>
+
+    <select id="getTenderById" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="com.xywg.admin.modular.longxin.model.LxTender">
+                 SELECT
+                    bpm.project_name AS projectName,
+                    a.file_name AS fileName,
+                    a.id,
+                    a.tender_code AS tenderCode,
+                    a.resume,
+                    a.status
+                    FROM
+              lx_tender a, lx_tender_process_relation b , buss_project_master bpm where a.project_id=bpm.id and a.id = b.buss_id and a.status = 0 and b.process_id = #{processId} and b.type = #{type}
+
+
+    </select>
+
+
+    <select id="getRegById" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation">
+
+        select buss_id as bussId from  lx_tender_process_relation where process_id = #{processId} and type =5
+
+    </select>
+    
+    <select id="getTenderByIdHis" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="com.xywg.admin.modular.longxin.model.LxTender">
+                 SELECT
+                    bpm.project_name AS projectName,
+                    a.file_name AS fileName,
+                    a.id,
+                    a.tender_code AS tenderCode,
+                    a.resume,
+                    a.status
+                    FROM
+              lx_tender a, lx_tender_process_relation b , buss_project_master bpm where a.project_id=bpm.id and a.id = b.buss_id and a.status != 0 and b.process_id = #{processId} and b.type = #{type}
+
+
+    </select>
+    
+    <select id="getInviteById" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="com.xywg.admin.modular.longxin.model.InviteBid">
+                  SELECT
+                  	a.id as id,
+                    c.file_name as tenderName,
+                    d.company_name as companyName,
+                    a.flowStatus as flowStatus,
+                    e.project_name as projectName,
+                    c.id as tenderId
+                    FROM
+              lx_fix_process_relation b left join lx_invite_bid a on b.buss_id = a.id left join lx_tender c on a.tender_id = c.id left join buss_sub_contractor d on 
+              a.company_id = d.id
+              left JOIN  buss_project_master e on c.project_id = e.id
+                where a.id = b.buss_id  and b.process_id = #{processId}  and b.type = #{type} and a.flowStatus = 1
+    </select>
+    
+    <select id="getInviteByIdHis" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="com.xywg.admin.modular.longxin.model.InviteBid">
+                  SELECT
+                  	a.id as id,
+                    c.file_name as tenderName,
+                    d.company_name as companyName,
+                    a.flowStatus as flowStatus,
+                       e.project_name as projectName
+                    FROM
+              lx_fix_process_relation b left join lx_invite_bid a on b.buss_id = a.id left join lx_tender c on a.tender_id = c.id left join buss_sub_contractor d on 
+              a.company_id = d.id
+                   left JOIN  buss_project_master e on c.project_id = e.id
+                where a.id = b.buss_id  and b.process_id = #{processId}  and b.type = #{type} and a.flowStatus != 1
+    </select>
+    
+    
+	<select id="getFixRelation" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="java.lang.String">
+                  SELECT
+                  	process_id
+                    FROM
+              lx_fix_process_relation where buss_id =  #{bussId} and type=#{type}
+    </select>
+    
+    <select id="getFlowRelation" parameterType="com.xywg.admin.modular.longxin.model.LxTenderProcessRelation" resultType="java.lang.String">
+                  SELECT
+                  	process_id
+                    FROM
+              lx_tender_process_relation where buss_id =  #{bussId}  and type=#{type}
+    </select>
+</mapper>

@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.longxin.dao.TenderMapper">
+
+
+
+    <delete
+        id="deleteTender" parameterType="com.xywg.admin.modular.longxin.model.LxTender">
+        delete from lx_tender where id in (${id})
+
+
+    </delete>
+    <update id="setType" parameterType="com.xywg.admin.modular.longxin.model.LxTender">
+
+        update lx_tender set tender_type = #{tenderType} where id =#{id }
+
+    </update>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+          id , project_id as projectId,project_name as projectName,submit_user_id as submitUserId,project_address as projectAddress,
+          project_type as projectType ,start_time as startTime, end_time as endTime,bid_numb as bidNumb,tender_context as tenderContext,
+          tender_resume as tenderResume,tender_files as tenderFiles,tender_type as tenderType
+    </sql>
+
+    <select id="getById" parameterType="java.lang.String" resultType="com.xywg.admin.modular.longxin.model.TenderResultBean">
+        SELECT
+        a.id , b.id as projectId,
+        b.project_name as projectName,
+        b.submit_people as subUserId,
+        b.address as projectAddress,
+        b.project_category as projectType ,
+        a.start_time as startTime,
+        a.create_user_name as createUser,
+        a.create_time as createTime,
+        a.deadline as deadline,
+        b.project_description as tenderContext,
+        a.resume as tenderResume,
+        a.file_name as fileName,
+        a.price_temp as priceTemp,
+        a.tender_code as tenderCode,
+        a.tender_type as tenderType,
+        a.tender_man_status as tenderManStatus,
+        a.status
+        FROM
+        lx_tender a, buss_project_master b
+        WHERE a.id= #{id}   and a.project_id = b.id
+        ORDER BY a.id DESC
+    </select>
+<update
+    id="updateStatus" parameterType="com.xywg.admin.modular.longxin.model.LxTender">
+    update lx_tender set status =#{status }
+    where id = #{id}
+</update>
+
+<update
+    id="updateStatusFix" parameterType="com.xywg.admin.modular.longxin.model.LxTender">
+    update lx_invite_bid set status =#{status },flowStatus=#{flowStatus}
+    where id = #{id}
+</update>
+
+<update 
+    id="updateManStatus"  >
+    update lx_tender set tender_man_status = #{status}
+    where id = #{id}
+</update>
+
+<update 
+    id="updateFlowStatus"  >
+    update lx_tender set status = #{status}
+    where id = #{id}
+</update>
+    <update id="updateEvaluationBid">
+      UPDATE lx_invite_bid SET
+        <if test="evaluateTimes != null and evaluateTimes == '1'">
+            pingbiao1=#{evaluateContent}
+        </if>
+        <if test="evaluateTimes != null and evaluateTimes == '2'">
+            pingbiao2=#{evaluateContent}
+        </if>
+
+        <if test="evaluateTimes != null and evaluateTimes == '3'">
+            pingbiao3=#{evaluateContent}
+        </if>
+        where id=#{id}
+    </update>
+    <update id="updateSubmitbid">
+
+        UPDATE  lx_invite_bid  set  status=4 where id=#{id}
+    </update>
+    <update id="reviewCalibration">
+      UPDATE lx_invite_bid SET status = '3',  flowStatus= '1'
+      WHERE id = #{id} AND status=4
+    </update>
+    <update id="reviewCalibrationPass">
+           UPDATE lx_invite_bid SET status = '5',  flowStatus= '2'  ,date = now()
+            WHERE id = #{toString} AND status=4
+
+    </update>
+    <update id="currentBid">
+      UPDATE lx_tender
+      SET tender_man_status = '2'
+      WHERE
+	  tender_code = #{tenderCode} AND tender_man_status='0'
+    </update>
+    <update id="RejectedBid">
+      UPDATE lx_tender
+      SET tender_man_status = '1'
+      WHERE
+	  tender_code = #{tenderCode} AND tender_man_status='0'
+    </update>
+    <update id="reviewCalibrationBid">
+          UPDATE lx_tender
+      SET status = '2'
+      WHERE id=#{id}
+
+    </update>
+    <update id="reviewCalibrationPassBid">
+               UPDATE lx_tender
+      SET status = '1'
+      WHERE id=#{id}
+
+    </update>
+    <update id="updateEvaluationBid1">
+        UPDATE lx_invite_bid SET pingbiao1=#{evaluateContent}    where id=#{id}
+    </update>
+    <update id="updateEvaluationBid2">
+          UPDATE lx_invite_bid SET pingbiao2=#{evaluateContent}    where id=#{id}
+    </update>
+    <update id="updateEvaluationBid3">
+           UPDATE lx_invite_bid SET pingbiao3=#{evaluateContent}    where id=#{id}
+    </update>
+    <update id="updatestatusPb">
+    update  lx_invite_bid set  status=3 where id=#{id}
+    </update>
+
+
+    <select id="selectList1" resultType="com.xywg.admin.modular.longxin.model.TenderResultBean">
+        SELECT
+        a.id , b.id as projectId,
+        b.project_name as projectName,
+        b.submit_people as subUserId,
+        b.address as projectAddress,
+        b.project_category as projectType,
+        a.start_time as startTime,
+        a.deadline as deadline,
+        a.create_time as createTime,
+        a.create_user_name as createUser,
+        a.file_name as fileName,
+        b.project_description as tenderContext,
+        a.resume as tenderResume,a.status,c.status as tenderStatus,a.tender_man_status as tenderManStatus,a.tender_type as tenderType
+        FROM
+        lx_tender a left join  (select distinct(t.tender_id),Max(t.status) as status from lx_invite_bid t where t.status in (3,4,5) group by t.tender_id)
+        c on a.id = c.tender_id  , buss_project_master b where  a.project_id = b.id
+        <if test="map.projectId != null  and map.projectId != '' ">
+            and   a.project_id = #{map.projectId}
+        </if>
+
+        <!--<if test="map.condition != null and map.condition != ''">-->
+        <!--AND (imei LIKE CONCAT('%',#{map.condition},'%') OR client_name LIKE CONCAT('%',#{map.condition},'%'))-->
+        <!--</if>-->
+
+        ORDER BY a.id DESC
+    </select>
+
+    <select id="selectList" resultType="com.xywg.admin.modular.longxin.model.TenderResultBean">
+        SELECT
+        a.id , b.id as projectId,
+        b.project_name as projectName,
+        b.submit_people as subUserId,
+        b.address as projectAddress,
+        b.project_category as projectType ,
+        a.start_time as startTime,
+        a.deadline as deadline,
+        a.create_time as createTime,
+        a.create_user_name as createUser,
+        a.file_name as fileName,
+        b.project_description as tenderContext,
+        a.resume as tenderResume,a.status,c.status as tenderStatus,a.tender_man_status as tenderManStatus,a.tender_type as tenderType
+        FROM
+        lx_tender a left join  (select distinct(t.tender_id),Max(t.status) as status from lx_invite_bid t where t.status in (3,4,5) group by t.tender_id) 
+       c on a.id = c.tender_id  , buss_project_master b where  a.project_id = b.id  and a.status = 1
+        <if test="map.projectId != null  and map.projectId != '' ">
+            and   a.project_id = #{map.projectId}
+        </if>
+
+        <!--<if test="map.condition != null and map.condition != ''">-->
+        <!--AND (imei LIKE CONCAT('%',#{map.condition},'%') OR client_name LIKE CONCAT('%',#{map.condition},'%'))-->
+        <!--</if>-->
+
+        ORDER BY a.id DESC
+    </select>
+    
+    <select id="selectListTender" resultType="com.xywg.admin.modular.longxin.model.TenderResultBean">
+        SELECT
+        a.id , b.id as projectId,
+        b.project_name as projectName,
+        b.submit_people as subUserId,
+        b.address as projectAddress,
+        b.project_category as projectType ,
+        a.start_time as startTime,
+        a.deadline as deadline,
+        a.create_time as createTime,
+        a.create_user_name as createUser,
+        a.file_name as fileName,
+        b.project_description as tenderContext,
+        a.resume as tenderResume,a.status,a.tender_man_status as tenderManStatus,a.tender_type as tenderType
+        FROM
+        lx_tender a , buss_project_master b where  a.project_id = b.id  and a.status = 1 and a.start_time > Now()
+        <if test="map.projectId != null  and map.projectId != '' ">
+            and   a.project_id = #{map.projectId}
+        </if>
+
+        <if test="map.tenderType != null  and map.tenderType == 1 ">
+            and a.tender_type = 1
+        </if>
+
+        <!--<if test="map.condition != null and map.condition != ''">-->
+        <!--AND (imei LIKE CONCAT('%',#{map.condition},'%') OR client_name LIKE CONCAT('%',#{map.condition},'%'))-->
+        <!--</if>-->
+
+        ORDER BY a.id DESC
+    </select>
+    
+    
+    
+    <select id="selectListFix" resultType="com.xywg.admin.modular.longxin.model.TenderResultBean">
+        SELECT
+        a.id , b.id as projectId,
+        b.project_name as projectName,
+        b.submit_people as subUserId,
+        b.address as projectAddress,
+        b.project_category as projectType ,
+        a.start_time as startTime,
+        a.deadline as deadline,
+        a.create_time as createTime,
+        a.create_user_name as createUser,
+        a.file_name as fileName,
+        b.project_description as tenderContext,
+        a.resume as tenderResume,a.status,c.status as tenderStatus,a.tender_man_status as tenderManStatus,a.tender_type as tenderType
+        FROM
+        lx_tender a inner join  (select distinct(t.tender_id),Max(t.status) as status from lx_invite_bid t where t.status in (5) group by t.tender_id) 
+       c on a.id = c.tender_id  , buss_project_master b where  a.project_id = b.id  and a.status = 1
+        <if test="map.projectId != null  and map.projectId != '' ">
+            and   a.project_id = #{map.projectId}
+        </if>
+
+        <!--<if test="map.condition != null and map.condition != ''">-->
+        <!--AND (imei LIKE CONCAT('%',#{map.condition},'%') OR client_name LIKE CONCAT('%',#{map.condition},'%'))-->
+        <!--</if>-->
+
+        ORDER BY a.id DESC
+    </select>
+
+    <insert id="saveFile" parameterType="java.util.List"  >
+
+        insert INTO  lx_tender_file (tender_id,file_path,file_name)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tenderId},#{item.filePath},#{item.fileName})
+        </foreach>
+
+
+
+    </insert>
+
+
+    <insert id="saveTender" parameterType="com.xywg.admin.modular.longxin.model.LxTender" useGeneratedKeys="true" keyProperty="id" >
+        insert into lx_tender(project_id,resume,file_name,price_temp,create_user_name,create_time,deadline,start_time,tender_code,tender_Type)
+        values(#{projectId},#{resume},#{fileName},#{priceTemp},#{createUser},#{createTime},#{deadline},#{startTime},#{tenderCode},#{tenderType})
+
+    </insert>
+
+    <select id="getFileByTenderId" parameterType="java.lang.String" resultType="com.xywg.admin.modular.longxin.model.LxTenderFile">
+
+        select tender_id as tenderId ,file_path as filePath ,file_name as fileName from lx_tender_file where tender_id = #{id}
+
+    </select>
+
+    <select id="selectType" resultType="java.lang.Integer">
+        select tender_Type AS tenderType  from lx_tender where id=#{id}
+    </select>
+    <select id="getTenderList" resultType="java.util.Map">
+        SELECT
+             t.id,
+        	t.file_name as tenderContent,
+        	ifnull(t.tender_code,"") as tenderCode,
+        	pm.project_name as tenderName,
+        	t.tender_type as tenderType,
+          MAX(ib.status) AS status,
+        	t.status AS  auditStatus,
+        	t.tender_man_status AS bid,
+        	t.deadline	AS endTime,
+        	t.start_time AS startTime,
+        	t.create_time AS  createTime,
+        	t.tender_code AS tenderCode
+        FROM
+        	lx_invite_bid ib
+        right JOIN lx_tender t ON t.id = ib.tender_id
+        LEFT JOIN sys_user u ON u. NAME = t.create_user_name
+				LEFT JOIN buss_project_master  pm ON  pm.id=t.project_id
+        WHERE
+        	u.account =#{account}
+
+        <if test="map.key != null  and map.key!=''">
+            and  ( pm.project_name like concat('%',#{map.key},'%') or t.file_name LIKE  concat('%',#{map.key},'%'))
+        </if>
+        	 GROUP BY t.id
+
+        	order by t.create_time desc
+        	  LIMIT #{pageNo},#{pageSize}
+
+    </select>
+    <select id="tenderDetails" resultType="java.util.Map">
+      SELECT
+      t.file_name  AS tenderContent ,
+      t.tender_code AS tenderCode,
+      pm.project_name AS tenderName,
+      t.resume as tenderContentDetail,
+      t.tender_type AS tenderType,
+      MAX(ib.status) AS status,
+      t.status AS  auditStatus,
+      t.tender_man_status AS bid,
+      t.deadline AS endTime,
+      t.start_time AS startTime,
+       count(ib.tender_id) as inviteCompanyNumber
+       from lx_invite_bid ib RIGHT JOIN lx_tender t on t.id=ib.tender_id
+			LEFT JOIN buss_project_master pm ON pm.id=t.project_id
+      where t.tender_code=#{tenderCode}
+      GROUP BY ib.tender_id
+    </select>
+    <select id="tenderFile" resultType="java.util.Map">
+        SELECT
+        tf.id,
+        CONCAT(tf.file_path) as filePath ,
+        tf.file_name as fileName
+         from  lx_tender_file tf LEFT JOIN lx_tender t ON t.id=tf.tender_id
+        LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+        where t.tender_code=#{tenderCode} GROUP BY  tf.id
+    </select>
+    <select id="winningBidList" resultType="java.util.Map">
+      SELECT
+      t.file_name AS	 tenderContent,
+      t.tender_code AS tenderCode,
+       pm.project_name AS tenderName,
+      t.tender_type AS tenderType,
+      sc.company_name AS winningBidUnit,
+      ib.date  AS winningBidTime
+      FROM
+      	sys_user u
+      RIGHT JOIN lx_tender t ON t.create_user_name = u. NAME
+      LEFT JOIN lx_invite_bid ib ON ib.tender_id = t.id
+      LEFT JOIN buss_sub_contractor sc ON sc.id = ib.company_id
+			LEFT JOIN buss_project_master pm ON pm.id=t.project_id
+      WHERE
+      ib. STATUS = '5'
+      order by ib.date desc
+
+     LIMIT #{pageNo},#{pageSize}
+
+
+    </select>
+    <select id="winningBidDetails" resultType="java.util.Map">
+            SELECT
+        t.file_name AS  tenderContent,
+        t.tender_code AS tenderCode,
+        pm.project_name AS  tenderName,
+        t.resume AS  tenderContentDetail,
+        t.tender_type AS tenderType,
+        sc.company_name AS winningBidUnit,
+        ib.date AS winningBidTime
+         from lx_invite_bid ib RIGHT JOIN lx_tender t ON t.id=ib.tender_id
+        LEFT JOIN buss_sub_contractor sc ON  sc.id=ib.company_id
+				LEFT JOIN buss_project_master pm on pm.id=t.project_id
+        where t.tender_code=#{tenderCode} and ib.status='5'
+    </select>
+    <select id="tenderDetailList" resultType="java.util.Map">
+      SELECT
+      	t.price_temp AS temp,
+      	fm.bid_price AS price
+      FROM
+      	lx_tender t
+      LEFT JOIN lx_invite_bid ib ON ib.tender_id = t.id
+      LEFT JOIN lx_fix_mark fm ON fm.invite_id = ib.id
+      WHERE
+      	t.tender_code = #{tenderCode} AND ib.status='5'
+    </select>
+    <select id="selectionList" resultType="java.util.Map">
+select
+		t.id,
+  	t.file_name AS  tenderContent,
+  	t.tender_code AS tenderCode,
+  	pm.project_name AS tenderName,
+  	t.tender_type AS tenderType,
+        MAX(ib.status) AS status,
+		t.status AS  auditStatus,
+		t.tender_man_status AS bid,
+		t.start_time AS startDate,
+  	t.create_time AS createTime
+
+from sys_user u RIGHT JOIN lx_tender t ON t.create_user_name=u.name
+LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+LEFT JOIN buss_project_master pm on pm.id=t.project_id
+
+where u.account=#{account}  AND t.status =1  AND t.tender_man_status=0
+
+        <if test="map.key != null  and map.key != '' ">
+            and (pm.project_name like concat('%',#{map.key},'%')  or t.file_name LIKE  concat('%',#{map.key},'%') )
+        </if>
+
+        GROUP BY  tender_id  HAVING   MAX(ib.status)=3 or MAX(ib.status)=4
+        order by t.create_time desc
+
+
+
+ LIMIT #{pageNo},#{pageSize}
+    </select>
+    <select id="candidateBidList" resultType="java.util.Map">
+        select
+        sc.company_name AS unitName,
+        sc.organization_code AS unitCode,
+        ib.pingbiao1 AS assessFirst,
+        ib.pingbiao2 AS assessSecond,
+        ib.pingbiao3 AS assessThird
+         FROM lx_tender t LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+        LEFT JOIN buss_sub_contractor sc ON sc.id=ib.company_id
+        where t.tender_code=#{tenderCode} and t.status=1 AND ib.status=5
+    </select>
+    <select id="tenderDetail" resultType="java.util.Map">
+
+        SELECT
+         t.price_temp as temp,
+          fm.bid_price as price
+       from lx_tender t LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+      LEFT JOIN lx_fix_mark fm ON fm.invite_id=ib.id
+      where t.tender_code=#{tenderCode} GROUP BY t.id
+    </select>
+    <select id="toDoTasks" resultType="java.util.Map">
+        SELECT
+      t.id,
+      t.file_name AS  tenderContent,
+      t.tender_code AS tenderCode,
+      pm.project_name AS tenderName,
+      t.tender_type AS tenderType,
+      ib.status AS status,
+      t.status AS  auditStatus,
+      t.tender_man_status AS bid,
+      t.start_time AS startDate,
+      t.create_time AS createTime
+
+      from sys_user u RIGHT JOIN lx_tender t ON t.create_user_name=u.name
+      LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+			LEFT JOIN buss_project_master pm ON pm.id=t.project_id
+      where u.account=#{account}
+            AND t.status='0'
+
+         GROUP BY id
+            order by t.create_time desc
+            LIMIT #{pageNo},#{pageSize}
+    </select>
+    <select id="selectEvaluationBid" resultType="java.lang.String">
+        SELECT ib.id from buss_sub_contractor sc RIGHT JOIN lx_invite_bid ib  ON ib.company_id=sc.id
+        LEFT JOIN lx_tender t ON t.id=ib.tender_id
+        where sc.organization_code=#{unitCode} AND t.tender_code=#{tenderCode}
+    </select>
+    <select id="submitbid" resultType="java.lang.Integer">
+        SELECT ib.id from buss_sub_contractor sc RIGHT JOIN  lx_invite_bid ib ON ib.company_id=sc.id
+        LEFT JOIN  lx_tender t ON t.id=ib.tender_id
+        where t.tender_code =#{tenderCode} AND sc.organization_code=#{unitCode}
+    </select>
+    <select id="selectId" resultType="java.lang.Integer">
+      SELECT
+	  ib.id as id
+      FROM
+      	lx_invite_bid ib
+      LEFT JOIN lx_tender t ON t.id = ib.tender_id
+      WHERE t.tender_code= #{tenderCode} and ib.status= '4'
+
+    </select>
+    <select id="selectDetails" resultType="java.util.Map">
+        SELECT
+        t.resume AS  tenderContent,
+        t.tender_code AS tenderCode,
+        t.file_name AS tenderName,
+        t.resume AS tenderContentDetail,
+        t.tender_type AS tenderType,
+           ib.status AS status,
+              t.status AS  auditStatus,
+              t.tender_man_status AS bid,
+        t.deadline AS endTime,
+        t.start_time AS startTime,
+        count(ib.tender_id) as inviteCompanyNumber
+         from sys_user u RIGHT JOIN lx_tender t on t.create_user_name=u.name
+        LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+        where u.account=#{account} AND t.tender_code=#{tenderCode}
+
+    </select>
+    <select id="filePath" resultType="java.util.Map">
+        SELECT
+        	tf.id,
+        	tf.file_name AS startFileName,
+        	tf.file_path AS startFilePath
+        FROM
+        	lx_tender_file tf
+        LEFT JOIN lx_tender t ON t.id = tf.tender_id
+        WHERE
+        	t.tender_code = #{tenderCode}
+        GROUP BY
+        	tf.id
+    </select>
+
+    <select id="selectProjectId" resultType="java.lang.String">
+
+        select  project_id AS projectId from lx_tender tender_code=#{tenderCode}
+    </select>
+    <select id="canApproval" resultType="java.lang.Integer">
+SELECT COUNT(wp.id)AS num from  sys_user u RIGHT JOIN biz_wf_process wp ON wp.display_name=u.name
+LEFT JOIN biz_wf_order wo ON wo.process_id=wp.id
+where wp.projectId=#{projectId} AND u.account=#{account}
+
+    </select>
+    <select id="canApprovalBid" resultType="java.lang.Integer">
+
+SELECT COUNT(fpr.id)AS num from lx_fix_process_relation fpr LEFT JOIN biz_wf_process wp  	ON wp.id=fpr.process_id
+LEFT JOIN sys_user u ON u.name =wp.display_name
+where wp.projectId=#{projectId} AND u.account=#{account}
+    </select>
+    <select id="tenderDetailAndCompany" resultType="java.util.Map">
+
+        SELECT
+        t.price_temp as temp,
+        ifnull(fm.bid_price,"") AS price
+
+        FROM
+        	buss_sub_contractor sc
+        RIGHT JOIN lx_invite_bid ib ON ib.company_id = sc.id
+        LEFT JOIN lx_tender t ON t.id = ib.tender_id
+        LEFT JOIN lx_fix_mark fm ON fm.invite_id = ib.id
+        WHERE
+        	t.tender_code = #{tenderCode}
+        AND sc.organization_code = #{unitCode}
+    </select>
+
+    <select id="announcementGetAllGetTenderList" resultType="java.util.Map">
+             SELECT
+        t.id,
+        	t.file_name as tenderContent,
+        	ifnull(t.tender_code,"") as tenderCode,
+        	pm.project_name as tenderName,
+        	t.tender_type as tenderType,
+        	MAX(ib.status) AS status,
+        	t.status AS  auditStatus,
+        	t.tender_man_status AS bid,
+        	t.deadline	AS endTime,
+        	t.start_time AS startTime,
+        	t.create_time AS  createTime,
+        	t.tender_code AS tenderCode
+        FROM
+        	lx_invite_bid ib
+        RIGHT JOIN lx_tender t ON t.id = ib.tender_id
+        LEFT JOIN sys_user u ON u. NAME = t.create_user_name
+LEFT JOIN buss_project_master pm ON pm.id=t.project_id
+        WHERE
+        	 t.status='1' AND t.tender_man_status=0 AND  ib.status IS NOT NULL
+
+        	  GROUP BY ib.tender_id
+        	 order by t.create_time desc
+        	 LIMIT #{pageNo},#{pageSize}
+
+    </select>
+    <select id="toDoTasksD" resultType="java.util.Map">
+    SELECT
+      t.id,
+      t.file_name AS  tenderContent,
+      t.tender_code AS tenderCode,
+      pm.project_name AS tenderName,
+      t.tender_type AS tenderType,
+      ib.status AS status,
+      t.status AS  auditStatus,
+      t.tender_man_status AS bid,
+      t.start_time AS startDate,
+      t.create_time AS createTime
+
+      from sys_user u RIGHT JOIN lx_tender t ON t.create_user_name=u.name
+      LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+			LEFT JOIN buss_project_master  pm ON pm.id=t.project_id
+      where u.account=#{account}
+          AND ib.status='4'  AND t.tender_man_status=0
+
+         GROUP BY id
+           order by t.create_time desc
+
+            LIMIT #{pageNo},#{pageSize}
+    </select>
+    <select id="candidateBidListZb" resultType="java.util.Map">
+
+           select
+        sc.company_name AS unitName,
+        sc.organization_code AS unitCode,
+        ib.pingbiao1 AS assessFirst,
+        ib.pingbiao2 AS assessSecond,
+        ib.pingbiao3 AS assessThird
+         FROM lx_tender t LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+         LEFT JOIN lx_fix_mark fm on fm.invite_id=ib.id
+        LEFT JOIN buss_sub_contractor sc ON sc.id=ib.company_id
+        where t.tender_code=#{tenderCode} AND fm.id IS not NULL AND t.status=1  and( ib.status=3  or ib.status=4 or ib.status=1 or ib.status=2 )
+
+    </select>
+    <select id="selectIdZb" resultType="java.lang.Integer">
+
+        SELECT id from lx_tender where tender_code=#{tenderCode}
+    </select>
+    <select id="selectTenderId" resultType="java.lang.String">
+        select id from lx_tender where  tender_code=#{tenderCode}
+
+    </select>
+    <select id="selectCompamyId" resultType="java.lang.String">
+        select id from buss_sub_contractor where organization_code=#{unitCode}
+
+    </select>
+    <select id="candidateBidListZbPingBiao1" resultType="java.util.Map">
+                 select
+        sc.company_name AS unitName,
+        sc.organization_code AS unitCode,
+        ib.pingbiao1 AS assessFirst,
+        ib.pingbiao2 AS assessSecond,
+        ib.pingbiao3 AS assessThird
+         FROM lx_tender t LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+         LEFT JOIN lx_fix_mark fm on fm.invite_id=ib.id
+        LEFT JOIN buss_sub_contractor sc ON sc.id=ib.company_id
+        where t.tender_code=#{tenderCode} AND fm.id IS not NULL AND t.status=1  and ib.status=3
+
+
+    </select>
+    <select id="candidateBidListZbDingBiao1" resultType="java.util.Map">
+
+                         select
+        sc.company_name AS unitName,
+        sc.organization_code AS unitCode,
+        ib.pingbiao1 AS assessFirst,
+        ib.pingbiao2 AS assessSecond,
+        ib.pingbiao3 AS assessThird
+         FROM lx_tender t LEFT JOIN lx_invite_bid ib ON ib.tender_id=t.id
+         LEFT JOIN lx_fix_mark fm on fm.invite_id=ib.id
+        LEFT JOIN buss_sub_contractor sc ON sc.id=ib.company_id
+        where t.tender_code=#{tenderCode} AND fm.id IS not NULL AND t.status=1  and ib.status=4
+    </select>
+    <select id="getid" resultType="java.lang.String">
+        select  id  from lx_tender where tender_code=#{tenderCode}
+
+    </select>
+    <select id="getCompanyId" resultType="java.lang.String">
+
+        select  id from buss_sub_contractor where organization_code=#{unitCode}
+    </select>
+    <select id="getibId" resultType="java.lang.String">
+
+
+
+    </select>
+    <select id="selectUserIdByUserName" resultType="java.lang.String">
+
+        select id   from sys_user  where account=#{account}
+    </select>
+
+
+</mapper>

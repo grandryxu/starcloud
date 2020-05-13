@@ -1,0 +1,26 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="projectCode" value="${item.projectCode}">
+                <div class="col-sm-12 b-r">
+                    <#input_sjf id="overTime" name="加班小时数" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="rain" name="雨天天数" value="${item.rain}" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="fallIll" name="病假天数" value="${item.fallIll}" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="compassionateLeave" name="事假天数" value="${item.compassionateLeave}" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="absent" name="缺席天数" value="${item.absent}" underline="true" requiredFlag="true"/>
+                </div>
+                
+            <div class="row btn-group-m-t" align="center">
+                <div class="col-sm-12">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceReportInfoDlg.addOverTimeSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceReportInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/report/deviceReportNew/deviceReport_info.js"></script>
+@}

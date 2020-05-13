@@ -1,0 +1,1896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.team.dao.TeamMasterMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xywg.admin.modular.team.model.TeamMaster">
+		<id column="id" property="id" />
+		<result column="team_sys_no" property="teamSysNo" />
+		<result column="project_code" property="projectCode" />
+		<result column="organization_code" property="organizationCode" />
+		<result column="team_name" property="teamName" />
+		<result column="team_leader" property="teamLeader" />
+		<result column="contact" property="contact" />
+		<result column="team_leader_id_number" property="teamLeaderIdNumber" />
+		<result column="responsible_person_id_number" property="responsiblePersonIdNumber" />
+		<result column="note" property="note" />
+		<result column="create_date" property="createDate" />
+		<result column="create_user" property="createUser" />
+		<result column="update_date" property="updateDate" />
+		<result column="update_user" property="updateUser" />
+		<result column="status" property="status" />
+		<result column="is_del" property="isDel" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, team_sys_no AS teamSysNo, project_code AS projectCode,
+		organization_code AS organizationCode, team_name AS teamName,
+		team_leader AS teamLeader, contact, team_leader_id_number AS
+		teamLeaderIdNumber, responsible_person_id_number AS
+		responsiblePersonIdNumber, note, create_date AS createDate,
+		create_user AS createUser, update_date AS updateDate, update_user AS
+		updateUser, status, is_del AS isDel
+	</sql>
+
+	<update id="setIsdel">
+		update buss_team_master set is_del = 1 where id =
+		#{teamId}
+	</update>
+
+
+	<update id="updateContractInfo">
+        UPDATE buss_team_master
+        SET
+        has_contract = 1
+        WHERE
+        team_sys_no = #{teamSysNo}
+    </update>
+
+	<!-- 列表查询 -->
+	<select id="getTeams" resultType="map">
+		SELECT
+		t.id,
+		t.team_sys_no AS teamSysNo,
+		t.project_code AS projectCode,
+		t.organization_code AS organizationCode,
+		t.team_name AS teamName,
+		t.team_leader AS teamLeader,
+		t.contact,
+		t.team_leader_id_number AS
+		teamLeaderIdNumber,
+		t.responsible_person_id_number AS
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date AS createDate,
+		t.create_user AS createUser,
+		t.update_date AS updateDate,
+		t.update_user
+		AS updateUser,
+		t.`status`,
+		t.is_del AS isDel,
+		w.worker_name AS
+		responsiblePersonName,
+		p.project_name AS projectName,
+		c.company_name AS
+		companyName ,
+		if(d.social_credit_number is null,0,1) AS isGeneralContractorOperation
+		FROM
+		buss_team_master AS t
+		LEFT JOIN buss_project_master AS p
+		ON t.project_code = p.project_code AND
+		p.is_del = 0
+		LEFT JOIN
+		buss_worker_master AS w ON t.responsible_person_id_number =
+		w.id_card_number AND w.is_del = 0 AND w.id_card_type = 1
+		LEFT JOIN buss_sub_contractor AS c ON
+		t.organization_code =
+		c.organization_code AND c.is_del = 0
+		LEFT JOIN sys_dept d ON d.social_credit_number =t.organization_code and  d.social_credit_number IN
+		<foreach collection="codes" close=")" open="(" separator=","
+				 index="index" item="item">
+			#{item}
+		</foreach>
+		WHERE
+		t.is_del = 0
+		<if test="!((switchType.switchType==0 and switchType.isGeneralContractor==1) or (map.page == 'ZBXM'))">
+		AND t.organization_code IN
+		<foreach collection="codes" close=")" open="(" separator=","
+			index="index" item="item">
+			#{item}
+		</foreach>
+		</if>
+	<!--	<if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+			and 1=2
+		</if>-->
+		<if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+			and t.project_code in
+			<foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="map.name != null and map.name != ''">
+			and (t.team_leader like CONCAT('%',#{map.name},'%'))
+		</if>
+		<if test="map.projectCode != null and map.projectCode != ''">
+			and t.project_code = #{map.projectCode}
+		</if>
+		<if test="map.organizationCode != null and map.organizationCode != ''">
+			and t.organization_code = #{map.organizationCode}
+		</if>
+		<if test="map.phone != null and map.phone != ''">
+			and (t.contact like CONCAT('%',#{map.phone},'%')) 
+		</if>
+		<if test="map.teamName != null and map.teamName != ''">
+			and ((t.team_name like CONCAT('%',#{map.teamName},'%')) or (t.team_leader like CONCAT('%',#{map.teamName},'%')))
+		</if>
+		<choose>
+			<when test="orderByField != null and orderByField !=''">
+				<choose>
+					<when test="isAsc == true">
+						order by ${orderByField} ASC
+					</when>
+					<otherwise>
+						order by ${orderByField} DESC
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				order by t.id DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- 查询单条 -->
+	<select id="getById" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		t.id,
+		t.team_sys_no AS
+		teamSysNo,
+		t.project_code AS projectCode,
+		t.organization_code AS
+		organizationCode,
+		t.team_name AS teamName,
+		t.team_leader AS teamLeader,
+		t.contact,
+		t.team_leader_id_number AS teamLeaderIdNumber,
+		t.responsible_person_id_number AS responsiblePersonIdNumber,
+		t.note,
+		t.create_date AS createDate,
+		t.create_user AS createUser,
+		t.update_date
+		AS updateDate,
+		t.update_user AS updateUser,
+		t.`status`,
+		t.is_del AS
+		isDel,
+		c.company_name AS companyName
+		FROM
+		buss_team_master AS t
+		LEFT JOIN
+		buss_sub_contractor AS c ON t.organization_code =
+		c.organization_code
+		where t.id = #{teamId}
+	</select>
+
+	<select id="getTeamInfoByTeamSysNo" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		t.id,
+		t.team_sys_no as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		where t.team_sys_no = #{no}
+	</select>
+
+	<!-- 查询班组下的工人 -->
+	<select id="getMemberByTeamCode" resultType="map">
+			SELECT
+				btm.id,
+				w.id as wId,
+				pw.id AS pwId,
+				btm.team_worker_type AS teamWorkerType,
+				w.worker_name AS workerName,
+				w.id_card_type AS idCardType,
+				w.id_card_number AS idCardNumber,
+				w.cell_phone,
+				w.work_type_code AS workTypeCode,
+				pw.join_status AS joinStatus,
+				w.gender,
+				pw.card_number AS cardNumber,
+				w.face
+		FROM buss_team_member AS btm
+		LEFT JOIN buss_worker_master AS w ON btm.id_card_type = w.id_card_type AND btm.id_card_number = w.id_card_number
+		LEFT JOIN buss_project_worker AS pw ON btm.id_card_type = pw.id_card_type AND btm.id_card_number = pw.id_card_number 
+					 AND btm.team_sys_no = pw.team_sys_no
+		WHERE btm.is_del= 0 AND w.is_del = 0 AND pw.is_del = 0
+			  AND btm.team_sys_no = #{map.teamCode}
+		<if test="map.name != null and map.name != ''">
+			and (w.worker_name like CONCAT('%',#{map.name},'%'))
+		</if>
+		<if test="map.idCard != null and map.idCard != ''">
+			and (w.id_card_number like
+			CONCAT('%',#{map.idCard},'%'))
+		</if>
+		<if test="map.phone != null and map.phone != ''">
+			and (w.cell_phone like CONCAT('%',#{map.phone},'%'))
+		</if>
+		GROUP BY btm.id_card_number
+		ORDER BY btm.team_worker_type ASC
+	</select>
+
+	<!-- 根据班组编号获取班组成员 -->
+	<select id="getTeamMemberByTeamCode" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		SELECT
+		w.id,
+		w.worker_name AS
+		workerName,
+		w.id_card_type AS idCardType,
+
+		w.id_card_number as
+		idCardNumber,
+		w.gender,
+		w.nation,
+		DATE_FORMAT(w.birthday,'%Y-%m-%d') as
+		birthday,
+		w.birth_place_code AS
+		birthPlaceCode,
+		w.address, w.head_image
+		AS
+		headImage,
+		w.politics_type AS
+		politicsType,
+		w.is_joined AS isJoined,
+		w.joined_time AS joinedTime,
+		w.cell_phone AS cellPhone,
+		w.culture_level_type AS cultureLevelType,
+		w.has_bad_medical_history AS
+		hasBadMedicalHistory,
+		w.urgent_contract_name AS urgentContractName,
+		w.urgent_contract_cellphone AS urgentContractCellphone,
+		w.work_type_code AS workTypeCode, w.work_date AS workDate,
+		w.icon_image AS iconImage,
+		w.id_image AS idImage,
+		w.is_face AS isFace,
+		w.face,
+		w.is_auth AS isAuth,
+		w.create_date AS createDate,
+		w.create_user
+		AS createUser,
+		w.update_date AS updateDate,
+		w.update_user AS updateUser,
+		w.note, w.is_del AS isDel
+		FROM
+		buss_team_member AS btm
+		LEFT JOIN
+		buss_worker_master AS w ON btm.id_card_type = w.id_card_type
+		AND
+		btm.id_card_number = w.id_card_number
+		WHERE
+		btm.is_del=0
+		AND w.is_del=0
+		AND
+		btm.team_sys_no = #{teamCode}
+
+		ORDER BY btm.team_worker_type ASC
+
+	</select>
+
+	<!-- 根据项目和班组编号获取班组成员 -->
+	<select id="getTeamMemberByProjectCodeAndTeamCode" resultType="Map">
+		SELECT
+		w.id,
+		w.worker_name AS
+		workerName,
+		w.id_card_type AS idCardType,
+		w.id_card_number as
+		idCardNumber,
+		w.gender,
+		w.nation,
+		DATE_FORMAT(w.birthday,'%Y-%m-%d') as
+		birthday,
+		w.birth_place_code AS
+		birthPlaceCode,
+		w.address, w.head_image
+		AS
+		headImage,
+		w.politics_type AS
+		politicsType,
+		w.is_joined AS isJoined,
+		w.joined_time AS joinedTime,
+		w.cell_phone AS cellPhone,
+		w.culture_level_type AS cultureLevelType,
+		w.has_bad_medical_history AS
+		hasBadMedicalHistory,
+		w.urgent_contract_name AS urgentContractName,
+		w.urgent_contract_cellphone AS urgentContractCellphone,
+		w.work_type_code AS workTypeCode, w.work_date AS workDate,
+		w.icon_image AS iconImage,
+		w.id_image AS idImage,
+		w.is_face AS isFace,
+		w.face,
+		w.is_auth AS isAuth,
+		w.create_date AS createDate,
+		w.create_user
+		AS createUser,
+		w.update_date AS updateDate,
+		w.update_user AS updateUser,
+		w.note, w.is_del AS isDel ,
+		btma.team_name AS teamName ,
+		bwk.name AS workTypeName
+		FROM
+		buss_team_member AS btm
+		LEFT JOIN
+		buss_worker_master AS w ON btm.id_card_type = w.id_card_type
+		AND
+		btm.id_card_number = w.id_card_number
+		LEFT JOIN buss_project_worker bpw ON bpw.id_card_type = btm.id_card_type AND bpw.id_card_number = btm.id_card_number AND bpw.is_del = 0 AND bpw.team_sys_no = btm.team_sys_no AND bpw.project_code = #{projectCode}
+		LEFT JOIN buss_team_master btma ON btma.team_sys_no = btm.team_sys_no
+		LEFT JOIN buss_work_kind bwk ON bwk.num = bpw.work_type_code AND bwk.organization_code = bpw.organization_code
+		WHERE
+		btm.is_del=0
+		AND w.is_del=0
+		AND
+		btm.team_sys_no = #{teamSysNo}
+		<if test="workerName != null and workerName != ''">
+			AND w.worker_name LIKE CONCAT('%',#{workerName},'%')
+		</if>
+		<if test="idCardNumber != null and idCardNumber != ''">
+			AND w.id_card_number LIKE CONCAT('%',#{idCardNumber},'%')
+		</if>
+		ORDER BY btm.team_worker_type ASC
+
+	</select>
+
+
+	<!-- 根据项目和班组编号获取班组成员 分页-->
+	<select id="getTeamMemberByProjectCodeAndTeamCodePages" resultType="Map">
+		SELECT
+		w.id,
+		w.worker_name AS
+		workerName,
+		w.id_card_type AS idCardType,
+		w.id_card_number as
+		idCardNumber,
+		w.gender,
+		w.nation,
+		DATE_FORMAT(w.birthday,'%Y-%m-%d') as
+		birthday,
+		w.birth_place_code AS
+		birthPlaceCode,
+		w.address, w.head_image
+		AS
+		headImage,
+		w.politics_type AS
+		politicsType,
+		w.is_joined AS isJoined,
+		w.joined_time AS joinedTime,
+		w.cell_phone AS cellPhone,
+		w.culture_level_type AS cultureLevelType,
+		w.has_bad_medical_history AS
+		hasBadMedicalHistory,
+		w.urgent_contract_name AS urgentContractName,
+		w.urgent_contract_cellphone AS urgentContractCellphone,
+		w.work_type_code AS workTypeCode, w.work_date AS workDate,
+		w.icon_image AS iconImage,
+		w.id_image AS idImage,
+		w.is_face AS isFace,
+		w.face,
+		w.is_auth AS isAuth,
+		w.create_date AS createDate,
+		w.create_user
+		AS createUser,
+		w.update_date AS updateDate,
+		w.update_user AS updateUser,
+		w.note, w.is_del AS isDel ,
+		btma.team_name AS teamName ,
+		bwk.name AS workTypeName
+		FROM
+		buss_team_member AS btm
+		LEFT JOIN
+		buss_worker_master AS w ON btm.id_card_type = w.id_card_type
+		AND
+		btm.id_card_number = w.id_card_number
+		LEFT JOIN buss_project_worker bpw ON bpw.id_card_type = btm.id_card_type AND bpw.id_card_number = btm.id_card_number AND bpw.is_del = 0 AND bpw.team_sys_no = btm.team_sys_no AND bpw.project_code = #{map.projectCode}
+		LEFT JOIN buss_team_master btma ON btma.team_sys_no = btm.team_sys_no
+		LEFT JOIN buss_work_kind bwk ON bwk.num = bpw.work_type_code AND bwk.organization_code = bpw.organization_code
+		WHERE
+		btm.is_del=0
+		AND w.is_del=0
+		AND
+		btm.team_sys_no = #{map.teamSysNo}
+		<if test="map.workerName != null and map.workerName != ''">
+			AND w.worker_name LIKE CONCAT('%',#{map.workerName},'%')
+		</if>
+		<if test="map.idCardNumber != null and map.idCardNumber != ''">
+			AND w.id_card_number LIKE CONCAT('%',#{map.idCardNumber},'%')
+		</if>
+		ORDER BY btm.team_worker_type ASC
+
+	</select>
+
+	<!-- 设置班组长 -->
+	<update id="setTeamLeader">
+		update buss_team_member
+		set
+		team_worker_type = 0
+		where
+		id=#{memberId}
+	</update>
+
+	<!-- 工人移除班组 -->
+	<update id="deleteMember">
+		update buss_team_member
+		set
+		is_del = 1
+		where
+		id=#{memberId}
+	</update>
+
+	<!-- 工人加入班组 -->
+	<insert id="addMember" parameterType="com.xywg.admin.modular.team.model.TeamMemberShip">
+		INSERT INTO
+		`buss_team_member` (
+		`team_sys_no`,
+		`id_card_type`,
+		`id_card_number`,
+		`team_worker_type`
+		)
+		VALUES
+		(
+		#{teamSysNo},
+		#{idCardType},
+		#{idCardNumber},
+		#{teamWorkerType}
+		);
+	</insert>
+
+	<!-- 撤销班组长 -->
+	<update id="deleteLeader">
+		update buss_team_member
+		set
+		team_worker_type = 1
+		where
+		team_sys_no=#{teamCode}
+	</update>
+
+	<!-- 查询没有班组内的员工 -->
+	<select id="getUnteamWorker" resultType="map">
+			SELECT
+					w.id,
+					w.worker_name AS workerName,
+					w.id_card_type AS idCardType,
+					w.id_card_number as idCardNumber,
+					w.cell_phone AS cellPhone,
+					w.face,
+					if(bw.is_valid=1,1,0) AS isBlack
+			FROM buss_worker_master AS w 
+			left JOIN buss_contractor_worker as cw ON w.id_card_type=cw.id_card_type AND w.id_card_number=cw.id_card_number
+			left JOIN buss_worker_black_list AS bw ON w.id_card_type=bw.id_card_type AND w.id_card_number = bw.id_card_number 
+			WHERE not EXISTS (
+			  SELECT btm.id_card_type,btm.id_card_number
+					FROM buss_project_worker AS btm
+					WHERE btm.is_del=0 AND btm.id_card_type = w.id_card_type and btm.id_card_number =w.id_card_number
+					  AND btm.project_code =#{map.projectCode}
+			) and w.is_del = 0
+			  <if test="map.name != null and map.name != ''">
+				and (
+					(w.worker_name like CONCAT('%',#{map.name},'%'))
+					OR
+					(w.id_card_number like CONCAT('%',#{map.name},'%'))
+					OR (w.cell_phone like CONCAT('%',#{map.name},'%'))
+					)
+				</if>
+					AND cw.organization_code IN 
+					<foreach collection="map.depts" item="item" index="index" open="(" separator="," close=")">
+			            #{item}
+			        </foreach>
+				GROUP BY w.id
+
+	</select>
+
+	<!-- 根据ID查询成员表 -->
+	<select id="getTeamMemberByTMid" resultType="map">
+		SELECT
+		tm.id,
+		tm.team_sys_no AS teamSysNo,
+		tm.id_card_type AS idCardType,
+		tm.id_card_number AS idCardNumber,
+		tm.team_worker_type AS
+		teamWorkerType
+		FROM
+		buss_team_member AS tm
+		WHERE
+		tm.id = #{memberId}
+	</select>
+
+	<select id="getMemberByTMid" resultType="com.xywg.admin.modular.team.model.TeamMemberShip">
+		SELECT
+		tm.id,
+		tm.team_sys_no AS teamSysNo,
+		tm.id_card_type AS idCardType,
+		tm.id_card_number AS idCardNumber,
+		tm.team_worker_type AS
+		teamWorkerType
+		FROM
+		buss_team_member AS tm
+		WHERE
+		tm.id = #{memberId}
+	</select>
+
+	<!-- 设置teamCode -->
+	<update id="updateAfterInsert">
+		UPDATE buss_team_master
+		SET team_sys_no = #{id}
+		WHERE
+		id=#{id}
+	</update>
+
+	<!-- 查询工人 -->
+	<select id="selectWorkers" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		select
+		id,
+		worker_name AS
+		workerName,
+		id_card_type AS idCardType,
+		id_card_number AS idCardNumber,
+		gender, nation,
+		birth_place_code AS birthPlaceCode,
+		address, head_image
+		AS headImage,
+		politics_type AS politicsType,
+		is_joined AS isJoined,
+		joined_time AS joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type
+		AS cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name AS urgentContractName,
+		urgent_contract_cellphone
+		AS urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date
+		AS workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		note, is_del AS isDel
+		FROM
+		buss_worker_master
+		where id in (${idStrs})
+	</select>
+
+	<!-- 根据班组编码查询班组信息 -->
+	<select id="getByteamCode" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		t.id,
+		t.team_sys_no
+		as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		WHERE
+		t.is_del = 0 AND
+		t.team_sys_no =
+		#{teamCode}
+
+	</select>
+
+	<!-- 删除项目工人关系 -->
+	<update id="deleteProjectWorker">
+		UPDATE `buss_project_worker`
+		SET
+		`is_del` = 1
+		WHERE
+		id=#{id}
+	</update>
+
+	<!-- 工人进场 -->
+	<update id="workerJoin">
+		UPDATE `buss_project_worker`
+		SET
+		`join_status` = 2,
+		entry_time=NOW()
+		WHERE
+		is_del = 0
+		and
+		id_card_type=#{idType}
+		AND
+		id_card_number=#{idCardNumber}
+		AND team_sys_no=#{teamCode}
+	</update>
+
+	<!-- 工人退场 -->
+	<update id="workerOut">
+		UPDATE `buss_project_worker`
+		SET
+		`join_status` = 3,
+		sh_imei = null,
+		card_number = null,
+		<if test="evaluate != null and evaluate != ''">
+			evaluate = #{evaluate},
+		</if>
+		exit_time = NOW()
+		WHERE
+		is_del = 0
+		and
+		id_card_type=#{idType}
+		AND
+		id_card_number=#{idCardNumber}
+		AND team_sys_no=#{teamCode}
+	</update>
+	<!--根据班组号查询企业编码 -->
+	<select id="getOrganizationCodeByTeamCode" resultType="String"
+		parameterType="Map">
+		select
+		organization_code
+		from buss_team_master
+		where
+		team_sys_no=#{map.teamSysNo}
+	</select>
+
+	<!-- 根据班组长姓名模糊查询 -->
+	<select id="getTeamCodeAndWorkerIdByWorkerName"
+		resultType="com.xywg.admin.modular.team.model.TeamCodeAndWorkerIdVo">
+		SELECT
+		t.id AS teamMemberId,
+		t.team_sys_no AS teamCode,
+		w.id
+		AS workerId
+		FROM
+		buss_team_member AS t
+		LEFT JOIN buss_worker_master AS w
+		ON w.id_card_type = t.id_card_type AND
+		w.id_card_number =
+		t.id_card_number AND w.is_del = 0
+		WHERE
+		t.is_del = 0 AND
+		t.team_worker_type = 0
+		AND (w.worker_name like
+		CONCAT('%',#{teamLeaderName},'%'))
+
+	</select>
+
+	<!-- 条件查询工人班组关系 （是否加入了班组） -->
+	<select id="getMemberJoinStatus" resultType="map">
+		SELECT
+		t.id,
+		t.team_sys_no,
+		t.id_card_type,
+		t.id_card_number,
+		t.team_worker_type,
+		t.is_del,
+		t.is_sign
+		FROM
+		buss_team_member AS t
+		WHERE
+		t.is_del = 0 AND
+		t.team_sys_no =
+		#{teamCode} AND
+		t.id_card_type = #{idType} AND
+		t.id_card_number =
+		#{idNumber}
+	</select>
+
+
+	<!-- 查询工人是否加入过某项目 -->
+	<select id="getWorkerInProjectStatus" resultType="map">
+	SELECT
+	p.id,
+	p.project_code,
+	p.organization_code,
+	p.team_sys_no,
+	p.id_card_type,
+	p.id_card_number,
+	p.sh_imei,
+	p.join_status,
+	p.work_type_code,
+	p.cell_phone,
+	p.issue_card_time,
+	p.entry_time,
+	p.exit_time,
+	p.complete_card_time,
+	p.card_number,
+	p.card_type,
+	p.has_contract,
+	p.contract_code,
+	p.worker_accommodation_type,
+	p.worker_role,
+	p.pay_roll_bank_card_number,
+	p.pay_roll_bank_name,
+	p.has_buy_insurance,
+	p.create_date,
+	p.create_user,
+	p.update_date,
+	p.update_user,
+	p.evaluate,
+	p.is_del
+	FROM
+	buss_project_worker AS p
+	WHERE
+	p.is_del = 0
+	AND
+	p.project_code = #{projectCode}
+	AND p.id_card_type = #{idCardType}
+	AND
+	p.id_card_number = #{idCardNumber}
+
+	</select>
+
+	<!-- 根据工人id获取工人信息（app用） -->
+	<select id="getWorkerById" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		SELECT
+		id,
+		worker_name AS
+		workerName,
+		id_card_type AS idCardType,
+		id_card_number AS
+		idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+		birth_place_code AS birthPlaceCode,
+		address, head_image AS
+		headImage,
+		politics_type AS politicsType,
+		is_joined AS isJoined,
+		joined_time AS
+		joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type
+		AS
+		cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name AS urgentContractName,
+		urgent_contract_cellphone
+		AS urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date
+		AS workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser,
+		note,
+		is_del AS isDel
+		from
+		buss_worker_master
+		where id = #{id}
+	</select>
+
+	<!-- 根据班组code查询班组成员 （app） -->
+	<select id="getAppMemberByTeamCode" resultType="com.xywg.admin.modular.team.model.AppTeamMemberVo">
+		SELECT
+		w.worker_name AS workerName,
+		w.id_card_type AS
+		idCardType,
+		w.id_card_number AS idCardNumber,
+		DATE_FORMAT(w.birthday,'%Y-%m-%d') AS
+		birthday,
+		w.head_image AS
+		headImage,
+		w.is_auth AS isAuth,
+		pw.has_contract
+		AS isSign,
+		tm.team_worker_type AS workerType,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS
+		pw
+		LEFT
+		JOIN buss_worker_master AS w ON pw.id_card_type = w.id_card_type
+		AND
+		pw.id_card_number = w.id_card_number
+		LEFT JOIN buss_team_member AS
+		tm
+		ON pw.team_sys_no = tm.team_sys_no AND
+		pw.id_card_type =
+		tm.id_card_type AND pw.id_card_number =
+		tm.id_card_number
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		WHERE
+		w.is_del
+		= 0 AND
+		pw.is_del = 0 AND
+		tm.is_del = 0
+		AND pw.team_sys_no=
+		#{teamCode}
+		<if test="joinStatus != null and joinStatus != ''">
+			AND pw.join_status = #{joinStatus}
+		</if>
+	</select>
+
+	<!-- 根据班组code查询班组成员分页 （app） -->
+	<select id="v116GetAppMemberByTeamCode" resultType="com.xywg.admin.modular.team.model.AppTeamMemberVo">
+		SELECT
+		w.worker_name AS workerName,
+		w.id_card_type AS
+		idCardType,
+		w.id_card_number AS idCardNumber,
+		DATE_FORMAT(w.birthday,'%Y-%m-%d') AS
+		birthday,
+		w.head_image AS
+		headImage,
+		w.is_auth AS isAuth,
+		pw.has_contract
+		AS isSign,
+		tm.team_worker_type AS workerType,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS
+		pw
+		LEFT
+		JOIN buss_worker_master AS w ON pw.id_card_type = w.id_card_type
+		AND
+		pw.id_card_number = w.id_card_number
+		LEFT JOIN buss_team_member AS
+		tm
+		ON pw.team_sys_no = tm.team_sys_no AND
+		pw.id_card_type =
+		tm.id_card_type AND pw.id_card_number =
+		tm.id_card_number
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		WHERE
+		w.is_del
+		= 0 AND
+		pw.is_del = 0 AND
+		tm.is_del = 0
+		AND pw.team_sys_no=
+		#{teamCode}
+		<if test="joinStatus != null and joinStatus != ''">
+			AND pw.join_status = #{joinStatus}
+		</if>
+		limit #{index},#{pageSize}
+	</select>
+
+	<!-- 查询班组长与项目的关系id -->
+	<select id="getPWidOfTeamLeader" resultType="java.lang.Integer">
+		SELECT
+		pw.id
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_team_member AS tm ON
+		pw.team_sys_no = tm.team_sys_no AND
+		pw.id_card_type = tm.id_card_type
+		AND pw.id_card_number =
+		tm.id_card_number
+		WHERE
+		pw.is_del = 0
+		AND
+		tm.is_del = 0
+		AND tm.team_worker_type = 0
+		AND pw.team_sys_no =
+		#{teamCode}
+	</select>
+
+	<!-- 班组进场 -->
+	<update id="teamJoin">
+		UPDATE `buss_project_worker`
+		SET
+		`join_status` = 2,
+		`entry_time` = NOW()
+		WHERE
+		project_code = #{projectCode}
+		AND
+		team_sys_no =
+		#{teamCode}
+		<if test="pwId != null and pwId != '' ">
+			AND id != #{pwId}
+		</if>
+	</update>
+
+	<!-- 班组退场 -->
+	<update id="teamOut">
+		UPDATE `buss_project_worker`
+		SET
+		`join_status` = 3,
+		<if test="evaluate != null and evaluate != ''">
+			`evaluate` = #{evaluate},
+		</if>
+		`exit_time` = NOW()
+		WHERE
+		project_code = #{projectCode}
+		AND
+		team_sys_no =
+		#{teamCode}
+		<if test="pwId != null and pwId != '' ">
+			AND id != #{pwId}
+		</if>
+	</update>
+
+	<!-- 查询工人在某项目的总考勤天数 -->
+	<select id="getWorkerRecordDays" resultType="java.lang.Integer">
+		SELECT
+		count( DISTINCT DATE_FORMAT(time, "%Y-%m-%d"))
+		FROM
+		buss_device_record AS r
+		WHERE
+		r.is_valid = 1
+		AND r.project_code =
+		#{projectCode}
+		<!-- <if test="teamSysNo != null and teamSysNo != ''"> AND r.team_sys_no 
+			=#{teamSysNo} </if> -->
+		AND r.id_card_type = #{idCardType}
+		and r.id_card_number =
+		#{idCardNumber}
+	</select>
+
+	<!-- 获取班组管理列表 无分页 登陆公司下班组 -->
+	<select id="getList" resultType="map">
+		SELECT
+		t.id,
+		t.team_sys_no as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		<!-- 发工资时 获取集团公司下的班组 -->
+		<if test="map.projectCode !='' and map.projectCode != null">
+			JOIN (SELECT social_credit_number FROM sys_dept WHERE
+			social_credit_number IS NOT NULL AND (id = #{map.deptId} OR pids LIKE
+			CONCAT('%[', #{map.deptId},']%') ) ) s ON s.social_credit_number =
+			t.organization_code
+		</if>
+		where 1=1 AND t.is_del = 0
+		<if test="map.projectCode !='' and map.projectCode != null">
+			AND t.project_code = #{map.projectCode}
+		</if>
+		<if test="map.teamName !='' and map.teamName != null">
+			AND t.team_name LIKE CONCAT('%',#{map.teamName},'%')
+		</if>
+	<!--	<if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+			and 1=2
+		</if>-->
+		<if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+			and t.project_code in
+			<foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<!-- 获取班组管理列表 无分页 所有班组 -->
+	<select id="getAllList" resultType="map">
+		SELECT
+		t.id,
+		t.team_sys_no as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		where 1=1 AND t.is_del = 0
+		<if test="map.organizationCode != null and map.organizationCode != ''">
+			and t.organization_code = #{map.organizationCode}
+		</if>
+		<if test="map.projectCode !='' and map.projectCode != null">
+			AND t.project_code = #{map.projectCode}
+		</if>
+		<if test="map.teamName !='' and map.teamName != null">
+			AND t.team_name LIKE CONCAT('%',#{map.teamName},'%')
+		</if>
+	</select>
+
+	<!-- 根据班组id查询工人是否在班组 -->
+	<select id="getWorkerInTeam" resultType="map">
+		SELECT
+		tm.id_card_type,
+		tm.id_card_number
+		FROM
+		buss_team_member AS tm
+		LEFT JOIN buss_team_master
+		AS t ON tm.team_sys_no = t.team_sys_no
+		WHERE
+		tm.is_del = 0 AND
+		t.is_del =
+		0 AND
+		t.id = #{teamId} AND
+		tm.id_card_type = #{idCardType} AND
+		tm.id_card_number = #{idCardNumber}
+	</select>
+
+	<!-- 条件获取平台已认证的人员 -->
+	<select id="getWorkerByKey" resultType="com.xywg.admin.modular.team.model.AppWorkerByKeyVo">
+		SELECT
+		w.worker_name AS workerName,
+		w.id_card_type AS idCardType,
+		w.id_card_number AS idCardNumber,
+		w.head_image AS headImage,
+		u.id
+		FROM
+		buss_worker_master AS w
+		LEFT JOIN sys_user AS u ON w.cell_phone =
+		u.phone
+		WHERE
+		w.is_del = 0 AND
+		(w.is_auth = 1 OR w.is_auth = 2)
+		and u.user_type = 0
+		<if test="key != null and key != ''">
+			and (w.worker_name like CONCAT('%',#{key},'%') OR
+			w.cell_phone like CONCAT('%',#{key},'%') )
+		</if>
+		AND
+		w.id
+		not in
+		(SELECT
+		IFNULL(w.id,0)
+		FROM
+		buss_project_worker AS btm
+		LEFT
+		JOIN
+		buss_worker_master AS w ON
+		btm.id_card_type = w.id_card_type
+		AND
+		btm.id_card_number =
+		w.id_card_number
+		WHERE
+		btm.is_del=0
+		AND
+		btm.project_code =
+		#{projectCode})
+	</select>
+
+	<!-- 条件获取平台已认证的人员 -->
+	<select id="v116GetWorkerByKey" resultType="com.xywg.admin.modular.team.model.AppWorkerByKeyVo">
+		SELECT
+		w.worker_name AS workerName,
+		w.id_card_type AS idCardType,
+		w.id_card_number AS idCardNumber,
+		w.head_image AS headImage,
+		u.id
+		FROM
+		buss_worker_master AS w
+		LEFT JOIN sys_user AS u ON w.cell_phone =
+		u.phone
+		WHERE
+		w.is_del = 0 AND
+		(w.is_auth = 1 OR w.is_auth = 2)
+
+		<if test="key != null and key != ''">
+			and (w.worker_name like CONCAT('%',#{key},'%') OR
+			w.cell_phone like CONCAT('%',#{key},'%') )
+		</if>
+		AND
+		w.id
+		not in
+		(SELECT
+		IFNULL(w.id,0)
+		FROM
+		buss_project_worker AS btm
+		LEFT
+		JOIN
+		buss_worker_master AS w ON
+		btm.id_card_type = w.id_card_type
+		AND
+		btm.id_card_number =
+		w.id_card_number
+		WHERE
+		btm.is_del=0
+		AND
+		btm.project_code =
+		#{projectCode})
+		limit #{index},#{pageSize}
+	</select>
+
+	<select id="getTeamMasterByProjectCode" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+			id,
+			team_sys_no as teamSysNo,
+			project_code as projectCode,
+			organization_code as organizationCode,
+			team_name as teamName,
+			team_leader as teamLeader,
+			contact,
+			team_leader_id_number as
+			teamLeaderIdNumber,
+			responsible_person_id_number as
+			responsiblePersonIdNumber,
+			note,
+			is_del as isDel,
+			status
+		from buss_team_master 
+		where project_code=#{projectCode} and is_del=0
+		<if test="list != null and list.size > 0">
+			and organization_code in
+			<foreach collection="list"  open="(" separator="," close=")" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<!-- 查询项目下的班组 -->
+	<select id="getAppTeamsByProject" resultType="com.xywg.admin.modular.team.model.AppTeamInfoVo">
+		SELECT
+		t.id AS
+		teamId,
+		t.team_name AS teamName
+		FROM
+		buss_team_master AS t
+		WHERE
+		t.is_del =
+		0
+		AND t.project_code =
+		#{projectCode}
+		<if test="organizationCode != null and organizationCode !=''">
+			AND t.organization_code =
+			#{organizationCode}
+		</if>
+	</select>
+
+	<!-- 查询项目下的班组 -->
+	<select id="v116GetAppTeamsInfo" resultType="com.xywg.admin.modular.team.model.AppTeamInfoVo">
+		SELECT
+		t.id AS
+		teamId,
+		t.team_name AS teamName
+		FROM
+		buss_team_master AS t
+		WHERE
+		t.is_del =
+		0
+		AND t.project_code =
+		#{projectCode}
+		<if test="organizationCode != null and organizationCode !=''">
+			AND t.organization_code =
+			#{organizationCode}
+		</if>
+		limit #{index},#{pageSize}
+	</select>
+
+	<!-- 统计班组成员数 -->
+	<select id="getMemberCountByTeamCode" resultType="java.lang.Integer">
+		SELECT
+		COUNT(1)
+		FROM buss_team_member AS tm
+		WHERE tm.is_del = 0
+		AND tm.team_sys_no=
+		#{teamCode}
+	</select>
+
+	<!-- 更新合同签署状态 -->
+	<update id="updateTeamSign">
+		UPDATE buss_team_member
+		SET
+		is_sign = 1
+		WHERE
+		id = #{id}
+	</update>
+
+	<!-- 获取工种 -->
+	<select id="getWorkKinds" resultType="com.xywg.admin.modular.team.model.AppWorkKindVo">
+		SELECT
+		sys_dict.num,
+		sys_dict.`name`
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+
+	</select>
+
+	<!--根据班组长查询其所有项目列表 -->
+	<select id="getProjectListByTeamer" parameterType="com.xywg.admin.modular.team.model.AppTeamerDto"
+		resultType="Map">
+		SELECT
+		tm.id as teamId,
+		tmer.team_sys_no AS teamSysNo,
+		tm.team_name AS
+		teamName,
+		tm.project_code AS
+		projectCode,
+		pm.project_name AS projectName,
+		pm.project_status AS
+		projectStatus
+		FROM
+		buss_team_member tmer
+		LEFT JOIN
+		buss_team_master tm ON
+		tmer.team_sys_no = tm.team_sys_no
+		LEFT JOIN
+		buss_project_master pm ON
+		pm.project_code = tm.project_code
+		WHERE
+		tmer.id_card_number =
+		#{map.idCardNumber}
+		AND tmer.id_card_type =
+		#{map.idCardType}
+		AND
+		tmer.team_worker_type = 0
+		AND tmer.is_del=0
+		<if test="map.projectStatus!=null and map.projectStatus!=''">
+			and pm.project_status=#{map.projectStatus}
+		</if>
+	</select>
+
+	<!--根据班组长查询其所有项目列表 -->
+	<select id="v116GetProjectListByTeamer" parameterType="com.xywg.admin.modular.team.model.AppTeamerDto"
+			resultType="Map">
+		SELECT
+		tm.id as teamId,
+		tmer.team_sys_no AS teamSysNo,
+		tm.team_name AS
+		teamName,
+		tm.project_code AS
+		projectCode,
+		pm.project_name AS projectName,
+		pm.project_status AS
+		projectStatus
+		FROM
+		buss_team_member tmer
+		LEFT JOIN
+		buss_team_master tm ON
+		tmer.team_sys_no = tm.team_sys_no
+		LEFT JOIN
+		buss_project_master pm ON
+		pm.project_code = tm.project_code
+		WHERE
+		tmer.id_card_number =
+		#{map.idCardNumber}
+		AND tmer.id_card_type =
+		#{map.idCardType}
+		AND
+		tmer.team_worker_type = 0
+		AND tmer.is_del=0
+		<if test="map.projectStatus!=null and map.projectStatus!=''">
+			and pm.project_status=#{map.projectStatus}
+		</if>
+		limit #{map.index},#{map.pageSize}
+	</select>
+
+	<!--根据班组长查询其所有项目列表 -->
+	<select id="v1111GetProjectListByTeamer" parameterType="com.xywg.admin.modular.team.model.AppTeamerDto"
+			resultType="Map">
+		SELECT
+		tm.id as teamId,
+		tmer.team_sys_no AS teamSysNo,
+		tm.team_name AS
+		teamName,
+		tm.project_code AS
+		projectCode,
+		pm.project_name AS projectName,
+		pm.project_status AS
+		projectStatus
+		FROM
+		buss_team_member tmer
+		LEFT JOIN
+		buss_team_master tm ON
+		tmer.team_sys_no = tm.team_sys_no
+		LEFT JOIN
+		buss_project_master pm ON
+		pm.project_code = tm.project_code
+		WHERE
+		tmer.id_card_number =
+		#{map.idCardNumber}
+		AND tmer.id_card_type =
+		#{map.idCardType}
+		AND tmer.is_del=0
+		<if test="map.projectStatus!=null and map.projectStatus!=''">
+			and pm.project_status=#{map.projectStatus}
+		</if>
+	</select>
+
+	<!-- 根据名称查询 -->
+	<select id="getByName" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		t.id,
+		t.team_sys_no as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		where
+		t.is_del = 0
+		AND t.project_code =
+		#{projectCode}
+		AND
+		t.team_name = #{name}
+	</select>
+
+	<!-- 根据手机号查询用户id -->
+	<select id="getUserIdByPhone" resultType="java.lang.Integer">
+		SELECT
+		u.id
+		FROM
+		sys_user
+		AS u
+		WHERE
+		u.`status` != 3 AND
+		u.phone = #{phone}
+	</select>
+
+	<!-- 查询项目下的参建单位 wanghshibo -->
+	<select id="getUnitContractorList" resultType="map">
+		SELECT
+		c.organization_code AS `code`,
+		sc.company_name AS `name`
+		FROM
+		buss_project_sub_contractor AS c
+		LEFT JOIN buss_sub_contractor AS sc ON
+		c.organization_code =
+		sc.organization_code
+		WHERE
+		c.is_del = 0 AND
+		c.project_code = #{projectCode}
+		AND c.organization_code in
+		<foreach collection="codes" close=")" open="(" separator=","
+			index="index" item="item">
+			#{item}
+		</foreach>
+	</select>
+
+	<!-- 修改班组联系人信息 -->
+	<update id="updateLeaderInfo">
+		UPDATE `buss_team_master`
+		SET
+		`team_leader` =
+		#{leaderName},
+		`contact` = #{cellPhone},
+		`team_leader_id_number` =
+		#{idCardNumber},
+		`responsible_person_id_number` = #{idCardNumber},
+		`update_date` = NOW()
+		WHERE
+		`team_sys_no` = #{teamCode}
+
+	</update>
+
+	<!-- 判重名 -->
+	<select id="checkNameForEdit" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		t.id,
+		t.team_sys_no as
+		teamSysNo,
+		t.project_code as projectCode,
+		t.organization_code as
+		organizationCode,
+		t.team_name as teamName,
+		t.team_leader as teamLeader,
+		t.contact,
+		t.team_leader_id_number as
+		teamLeaderIdNumber,
+		t.responsible_person_id_number as
+		responsiblePersonIdNumber,
+		t.note,
+		t.create_date as createDate,
+		t.create_user as createUser,
+		t.update_date
+		as updateDate,
+		t.update_user
+		as updateUser,
+		t.`status`,
+		t.is_del as
+		isDel
+		FROM
+		buss_team_master AS t
+		where
+		t.is_del = 0
+		AND t.project_code =
+		#{projectCode}
+		AND
+		t.team_name =
+		#{teamName}
+		and t.id != #{id}
+		limit 1
+	</select>
+
+	<!-- 修改班组信息wangshibo -->
+	<update id="updateTeam">
+		UPDATE `buss_team_master`
+		SET
+		`team_name` =
+		#{teamName},
+		`contact` = #{contact},
+		`note` = #{note},
+		`update_date` =
+		NOW()
+		WHERE
+		`id` = #{id};
+	</update>
+
+	<!--发送劳务通班组数据到实名制 xss -->
+	<select id="getTeamFromLabor" resultType="com.xywg.admin.modular.smz.model.TeamMo">
+		<!--select
+		btm.id as lablorId,
+		btm.team_name as name,
+		bpm.id as projectId,
+		bpm.project_code as projectCode,
+		bpm.contractor_org_code as orgCode,
+		btm.team_leader as teamLeader,
+		btm.contact as contract,
+		btm.team_leader_id_number as teamIdNumber,
+		btm.responsible_person_id_number as responseIdNumber,
+		btm.note as note,
+		bpm.contractor_org_code as conCode,
+		btr.option1 as option1,
+		btr.option2 as option2,
+		btr.option3 as option3,
+		btr.option4 as option4,
+		max(btr.id) as reviewId
+		from
+		buss_team_master btm
+		left join buss_project_master bpm
+		on btm.project_code=bpm.project_code
+		left join buss_team_review btr on
+		btr.team_sys_no=btm.team_sys_no
+		where  btm.is_del = 0 and bpm.is_synchro = 1 and btm.id in
+		<foreach item="ids" collection="list" open="(" separator=","
+			close=")">
+			#{ids}
+		</foreach>
+		GROUP BY btm.id
+		select
+		btm.id as lablorId,
+		btm.team_name as name,
+		bpm.id as projectId,
+		bpm.project_code as projectCode,
+		bpm.contractor_org_code as orgCode,
+		btm.team_leader as teamLeader,
+		btm.contact as contract,
+		btm.team_leader_id_number as teamIdNumber,
+		btm.responsible_person_id_number as responseIdNumber,
+		btm.note as note,
+		bpm.contractor_org_code as conCode,
+		btr.option1 as option1,
+		btr.option2 as option2,
+		btr.option3 as option3,
+		btr.option4 as option4,
+		max(btr.id) as reviewId,
+		sl.smz_id AS ngProjectId
+		FROM buss_team_master btm
+		left join buss_project_master bpm on btm.project_code=bpm.project_code
+		left join buss_team_review btr ON btr.team_sys_no=btm.team_sys_no
+		LEFT JOIN r_smz_lwt sl ON sl.lwt_id = bpm.id AND sl.TABLE_NAME ='Project'
+		where  btm.is_del = 0 and bpm.is_synchro = 1
+		and btm.id IN (SELECT id FROM ifa_labor WHERE TABLE_NAME = 'buss_team_master')
+		GROUP BY btm.id -->
+		select
+		CONCAT('200000',btm.id) as lablorId,
+		btm.team_name as name,
+		CONCAT('200000',bpm.id) as projectId,
+		bpm.project_code as projectCode,
+		bpm.contractor_org_code as orgCode,
+		btm.team_leader as teamLeader,
+		btm.contact as contract,
+		btm.team_leader_id_number as teamIdNumber,
+		btm.responsible_person_id_number as responseIdNumber,
+		btm.note as note,
+		bpm.contractor_org_code as conCode,
+		sl.smz_id AS ngProjectId
+		FROM buss_team_master btm
+		left join buss_project_master bpm on btm.project_code=bpm.project_code
+		LEFT JOIN r_smz_lwt sl ON sl.lwt_id = bpm.id AND sl.TABLE_NAME ='Project'
+		where  btm.is_del = 0 and bpm.is_synchro = 1
+		and btm.id IN (SELECT id FROM ifa_labor WHERE TABLE_NAME = 'buss_team_master')
+		GROUP BY btm.id
+	</select>
+
+	<!-- 添加班组评价 -->
+	<insert id="addEvaluate">
+		INSERT INTO `buss_team_review`
+		(
+		`project_code`,
+		`organization_code`,
+		`team_sys_no`,
+		`option1`,
+		`option2`,
+		`option3`,
+		`option4`,
+		`note`,
+		`is_del`
+		)
+		VALUES
+		(
+		#{projectCode},
+		#{organizationCode},
+		#{teamSysNo},
+		#{option1},
+		#{option2},
+		#{option3},
+		#{option4},
+		#{note},
+		0
+		);
+	</insert>
+
+	<!-- 根据班组获取评价 -->
+	<select id="getTeamEvaluationsByTeam" resultType="map">
+		SELECT
+		r.id,
+		r.team_sys_no AS teamSysNo,
+		r.organization_code AS organizationCode,
+		r.project_code AS projectCode,
+		r.option1,
+		r.option2,
+		r.option3,
+		r.option4,
+		r.note,
+		r.is_del AS isDel
+		FROM
+		buss_team_review AS r
+		WHERE
+		r.is_del = 0 AND
+		r.team_sys_no = #{map.teamCode}
+		ORDER BY id DESC
+	</select>
+
+	<!-- 修改安全帽状态 -->
+	<update id="updateShImeiStatus">
+		UPDATE buss_safety_helmet
+SET `status` = 1
+WHERE
+is_del= 0
+	AND
+	FIND_IN_SET(
+	imei,#{imeis})
+
+	</update>
+
+	<!--获取班组下工人列表-->
+	<select id="getWorkerListByTeam" resultType="Map">
+		select
+		bwm.id as id,
+		bwm.worker_name as workerName,
+		bwm.id_card_type as idCardType,
+		bwm.id_card_number as idCardNumber,
+		bwm.gender as gender,
+		bpw.work_type_code as workType,
+		btm.team_sys_no as teamSysNo
+		from buss_worker_master bwm
+		left join buss_team_member btm on btm.id_card_number=bwm.id_card_number and btm.id_card_type=bwm.id_card_type
+		left join buss_project_worker bpw on bpw.id_card_number=bwm.id_card_number and bwm.id_card_type=bpw.id_card_type
+		and bpw.project_code= #{map.projectCode} and bpw.team_sys_no=#{map.team}
+		where btm.team_sys_no=#{map.team} AND bwm.is_del = 0 AND btm.is_del = 0 AND bpw.is_del = 0
+		<if test="map.workerName!='' and map.workerName!=null">
+			and bwm.worker_name like CONCAT('%',#{map.workerName},'%')
+		</if>
+		<if test="map.idCardNumber!='' and map.idCardNumber!=null">
+			and bwm.id_card_number like CONCAT('%',#{map.idCardNumber},'%')
+		</if>
+	</select>
+
+
+	<!--查询人脸模版 -->
+	<select id="getPersonFaceData" resultType="com.xywg.admin.modular.team.model.BussPersonData">
+		SELECT
+pd.id,
+pd.id_card_type AS idCardType,
+pd.id_card_number AS idCardNumber,
+pd.user_Name AS userName,
+pd.uid,
+pd.alg_version AS algVersion,
+pd.tx_face AS txFace,
+pd.createDate,
+pd.type,
+pd.ocv_version AS ocvVersion,
+pd.ocv_face AS ocvFace,
+pd.img_path AS imgPath
+FROM
+buss_person_data AS pd
+WHERE
+pd.type = 0 AND
+pd.tx_face IS NOT NULL AND
+pd.id_card_type = #{idCardType} AND
+pd.id_card_number = #{idCardNumber}
+
+	</select>
+	
+	 <update id="setTeamLeaderByTeamSysNo">
+        UPDATE
+        buss_team_master
+        SET
+        team_leader = #{workerName},
+        team_leader_id_number = #{idCardNumber}
+        WHERE
+        team_sys_no = #{teamSysNo}
+    </update>
+
+    <update id="removeTeamLeader">
+  <!--       UPDATE
+        buss_team_member
+        SET
+        team_worker_type = 1
+        WHERE
+        team_worker_type = 0 AND team_sys_no = #{teamSysNo} AND is_del = 0 -->
+          UPDATE
+        buss_team_member t 
+        LEFT JOIN buss_project_worker p ON t.team_sys_no = p.team_sys_no
+        SET
+        t.team_worker_type = 1,
+        p.team_worker_type = 1
+        WHERE
+        t.team_worker_type = 0 AND t.team_sys_no =  #{teamSysNo} AND t.is_del = 0
+        
+        
+    </update>
+	
+	
+	    
+    <!-- 根据项目查询当前工人在该项目老的班组编号  -->	
+	<select id="getOldTeamSysNoByProjectId" resultType="Integer">
+			SELECT p.team_sys_no
+			FROM buss_project_worker  p 
+			WHERE p.id = #{projectId} and p.id_card_number =  #{idCardNumber} and p.id_card_type=#{idCardType}
+	</select>
+
+
+    <update id="updateByOldTeamSysNo"  >
+		update buss_team_member m 
+  		   SET m.team_sys_no = #{t.teamSysNo}, 
+               m.team_worker_type = #{t.teamWorkerType}
+         WHERE m.team_sys_no = #{oldTeamSysNo} 
+           AND m.id_card_number = #{t.idCardNumber}
+           and m.id_card_type=#{t.idCardType}
+	</update>
+	<select id="queryOrgnationCode" resultType="String">
+	select contractor_org_code from buss_project_master
+	where id = #{projectId,jdbcType=DECIMAL}
+	</select>
+    <select id="selectIdByTeamSysNo" resultType="java.util.Map">
+		select count(id) AS num, id from buss_team_master where team_sys_no=#{teamSysNo}
+
+	</select>
+
+    <insert id="insertObj" useGeneratedKeys="true" keyProperty="id" parameterType="com.xywg.admin.modular.team.model.TeamMaster">
+		insert into buss_team_master(id,
+		                             team_sys_no,
+		                             project_code,
+		                             organization_code,
+		                             team_name,
+		                             team_leader,
+		                             contact,
+		                             team_leader_id_number,
+		                             responsible_person_id_number,
+		                             note,
+		                             create_date,
+		                             create_user,
+		                             update_date,
+		                             update_user,
+		                             status,
+		                             is_del)
+		values(#{id},
+		       #{teamSysNo},
+		       #{projectCode},
+		       #{organizationCode},
+		       #{teamName},
+		       #{teamLeader},
+		       #{contact},
+		       #{teamLeaderIdNumber},
+		       #{responsiblePersonIdNumber},
+		       #{note},
+		       #{createDate},
+		       #{createUser},
+		       #{updateDate},
+		       #{updateUser},
+		       #{status},
+		       #{isDel})
+	</insert>
+
+
+
+
+	<!-- 根据证件类型和证件号查询工人 yuanyang -->
+	<select id="getWorkerByIdCard" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		select
+		id,
+		worker_name
+		AS workerName,
+		id_card_type AS idCardType,
+		id_card_number AS
+		idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%Y-%m-%d') as
+		birthday,
+		birth_place_code AS birthPlaceCode,
+		address, head_image AS
+		headImage,
+		cell_phone AS cellPhone,
+
+		work_type_code AS workTypeCode, work_date
+		AS workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser
+		from
+		buss_worker_master
+		where 1=1 AND id_card_type=#{idCardType}
+		and
+		id_card_number=#{idCardNumber}
+		and is_del=0
+	</select>
+
+
+
+	<select id="selectByProjectCode" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+	select * from buss_team_master
+	where project_code = #{projectCode}
+	and team_sys_no = #{teamSysNo}
+	and is_del = 0
+	</select>
+
+
+    <select id="queryTeamMasterById" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+		SELECT
+		id,
+		team_sys_no AS teamSysNo,
+		project_code AS projectCode,
+		organization_code AS organizationCode,
+		team_name AS teamName,
+		team_leader AS teamLeader,
+		contact,
+		team_leader_id_number AS teamLeaderIdNumber,
+		responsible_person_id_number AS responsiblePersonIdNumber,
+		note,
+		status
+		FROM buss_team_master
+		WHERE
+		id > #{id}
+		<if test="organizationCode != null and organizationCode != ''">
+			and organization_code = #{organizationCode}
+		</if>
+		<if test="projectCode != null and projectCode != ''">
+			and project_code = #{projectCode}
+		</if>
+	</select>
+
+
+	<select id="selectByProjectCode1" resultType="com.xywg.admin.modular.team.model.TeamMaster">
+ SELECT  t.id,
+   t.team_name as teamName,
+   t.team_sys_no as teamSysNo,
+   t.project_code as projectCode
+ FROM  buss_team_master t
+ LEFT JOIN buss_project_master p ON t.project_code =p.project_code AND p.is_del = 0
+ WHERE p.build_project_code = #{projectCode}
+ AND t.team_sys_no = #{teamSysNo}
+ and t.is_del = 0
+
+ </select>
+    <select id="getTeamMasterByProjectCodeAndOrgCode" resultType="java.util.Map">
+		select
+		tm.id AS id ,
+		pm.project_name as projectName,
+		tm.team_name as teamName,
+		tm.team_leader as teamLeader,
+		tm.contact as phoneNumber
+
+		from buss_team_master  tm
+		left join buss_project_master pm  on pm.project_code=tm.project_code
+		where  1=1  	and tm.is_del=0
+
+		<if test="map.orgCode != null and map.orgCode  != ''">
+			and pm.contractor_org_code=#{map.orgCode}
+		</if>
+
+	</select>
+</mapper>

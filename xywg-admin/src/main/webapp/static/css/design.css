@@ -1,0 +1,179 @@
+.main {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+}
+.side__right {
+    position: absolute;
+    height: 100vh;
+    min-width: 20%;
+    background: rgba(184, 177, 177, 0.5);
+    right: 0;
+    top: 0;
+    display: none;
+}
+.main__show {
+    border: 1px solid #ddd;
+    width: 50%;
+    margin: 60px 0 0 60px;
+
+}
+.show__ul {
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+.show__ul > li {
+    display: block;
+    width: 100px;
+    height: 40px;
+    background: #ddd;
+    margin: 0 auto;
+    text-align: center;
+    line-height: 40px;
+    margin-bottom: 30px;
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+.show__ul > li.active {
+    border: 1px solid #0e9aef;
+}
+.show__ul > li::after {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 0;
+    height: 40px;
+    border-right: 1px solid #ddd;
+    content: '';
+}
+.show__ul > li:last-of-type::after {
+    display: none;
+}
+.btn__add {
+    position: absolute;
+    right: -10px;
+    transform: translateX(100%);
+    border: 1px solid #ddd;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    display: none;
+    z-index: 3;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #000;
+    top: 0;
+}
+.btn__add_clone {
+    top: 0;
+    position: absolute;
+    right: 0;
+    transform: translateX(100%);
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    display: none;
+    z-index: 2;
+}
+.form__row {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.row {
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
+.form__row label {
+    display: inline-block;
+    width: 100px;
+    text-align: left;
+    padding-right: 4px;
+    margin-bottom: 4px;
+}
+.right__form {
+    padding: 20px;
+}
+
+.form__row input[type=button] {
+    margin-right: 20px;
+    padding: 10px 26px;
+    border: none;
+    border-radius: 10px;
+    background: #409eff;
+    color: #fff;
+    outline: none;
+}
+input[type=button] {
+    margin-right: 20px;
+    padding: 10px 26px;
+    border: none;
+    border-radius: 10px;
+    background: #409eff;
+    color: #fff;
+    outline: none;
+}
+.form__row input[type=button]:nth-of-type(2) {
+    background: #fff;
+    border: 1px solid #dcdfe6;
+    color: #606266;
+}
+.form__row input[type=button]:last-of-type {
+    margin-right: 0;
+    background: red;
+    border: 1px solid #dcdfe6;
+    color: #fff;
+}
+.form__row input[type=text],.form__row select{
+    border: none;
+    border: 1px solid #ddd;
+    height: 30px;
+    line-height: 30px;
+    outline: none;
+    padding-left: 4px;
+    width: 100%;
+}
+
+input[type=text].input__with__btn{
+    width: calc(100% - 31px);
+    box-sizing: border-box;
+    float: left;
+}
+.baseInfo {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+.baseInfo > li {
+    display: inline-block;
+    margin-right: 20px;
+}
+.baseField {
+    margin: 10px 0 40px 40px;
+    width: 60%;
+    padding: 20px;
+    border: 1px solid  #ddd;
+}
+
+input[type=text] {
+    border: none;
+    border: 1px solid #ddd;
+    height: 30px;
+    line-height: 30px;
+    outline: none;
+    padding-left: 4px;
+}
+
+.btn__right {
+    border: none;
+    height: 30px;
+    line-height: 30px;
+    outline: none;
+    float: left;
+}

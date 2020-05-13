@@ -1,0 +1,42 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="deviceQrForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <!--<#input id="id" name="主键" value="${item.id}" underline="true"/>-->
+                    <!--<#input id="projectCode" name="项目id" value="${item.projectCode}" underline="true"/>-->
+                    <#select_sjf id="projectCode" name="项目名称" underline="false" requiredFlag="true">
+                        @for(i in project){
+                        @if(i.projectCode==item.projectCode){
+                        <option value="${i.projectCode}" selected>${i.projectName}</option>
+                        @}else{
+                        <option value="${i.projectCode}">${i.projectName}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    <#input id="name" name="设备名称" value="${item.name}" underline="true" requiredFlag="true"/>
+                    <#input id="sn" name="设备序列号（唯一标识）" value="${item.sn}" underline="true" requiredFlag="true"/>
+                    <#input id="version" name="版本" value="${item.version}" underline="true"/>
+                </div>
+
+                <div class="col-sm-6">
+                    <#input id="remark" name="备注" value="${item.remark}" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceQrInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceQrInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/device/deviceQr/deviceQr_info.js"></script>
+@}

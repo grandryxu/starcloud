@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.WorkKindMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.WorkKind">
+        <id column="id" property="id" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="name" property="name" />
+        <result column="amount" property="amount" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        t1.id, t1.organization_code AS organizationCode, t1.name, t1.amount, t1.create_date AS createDate, t1.create_user AS createUser, t1.update_date AS updateDate, t1.update_user AS updateUser, t1.status, t1.remark,
+        t2.company_name AS companyName
+    </sql>
+
+	<select id="selectWorkKind" resultType="map">
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM buss_work_kind t1
+	    LEFT JOIN buss_sub_contractor t2 ON t2.organization_code = t1.organization_code
+	    WHERE 1=1
+	    <if test="map.companyName != null and map.companyName != ''">
+			AND t2.company_name like CONCAT('%',#{map.companyName},'%')
+		</if>
+	    
+	</select>
+	<!-- 通过id查询工种详情 -->
+	<select id="selectWorkKindById" resultType="com.xywg.admin.modular.system.model.WorkKind">
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM buss_work_kind t1
+	    LEFT JOIN buss_sub_contractor t2 ON t2.organization_code = t1.organization_code
+	    WHERE 1=1
+	    <if test="workKindId != null and workKindId != ''">
+			AND t1.id = #{workKindId}
+        </if>
+	</select>
+    <!-- 从业人员姓名下拉框 yuanyang -->
+    <select id="getWorkKinds" resultType="com.xywg.admin.modular.system.model.WorkKind">
+        select
+        id,num,
+        name
+        from  buss_work_kind
+        where 1=1
+        and status=1
+    </select>
+    <!-- 根据工种num获取工种名称 yuanyang -->
+    <select id="getWorkKindName" resultType="java.lang.String">
+        select
+        name
+        from  buss_work_kind
+        where num=#{num}
+        and status=1
+    </select>
+
+    <!-- 根据工种name获取工种num yuanyang -->
+    <select id="getNumByName" resultType="java.lang.Integer">
+        select
+        num
+        from  buss_work_kind
+        where name=#{name}
+        and status=1
+    </select>
+    <!-- 查询现有工种 -->
+    <select id="getWorkKindsNameList" resultType="com.xywg.admin.modular.system.model.WorkKind">
+        SELECT name
+        FROM  buss_work_kind
+        WHERE status = 1
+        GROUP BY name
+    </select>
+    <!-- 查询工种表企业集合 -->
+    <select id="getWorkKindsCompanyList" resultType="com.xywg.admin.modular.system.model.WorkKind">
+        SELECT organization_code as organizationCode
+        FROM buss_work_kind
+        WHERE status = 1
+        GROUP BY organization_code
+    </select>
+    
+    <!-- 插入工种(新增企业时调用) -->
+    <insert id="addWorkKind">
+	    insert into buss_work_kind (organization_code, num, name, status, amount)   
+	    values  
+	    <foreach collection="fileList" item="item" index="index" separator="," >  
+	        (#{item.organizationCode},#{item.num},#{item.name}, 1, 0)  
+	    </foreach>   
+    </insert>
+    
+    <delete id="deleteWorkKind">
+       DELETE FROM buss_work_kind
+    </delete>
+    
+    <select id="getWorkKindSendSMZ" resultType="java.util.HashMap">
+    <!--	SELECT w.num as workId,w.name from sys_dict w
+			WHERE EXISTS (
+				SELECT id FROM ifa_labor l WHERE l.table_name ='buss_work_kind' AND w.num = l.id)
+			AND w.pid = 121 -->
+        SELECT w.tips as workId,w.name from sys_dict w
+        WHERE EXISTS (
+        SELECT id FROM ifa_labor l WHERE l.table_name ='buss_work_kind' AND w.num = l.id)
+        AND w.pid = 950
+    </select>
+    <select id="selectIdByOrgCodeAndNum" resultType="java.util.Map">
+      select id,count(id) AS num from buss_work_kind where organization_code=#{organizationCode} AND num=#{num}
+    </select>
+
+</mapper>

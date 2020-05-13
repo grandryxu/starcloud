@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceCommandMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.DeviceCommand">
+        <id column="id" property="id" />
+        <result column="device_sn" property="deviceSn" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="file_id" property="fileId" />
+        <result column="type" property="type" />
+        <result column="state" property="state" />
+        <result column="createDate" property="createDate" />
+        <result column="processDate" property="processDate" />
+        <result column="description" property="description" />
+        <result column="modify_ip" property="modifyIp" />
+        <result column="modify_id" property="modifyId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, device_sn AS deviceSn, id_card_type AS idCardType, id_card_number AS idCardNumber, file_id AS fileId, type, state, createDate, processDate, description, modify_ip AS modifyIp, modify_id AS modifyId
+    </sql>
+
+	<!-- 查询设备未执行的命令数量 -->
+    <select id="getDeviceCommandCount" resultType="int">
+        SELECT COUNT(id)
+        FROM buss_device_command
+        WHERE device_sn=#{deviceId} AND state=0
+        AND createDate > #{begin}
+    </select>
+    
+   <select id="getSameCommandDevice" resultType="com.xywg.admin.modular.device.model.Device">
+        SELECT  d.id, d.name, d.sn
+        FROM buss_device_command c
+        INNER JOIN buss_device d ON d.sn=c.device_sn
+        WHERE c.type=#{command.type,jdbcType=INTEGER} AND d.sn IN
+        <foreach collection="command.deviceSns" item="did" separator="," index="index" open="(" close=")">
+            #{did}
+        </foreach>
+        AND c.createDate > #{begin,jdbcType=DATE} AND c.state=0
+    </select>
+    
+    
+    <!-- 设置命令状态 -->
+    <update id="setCommandState" >
+        UPDATE buss_device_command SET processDate=now(), description=#{description}, state=#{state} WHERE id=#{id}
+    </update>
+    
+    <!-- 查询设备未执行的命令 -->
+    <select id="getDeviceCommand" resultType="com.xywg.admin.modular.device.model.DeviceCommand">
+        SELECT c.id,c.state,ud.tx_face AS description,c.type, 
+        c.id_card_type as idCardType,c.id_card_number as idCardNumber,
+        u.worker_name as workerName,a.account as loginName
+        FROM buss_device_command c
+        INNER JOIN buss_device d ON d.sn = c.device_sn
+        LEFT JOIN buss_device_file f ON f.id = c.file_id AND f.state > 0
+        LEFT JOIN buss_device_type t ON f.type_id = t.id
+        LEFT JOIN buss_worker_master u ON c.id_card_type = u.id_card_type and c.id_card_number = u.id_card_number
+        LEFT JOIN buss_person_data ud ON ud.id_card_type = u.id_card_type and ud.id_card_number = u.id_card_number AND ud.alg_version = d.alg_version AND ud.type =0
+        LEFT JOIN sys_user a ON c.modify_id = a.id
+        WHERE c.device_sn=#{sn} AND c.state=0
+        AND c.createDate > #{begin,jdbcType=DATE} 
+    </select>
+    
+    
+     <!-- 下发设备命令 -->
+    <insert id="executeCommand">
+        INSERT INTO buss_device_command
+        (device_sn, file_id, id_card_type,id_card_number, type, state, createDate, modify_id)
+        SELECT did, fid, 1,idCardNumber, type,state,createdate,mid FROM
+        <choose>
+              <when test="command.userIds != null and command.userIds.size() > 0">
+                <foreach collection="command.userIds" item="uid" index="index" separator=" UNION ALL " open="(" close=")">
+                    <foreach collection="command.deviceSns" item="did" separator=" UNION ALL " index="index">
+                        SELECT 
+                             #{did} AS did, 
+	                         #{command.fileId,jdbcType=BIGINT} AS fid, 
+	                         #{command.type,jdbcType=INTEGER} AS type,
+	                         0 AS state, now() AS createdate, 
+	                         #{uid} AS idCardNumber,
+	                         #{command.userId} AS mid
+                        from dual
+                    </foreach>
+                </foreach> r
+            </when>
+            <otherwise>
+                <foreach collection="command.deviceSns" item="did" separator=" UNION ALL " index="index" open="(" close=")">
+                    SELECT #{did} AS did,
+	                     #{command.fileId,jdbcType=BIGINT} AS fid, 
+	                     #{command.type,jdbcType=INTEGER} AS type, 
+	                     0 AS state,
+	                     now() AS createdate,
+                         '' AS idCardNumber,
+                         #{command.userId} AS mid
+                    from dual
+                </foreach> r
+            </otherwise>
+        </choose>
+    </insert>
+    
+        <!-- 检查是否有对应到区域的设备 -->
+    <select id="getDistrictDeviceInfo" parameterType="list" resultType="string">
+        SELECT group_concat("<![CDATA[ <  ]]>br/>",name,"(",sn,")") FROM buss_device d
+        WHERE   d.sn IN
+        <foreach collection="list" item="id" separator="," open="(" close=")" index="index">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+        AND EXISTS
+        (SELECT 1 FROM buss_project_master WHERE project_code=d.project_code)
+    </select>
+
+    <!--查询历史命令-->
+     <select id="queryCommandBySeries" resultType="com.xywg.admin.modular.device.model.DeviceCommand">
+        SELECT
+            c.id,
+            c.device_sn as  deviceSn,
+            c.id_card_type as idCardType,
+            c.id_card_number as  idCardNumber,
+            c.file_id as  fileId,
+            c.`type`,
+            c. state,
+            c.createDate,
+            c.processDate,
+            c.description,
+            c.modify_ip as modifyIp,
+            c.modify_id as modifyId,
+            w.worker_name as workerName
+        from buss_device_command  c
+        left join buss_device d on  c.device_sn=d.sn
+        left join buss_worker_master w on w.id_card_number = c.id_card_number
+        where   d.is_del=0
+         <if test=" map.projectCodes != null and  map.projectCodes.size() >0 "  >
+             and  d.project_code  in
+              <foreach collection="map.projectCodes" close=")" open="(" separator="," item="item" index="index">
+                  #{item}
+              </foreach>
+         </if>
+         <if test=" map.deviceSn != null and  map.deviceSn != '' "  >
+           and c.device_sn like  CONCAT('%',#{map.deviceSn},'%' )
+        </if>
+         <if test=" map.deviceSns != null and  map.deviceSns != '' "  >
+             and FIND_IN_SET(c.device_sn ,#{map.deviceSns} )
+         </if>
+        <if test=" map.state != null and  map.state != '' "  >
+            and c.state= #{map.state}
+        </if>
+        <if test="map.beginTime !=null and  map.beginTime !='' ">
+            and left(c.createDate,10) >= #{map.beginTime}
+        </if>
+        <if test="map.endTime !=null and  map.endTime !='' ">
+            and left(c.createDate,10) &lt;= #{map.endTime}
+        </if>
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by c.createDate DESC
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

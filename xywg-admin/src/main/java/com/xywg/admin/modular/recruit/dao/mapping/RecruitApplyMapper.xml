@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.recruit.dao.RecruitApplyMapper">
+    <insert id="apply">
+    INSERT INTO `recruit_resume` ( `recruit_id`, `id_card_type`, `id_card_number`, `create_date`, `upadte_date`,`resume_class`,`mobile` )
+VALUES
+	( #{id}, #{idCardType}, #{idCardNumber}, NOW( ), NOW( ),#{resumeClass},#{mobile} )
+    </insert>
+
+    <select id="getApplyListByPerson" resultType="com.xywg.admin.modular.recruit.model.ApplyListPersonVo">
+ SELECT
+rr.is_evaluate AS isEvaluate,
+rr.is_dispose AS isDispose,
+rr.upadte_date AS updateDate,
+rr.recruit_id AS id,
+rw.salary_type AS salaryType,
+rw.salary_content AS salaryContent,
+rw.salary_text AS salaryText,
+c.company_name AS companyName,
+rw.work_id_sets AS `work`,
+rw.recruit_station AS recruitStation,
+rw.description,
+rw.recruit_type AS recruitType,
+rw.phone
+FROM
+recruit_resume AS rr
+LEFT JOIN recruit_worker AS rw ON rr.recruit_id = rw.id
+LEFT JOIN buss_sub_contractor AS c ON rw.organization_code = c.organization_code AND c.is_del = 0
+WHERE
+rr.is_del = 0 AND
+rr.id_card_type = #{idCardType} AND
+rr.id_card_number = #{idCardNumber}
+<if test="keyword != null and keyword !='' ">
+    AND (rw.recruit_station like CONCAT('%',#{keyword},'%') OR c.company_name like CONCAT('%',#{keyword},'%'))
+</if>
+ ORDER BY
+ updateDate DESC
+LIMIT #{pageNo}, #{pageSize}
+    </select>
+
+    <select id="queryPersonRecruit" resultType="com.xywg.admin.modular.recruit.model.ApplyListPersonVo">
+        SELECT
+	rr.is_dispose AS isDispose,
+	rr.create_date AS updateDate,
+	rr.recruit_id AS id,
+	rw.salary_type AS salaryType,
+	rw.salary_content AS salaryContent,
+	rw.salary_text AS salaryText,
+	c.company_name AS companyName,
+	rw.work_id_sets AS `work`,
+	rw.recruit_station AS recruitStation
+FROM
+	recruit_resume AS rr
+	LEFT JOIN recruit_worker AS rw ON rr.recruit_id = rw.id
+	LEFT JOIN buss_sub_contractor AS c ON rw.organization_code = c.organization_code
+	AND c.is_del = 0
+WHERE
+	rr.is_del = 0 AND
+	rr.id_card_type = #{idCardType} AND
+	rr.id_card_number = #{idCardNumber}
+	AND rr.recruit_id = #{recruitId}
+	ORDER BY
+ 	rr.id DESC
+    </select>
+
+	<insert id="callMobile">
+INSERT INTO `recruit_telegram` (  `mobile`, `recruit_id`, `telegram_time` )
+VALUES
+	( #{mobile}, #{id}, NOW() )
+	</insert>
+
+	<select id="getApplyListById" resultType="com.xywg.admin.modular.recruit.model.ApplyVo">
+		SELECT
+rr.id,
+rr.create_date AS createDate,
+rr.is_dispose AS isDispose,
+bwm.worker_name AS workName,
+rr.mobile AS cellPhone,
+rr.id_card_type AS idCardType,
+rr.id_card_number AS idCardNumber,
+IFNULL(bwm.head_image,'') AS headImage
+FROM
+recruit_resume AS rr
+LEFT JOIN buss_worker_master AS bwm ON rr.id_card_type = bwm.id_card_type AND rr.id_card_number = bwm.id_card_number AND bwm.is_del = 0
+WHERE
+	rr.is_del = 0
+	AND rr.recruit_id = #{id}
+ORDER BY
+	rr.id ASC
+	LIMIT #{pageNo},#{pageSize}
+	</select>
+
+	<select id="getEvaluateListById" resultType="com.xywg.admin.modular.recruit.model.EvaluateVo">
+	SELECT
+re.id,
+re.mobile,
+re.score,
+re.evaluate,
+re.is_appeal AS isAppeal,
+ra.reject_reason AS rejectReason,
+ra.is_audit AS isAudit,
+IFNULL(bwm.head_image,'') AS headImage
+FROM
+recruit_evaluate AS re
+LEFT JOIN recruit_appeal AS ra ON re.id = ra.evaluate_id
+LEFT JOIN buss_worker_master AS bwm ON re.mobile = bwm.cell_phone AND bwm.is_del = 0
+WHERE
+re.is_del = 0 AND
+re.recruit_id = #{id}
+ORDER BY
+re.id ASC
+LIMIT #{pageNo},#{pageSize}
+	</select>
+
+
+	<select id="getWealContentListByWealContent" resultType="java.lang.String">
+		SELECT
+		sys_dict.`name`
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '福利')
+		AND sys_dict.num in
+		<foreach collection="codes" close=")" open="(" separator=","
+				 index="index" item="item">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getRecruitInfoById" resultType="com.xywg.admin.modular.recruit.model.RecruitInfoVo">
+SELECT
+	rrw.account,
+	rrw.recruit_type AS recruitType,
+	rrw.recruit_station AS recruitStation,
+	rrw.work_id_sets AS workNameSets,
+	rrw.recruit_number AS recruitNumber,
+	rrw.weal_content AS wealContent,
+	rrw.age_start AS ageStart,
+	rrw.age_end AS ageEnd,
+	rrw.claim,
+	rrw.description,
+	rrw.salary_type AS salaryType,
+	rrw.salary_content AS salaryContent,
+	rrw.salary_text AS salaryText,
+	rrw.`name`,
+	rrw.phone,
+	rrw.email,
+	rrw.create_date AS createDate,
+	rrw.create_user AS createUser,
+	rrw.address,
+	t1.`name` AS projectType,
+	t2.areaname AS provinces,
+	t3.areaname AS cities,
+	t4.areaname AS areas
+FROM
+	recruit_worker AS rrw
+	LEFT JOIN (
+	SELECT
+		sys_dict.num,
+		sys_dict.`name`
+	FROM
+		sys_dict
+	WHERE
+		sys_dict.pid = ( SELECT sys_dict.id FROM sys_dict WHERE sys_dict.pid = 0 AND sys_dict.`name` = '项目分类' )
+	) AS t1 ON rrw.project_type = t1.num
+	LEFT JOIN ref_area t2 ON rrw.provinces_id = t2.id
+	LEFT JOIN ref_area t3 ON rrw.cities_id = t3.id
+	LEFT JOIN ref_area t4 ON rrw.areas_id = t4.id
+WHERE
+	rrw.id = #{id}
+	</select>
+
+	<update id="addRecordCount">
+		UPDATE `recruit_worker`
+SET
+`record_count` = record_count + 1
+WHERE
+	`id` = #{id}
+	</update>
+
+	<update id="disposeApply">
+UPDATE `recruit_resume`
+SET
+`is_dispose` = 1
+WHERE
+	`id` = #{id}
+	</update>
+
+</mapper>

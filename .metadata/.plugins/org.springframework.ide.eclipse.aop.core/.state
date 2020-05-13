@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aop-reference-model>
+<aop-project name="xywg-rest"/>
+<aop-project name="xywg-admin"/>
+<aop-project name="xywg-generator"/>
+<aop-project name="xywg-core"/>
+</aop-reference-model>

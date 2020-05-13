@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.projectSubContractor.dao.ProjectSubContractorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.projectSubContractor.model.ProjectSubContractor">
+        <id column="id" property="id"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="contractor_type" property="contractorType"/>
+        <result column="entry_time" property="entryTime"/>
+        <result column="exit_time" property="exitTime"/>
+        <result column="bank_name" property="bankName"/>
+        <result column="bank_number" property="bankNumber"/>
+        <result column="bank_link_number" property="bankLinkNumber"/>
+        <result column="pay_mode" property="payMode"/>
+        <result column="pm_name" property="pmName"/>
+        <result column="pm_idcard_type" property="pmIdcardType"/>
+        <result column="pm_idcard_number" property="pmIdcardNumber"/>
+        <result column="pm_phone" property="pmPhone"/>
+        <result column="is_del" property="isDel"/>
+        <result column="has_contract" property="hasContract"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, organization_code AS organizationCode, contractor_type AS contractorType, entry_time AS entryTime, exit_time AS exitTime, bank_name AS bankName, bank_number AS bankNumber, bank_link_number AS bankLinkNumber, pay_mode AS payMode, pm_name AS pmName, pm_idcard_type AS pmIdcardType, pm_idcard_number AS pmIdcardNumber, pm_phone AS pmPhone, is_del AS isDel,has_contract as hasContract
+    </sql>
+
+    <select id="getList" resultType="Map">
+        select
+        psc.id,
+        psc.project_code as projectCode,
+        pm.project_name as projectName,
+        sc.company_name as companyName,
+        psc.organization_code as organizationCode,
+        psc.contractor_type as contractorType,
+        psc.exit_time as exitTime,
+        psc.entry_time as entryTime,
+        psc.bank_name as bankName,
+        psc.bank_number as bankNumber,
+        psc.bank_link_number as bankLinkNumber,
+        psc.pay_mode as payMode,
+        psc.pm_name as pmName,
+        psc.pm_idcard_type as pmIdcardType,
+        psc.pm_idcard_number as pmIdcardNumber,
+        psc.pm_phone as pmPhone,
+        psc.status ,
+        psc.create_organization_code AS createOrganizationCode
+        from buss_project_sub_contractor psc
+        left join buss_project_master pm on psc.project_code=pm.project_code
+        left join buss_sub_contractor sc on sc.organization_code=psc.organization_code
+        where psc.is_del=0
+        <if test="map.projectProjectCode!=null and map.projectProjectCode != ''">
+            AND psc.project_code = #{map.projectProjectCode}
+        </if>
+        <if test="map.projectCode!=null and map.projectCode != ''">
+            AND psc.project_code = #{map.projectCode}
+        </if>
+        <if test="map.subOrganizationCode!=null and map.subOrganizationCode != ''">
+            AND psc.organization_code = #{map.subOrganizationCode}
+        </if>
+        <if test="map.condition!=null and  map.condition!=''">
+            and(
+            (psc.project_code like concat('%',#{map.condition},'%')) 
+             or (pm.project_name like concat('%',#{map.condition},'%')) 
+             or(pm.build_project_code like concat('%',#{map.condition},'%'))
+             or (pm.general_contractor_name like concat('%',#{map.condition},'%')) 
+             or (pm.build_corporation_code like concat('%',#{map.condition},'%')) 
+             OR ( sc.company_name LIKE concat( '%',#{map.condition}, '%' ) )
+            )
+        </if>
+        
+        <if test="map.workKeys != null and map.workKeys != '' ">
+         	AND sc.company_name LIKE CONCAT( '%',#{map.workKeys}, '%' ) 
+        </if>
+        
+      <!--    <if test="map.keys!=null and  map.keys!=''">
+            and sc.company_name LIKE concat( '%',#{map.keys}, '%')
+        </if> -->
+        
+        <if test="map.projectStatus!=null and map.projectStatus!=''">
+            and pm.project_status=#{map.projectStatus}
+        </if>
+        <if test="map.startDate!=null and  map.startDate!=''">
+            and psc.entry_time <![CDATA[>=]]> #{map.startDate}
+        </if>
+        <if test="map.endDate!=null and map.endDate!=''">
+            and psc.entry_time <![CDATA[<=]]> #{map.endDate}
+        </if>
+        <if test="map.startDate1!=null and  map.startDate1!=''">
+            and psc.exit_time <![CDATA[>=]]> #{map.startDate1}
+        </if>
+        <if test="map.endDate1!=null and map.endDate1!=''">
+            and psc.exit_time <![CDATA[<=]]> #{map.endDate1}
+        </if>
+        <if test="map.contractorType!=null and map.contractorType!=''">
+            and psc.contractor_type = #{map.contractorType}
+        </if>
+
+        <!--<if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>-->
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and psc.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY psc.id DESC
+    </select>
+
+    <select id="getById" resultType="Map">
+        select
+        psc.id,
+        psc.project_code as projectCode,
+        pm.project_name as projectName,
+        sc.company_name as companyName,
+        psc.organization_code as organizationCode,
+        psc.contractor_type as contractorType,
+        psc.exit_time as exitTime,
+        psc.entry_time as entryTime,
+        psc.bank_name as bankName,
+        psc.bank_number as bankNumber,
+        psc.bank_link_number as bankLinkNumber,
+        psc.pay_mode as payMode,
+        psc.pm_name as pmName,
+        psc.pm_idcard_type as pmIdcardType,
+        psc.pm_idcard_number as pmIdcardNumber,
+        psc.pm_phone as pmPhone ,
+        psc.create_organization_code AS createOrganizationCode,
+        psc.score AS score
+        from buss_project_sub_contractor psc
+        left join buss_project_master pm on psc.project_code=pm.project_code
+        left join buss_sub_contractor sc on sc.organization_code=psc.organization_code
+        where psc.id=#{id}
+    </select>
+
+    <update id="changeState" parameterType="Map">
+        update buss_project_sub_contractor
+        set status=#{map.status}
+        where FIND_IN_SET(id,#{map.ids})
+    </update>
+    <select id="getCompanyById" resultType="Map">
+        select
+        psc.company_name as companyName,
+        psc.organization_type as organizationType,
+        psc.organization_code as organizationCode,
+        psc.business_status as businessStatus,
+        psc.social_credit_number as socialCreditNumber,
+        psc.biz_register_code as bizRegisterCode,
+        psc.address as address,
+        psc.representative_name as representativeName,
+        psc.representative_idcard_type as representativeIdcardType,
+        psc.representative_idcard_number as representativeIdcardNumber,
+        psc.zip_code as zipCode,
+        psc.establish_date as establishDate,
+        psc.registration_capital as registrationCapital,
+        psc.capital_currency as capitalCurrency,
+        psc.phone_number as phoneNumber,
+        psc.fax_number as faxNumber,
+        psc.contact_people_name as contactPeopleName,
+        psc.contact_people_phone as contactPeoplePhone,
+        psc.contact_people_cell_phone as contactPeopleCellPhone,
+        psc.email as email,
+        psc.home_website_url as homeWebsiteUrl ,
+        ra.areaname AS areaName
+        from buss_sub_contractor psc
+        LEFT  join  buss_project_sub_contractor sc on psc.organization_code =sc.organization_code
+        LEFT JOIN ref_area ra ON ra.id = psc.area_code
+        where sc.id=#{id}
+    </select>
+
+    <insert id="add" parameterType="Map">
+        insert INTO buss_sub_contractor_construction
+        (construction_code,
+        contractor_code)
+        VALUES (
+        #{map.organizationCode},
+        (select contractor_org_code from buss_project_master where project_code=#{map.projectCode})
+        )
+    </insert>
+
+
+    <select id="getProjectsByCompany" resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+        select
+			c.project_code as  projectCode,
+			m.project_name as  projectName,
+			c.pm_name as   pmName,
+			a.areaname as 	area,
+            m.project_status as 	projectStatus,
+			m.start_date as 	startDate,
+			m.complete_date as 	completeDate,
+            ifnull(p.is_concern,0) AS isCollect,
+            m.device_type as deviceType,
+			m.address as 	 address
+        from  buss_project_sub_contractor c
+        left join buss_project_master m on c.project_code=m.project_code
+        left join ref_area a on  a.id= m.area_code
+        LEFT JOIN sys_user_project p  on  p.project_code=c.project_code  and  p.user_id=#{id}
+        where c.is_del=0  and  m.status=1  and  m.is_del=0  and  c.organization_code=#{organizationCode}
+        <choose>
+            <when test="projectType ==1 " >
+                and c.contractor_type = 16
+            </when>
+            <when test="projectType ==2">
+                and c.contractor_type != 16
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        <if test="projectStatus!=null  and  projectStatus!=''">
+           and  m.project_status=#{projectStatus}
+        </if>
+        <if test="key != null  and  key != '' ">
+           and  m.project_name like concat('%',#{key},'%')
+        </if>
+    </select>
+
+    <select id="v116GetProjectsByCompany" resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+        select
+        c.project_code as  projectCode,
+        m.project_name as  projectName,
+        c.pm_name as   pmName,
+        a.areaname as 	area,
+        m.project_status as 	projectStatus,
+        m.start_date as 	startDate,
+        m.complete_date as 	completeDate,
+        ifnull(p.is_concern,0) AS isCollect,
+        m.device_type as deviceType,
+        m.address as 	 address ,
+        c.contractor_type as projectType
+        from  buss_project_sub_contractor c
+        left join buss_project_master m on c.project_code=m.project_code
+        left join ref_area a on  a.id= m.area_code
+        LEFT JOIN sys_user_project p  on  p.project_code=c.project_code  and  p.user_id=#{id}
+        where c.is_del=0  and  m.status=1  and  m.is_del=0  and  c.organization_code=#{organizationCode}
+        <if test="type != null and type == '2'.toString() ">
+            and (m.project_code = p.project_code or m.project_code in (select project_code from sys_account_project where is_del = 0 and account = #{account}))
+        </if>
+        <choose>
+            <when test="projectType ==1 " >
+                and c.contractor_type = 16
+            </when>
+            <when test="projectType ==2">
+                and c.contractor_type != 16
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        <if test="projectStatus!=null  and  projectStatus!=''">
+            and  m.project_status=#{projectStatus}
+        </if>
+        <if test="key != null  and  key != '' ">
+            and  m.project_name like concat('%',#{key},'%')
+        </if>
+        limit #{index},#{pageSize}
+    </select>
+
+    <insert id="addBussSubContractorConstruction">
+        INSERT INTO buss_sub_contractor_construction(contractor_code , construction_code , create_date , create_user )
+        VALUE (#{socialCreditNumber},#{organizationCode},now(),#{name})
+    </insert>
+
+    <!-- 获取项目统计个数 yuanyang-->
+    <select id="getProjectCount" resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+     SELECT
+        ( SELECT count(1) FROM buss_project_sub_contractor
+              WHERE organization_code = #{organizationCode} AND contractor_type = 16 AND is_del = 0
+            <if test="type != null and type == '2'.toString() ">
+              and project_code in (select project_code from sys_account_project where is_del = 0 and account = #{account})
+            </if>
+         ) AS contractorProjectCount,
+        ( SELECT count(1) FROM buss_project_sub_contractor
+              WHERE organization_code = #{organizationCode} AND contractor_type != 16 AND is_del = 0
+            <if test="type != null and type == '2'.toString() ">
+                and project_code in (select project_code from sys_account_project where is_del = 0 and account = #{account})
+            </if>
+        ) AS constructionProjectCount,
+        (SELECT count(1) FROM buss_project_sub_contractor
+              WHERE organization_code = #{organizationCode} AND is_del = 0
+            <if test="type != null and type == '2'.toString() ">
+                and project_code in (select project_code from sys_account_project where is_del = 0 and account = #{account})
+            </if>
+        ) as allProjectCount
+    </select>
+
+    <!-- 获取参建公司的某项目的参建基本信息 yuanyang-->
+    <select id="getCooperationProject"
+            resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+        select
+        psc.entry_time as entryTime ,
+        psc.exit_time as exitTime,
+		psc.pm_name as pmName,
+		psc.contractor_type as contractorType,
+        psc.pm_idcard_type as      idCardType,
+        psc.pm_idcard_number as      idCardNumber,
+        c.company_name as companyName
+        from buss_project_sub_contractor psc left join buss_sub_contractor c on c.organization_code=psc.organization_code AND c.is_del=0 and c.`status`=1
+        where psc.is_del=0
+        and psc.`status`=1
+        and psc.organization_code=#{organizationCode}
+        and psc.project_code=#{projectCode}
+        and psc.contractor_type !=16
+    </select>
+
+    <!-- 获取参建公司的某项目的参建基本信息列表 yuanyang-->
+    <select id="getCooperationProjectList"
+            resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+        select
+        psc.entry_time as entryTime ,
+        psc.exit_time as exitTime,
+        psc.pm_name as pmName,
+       psc.contractor_type as   contractorType,
+        c.company_name as companyName
+        from buss_project_sub_contractor psc left join buss_sub_contractor c on c.organization_code=psc.organization_code AND c.is_del=0 and c.`status`=1
+        where psc.is_del=0
+        and psc.`status`=1
+        and psc.project_code=#{projectCode}
+        and psc.contractor_type !=16
+    </select>
+
+    <!-- 获取参建公司的某项目的参建基本信息列表 cw-->
+    <select id="v116GetCooperationProjectList"
+            resultType="com.xywg.admin.modular.projectSubContractor.model.AppProjectSubContractorDto">
+        select
+        psc.entry_time as entryTime ,
+        psc.exit_time as exitTime,
+        psc.pm_name as pmName,
+        psc.contractor_type as   contractorType,
+        c.company_name as companyName
+        from buss_project_sub_contractor psc left join buss_sub_contractor c on c.organization_code=psc.organization_code AND c.is_del=0 and c.`status`=1
+        where psc.is_del=0
+        and psc.`status`=1
+        and psc.project_code=#{projectCode}
+        and psc.contractor_type !=16
+        limit #{index},#{pageSize}
+    </select>
+
+    <update id="toggleJoinStatus">
+        UPDATE buss_project_sub_contractor
+        SET
+        <if test="status == 0">
+            entry_time = now(),
+            exit_time = if((now()>exit_time),null,exit_time)
+        </if>
+        <if test="status == 1">
+            exit_time = now()
+        </if>
+        WHERE
+        <foreach collection="organizationCodesList" item="item" open="(" separator=") OR (" close=")">
+            project_code = #{projectCode} AND organization_code = #{item}
+        </foreach>
+    </update>
+
+    <update id="deleteByProjectCodeAndOrganizationCodes">
+        UPDATE buss_project_sub_contractor
+        SET
+        is_del = 1
+        WHERE
+        <foreach collection="organizationCodeList" item="item" open="(" separator=") OR (" close=")">
+            project_code = #{projectCode} AND organization_code = #{item}
+        </foreach>
+    </update>
+
+    <select id="getListByProjectCodeAndOrganizationCode"
+            resultType="com.xywg.admin.modular.projectSubContractor.model.ProjectSubContractor">
+        select
+        id,
+        project_code as projectCode,
+        organization_code as organizationCode,
+        contractor_type as contractorType,
+        entry_time as entryTime,
+        exit_time as exitTime,
+        bank_name as bankName,
+        bank_number as bankNumber,
+        bank_link_number as bankLinkNumber,
+        pay_mode as payMode,
+        pm_name as pmName,
+        pm_idcard_type as pmIdcardType,
+        pm_idcard_number as pmIdcardNumber,
+        pm_phone as pmPhone
+        from buss_project_sub_contractor
+        where project_code=#{projectCode}
+        <if test="organizationCode != null and organizationCode != ''">
+        AND
+        organization_code=#{organizationCode}
+        </if>
+    </select>
+
+	<select id="getListByProjectCodeAndOrganizationCodeFromCompany"
+            resultType="com.xywg.admin.modular.projectSubContractor.model.ProjectSubContractor">
+        select
+        id,
+        project_code as projectCode,
+        organization_code as organizationCode,
+        contractor_type as contractorType,
+        entry_time as entryTime,
+        exit_time as exitTime,
+        bank_name as bankName,
+        bank_number as bankNumber,
+        bank_link_number as bankLinkNumber,
+        pay_mode as payMode,
+        pm_name as pmName,
+        pm_idcard_type as pmIdcardType,
+        pm_idcard_number as pmIdcardNumber,
+        pm_phone as pmPhone
+        from buss_project_sub_contractor
+        where project_code=#{projectCode}
+        AND
+        organization_code in
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+    </select>
+
+	<!-- 获取进场项目数 -->
+	<select id="getTotalEntry" resultType="java.lang.Integer">
+		select count(1) from(
+	        select project_code
+	        from buss_project_sub_contractor
+	        where contractor_type != 16 and organization_code in
+	        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	        and entry_time <![CDATA[<=]]> now()
+	        and (exit_time <![CDATA[>=]]> now()
+	        or exit_time is null)
+	        group by project_code
+	        union
+        	select t1.project_code
+        	from buss_project_sub_contractor t1
+        	left join buss_project_master t2 on t1.project_code = t2.project_code
+        	where t1.contractor_type = 16 and t1.organization_code in
+	        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	        and t2.start_date <![CDATA[<=]]> now()
+	        and (t2.complete_date <![CDATA[>=]]> now()
+	        or t2.complete_date is null)
+	        group by t1.project_code
+        ) t
+        WHERE 1=1
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+
+    </select>
+
+    <!-- 获取退场项目数 -->
+	<select id="getTotalExit" resultType="java.lang.Integer">
+		select count(1) from(
+	        select project_code
+	        from buss_project_sub_contractor
+	        where contractor_type != 16 and organization_code in
+	        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	        and exit_time <![CDATA[<=]]> now()
+	        group by project_code
+	        union
+        	select t1.project_code
+        	from buss_project_sub_contractor t1
+        	left join buss_project_master t2 on t1.project_code = t2.project_code
+        	where t1.contractor_type = 16 and t1.organization_code in
+	        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	        and t2.complete_date <![CDATA[<=]]> now()
+	        group by t1.project_code
+        ) t
+        WHERE 1=1
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="setPm" parameterType="Map">
+        update buss_project_sub_contractor
+        set pm_name=#{map.pmName},
+        pm_idcard_type=#{map.idCardType},
+        pm_idcard_number=#{map.idCardNumber},
+        pm_phone=#{map.cellPhone}
+        where id=#{map.id}
+    </update>
+
+    <update id="toggleJoinStatusWithIds">
+        UPDATE buss_project_sub_contractor
+        SET
+        <if test="status == 0">
+            entry_time = now(),
+            exit_time = if((now()>exit_time),null,exit_time)
+        </if>
+        <if test="status == 1">
+            exit_time = now()
+        </if>
+        WHERE
+        FIND_IN_SET(id,#{ids})
+    </update>
+
+    <select id="getGroupByProjectSubContractorByDeptId" resultType="com.xywg.admin.modular.projectSubContractor.model.ProjectSubContractor">
+        SELECT
+           bp.id,bp.project_code as projectCode,bp.contractor_type as contractorType
+        FROM
+           buss_project_sub_contractor bp
+            JOIN sys_dept sd ON sd.social_credit_number IS NOT NULL
+            AND ( sd.id = #{toggleDeptId} OR sd.pids LIKE CONCAT( '%', #{toggleDeptId}, '%' ) )
+            AND sd.social_credit_number = bp.organization_code
+        WHERE
+            bp.is_del = 0
+    </select>
+    <select id="getContractorById" resultType="java.util.Map">
+        SELECT
+        id,
+        company_name AS companyName
+
+          from  buss_sub_contractor  where id=#{projectSubContractorId}
+
+    </select>
+    <select id="selectProjectCodeAndOrjCode" resultType="java.lang.Long">
+        SELECT count(id) from buss_project_sub_contractor where
+          project_code=#{projectCode} AND organization_code=#{companyOrgcode} AND is_del=0
+    </select>
+</mapper>

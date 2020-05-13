@@ -1,0 +1,321 @@
+/**
+ * 结算单添加页面金额初始化
+ */
+var settlementAddDetailTable = {
+    id: "settlementAddDetailTable",	//表格id
+    seItem: null,		//选中的条目
+    table: null,
+    layerIndex: -1,
+    tableData:{},
+    projectCodeValue:null
+};
+
+/**
+ * 结算单添加页面金额初始化表格的列
+ */
+settlementAddDetailTable.initColumn = function () {
+    return [
+        {field: 'selectItem', checkbox: true},
+        {title: '姓名', field: 'workerName', visible: true, align: 'center', valign: 'middle',
+            footerFormatter: function () {
+                return "合计";
+            }},
+        {title: '证件类型', field: 'idCardType', visible: true, align: 'center', valign: 'middle'},
+        {title: '证件编号', field: 'idCardNumber', visible: true, align: 'center', valign: 'middle'},
+        {title: '工种', field: 'workerTypeName', visible: true, align: 'center', valign: 'middle'},
+        {title: '累计应发', field: 'addPayAmount', visible: true, align: 'center', valign: 'middle',
+            footerFormatter: function (value) {
+                 var count = 0;
+                 for(var i=0;i<value.length;i++){
+                     count+=parseFloat(value[i].payAmount);
+                 }
+                return count;
+         }},
+        {title: '累计已发', field: 'addActualAmount', visible: true, align: 'center', valign: 'middle',
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].actualAmount);
+                }
+                return count;
+            }},
+        {title: '剩余金额(元)', field: 'addBalanceAmount', visible: true, align: 'center', valign: 'middle',
+            formatter: function (value, row, index) {
+            if (value === null || value === '' || value===undefined) {
+                value = "0";
+            }
+            return "<span class='addBalanceAmount' data-index='"+index+"'>" + value + "</span>";
+            },
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].addBalanceAmount);
+                }
+                return count;
+            }},
+
+        {title: '奖励', field: 'rewardAmount', visible: true, align: 'center', valign: 'middle',
+            formatter: function (value, row, index) {
+                if (value === null || value === '' || value===undefined) {
+                    value = "0";
+                }
+                return "<a class='rewardAmount' data-index='"+index+"'>" + value + "</a>";
+            },
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].rewardAmount);
+                }
+                return "<span class='rewardAmount'>" + count + "</span>";
+            }},
+        {title: '惩罚', field: 'punishAmount', visible: true, align: 'center', valign: 'middle',
+            formatter: function (value, row, index) {
+                if (value === null || value === '' || value===undefined) {
+                    value = "0";
+                }
+                return "<a class='punishAmount' data-index='"+index+"'>" + value + "</a>";
+            },
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].punishAmount);
+                }
+                return "<span class='punishAmount' >" + count + "</span>";
+            }},
+        {title: '结算应发', field: 'settlePayAmount', visible: true, align: 'center', valign: 'middle',
+            formatter: function (value, row, index) {
+                if (value === null || value === '' || value===undefined) {
+                    value = "0";
+                }
+                return "<span class='settlePayAmount'>" + value + "</span>";
+            },
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].settlePayAmount);
+                }
+                return "<span class='settlePayAmount' >" + count + "</span>";
+            }},
+        {title: '结算实发', field: 'settleActualAmount', visible: true, align: 'center', valign: 'middle',
+            formatter: function (value, row, index) {
+                if (value === null || value === '' || value===undefined) {
+                    value = "0";
+                }
+                return "<a class='settleActualAmount' data-index='"+index+"'>" + value + "</a>";
+            },
+            footerFormatter: function (value) {
+                var count = 0;
+                for(var i=0;i<value.length;i++){
+                    count+=parseFloat(value[i].settleActualAmount);
+                }
+                return "<span class='settleActualAmount' >" + count + "</span>";
+            }}
+    ];
+};
+/**
+ * 表格加载成功
+ * @param data
+ */
+settlementAddDetailTable.tableOnloadSuccess =function (data) {
+    settlementAddDetailTable.tableData = data;
+    console.info("ssdata:"+data);
+    $("td a").editable({
+        url: function (params) {
+            $(this).text(params.value);
+            calculateWages(this);
+        },
+        type: 'text'
+    });
+}
+
+
+
+/**
+ * 批量奖励
+ */
+settlementAddDetailTable.batchRewardAmount = function () {
+    layer.prompt({title: '输入奖励金额', formType: 0}, function(text, index){
+        layer.close(index);
+        settlementAddDetailTable.batchUpdate('rewardAmount',text);
+
+    });
+
+}
+
+/**
+ * 批量惩罚
+ */
+settlementAddDetailTable.batchPunishAmount= function () {
+    layer.prompt({title: '输入惩罚金额', formType: 0}, function(text, index){
+        layer.close(index);
+        settlementAddDetailTable.batchUpdate('punishAmount',text);
+    });
+
+}
+
+/**
+ * 批量结算
+ */
+settlementAddDetailTable.batchSettleActualAmount = function () {
+    layer.prompt({title: '输入结算金额', formType: 0}, function(text, index){
+        layer.close(index);
+        settlementAddDetailTable.batchUpdate('settleActualAmount',text);
+    });
+}
+
+
+/**
+ * 批量更新数据
+ */
+settlementAddDetailTable.batchUpdate = function (typeClass,text) {
+    var selected = $('#' + settlementAddDetailTable.id).find("input[type='checkbox']:checked");
+    $(selected).each(function(){
+        var cell = $(this).parents('tr').find('.'+typeClass);
+        if(cell.html()&&cell.html()!=''){
+            cell.text(text);
+            calculateWages(cell);
+        }
+    });
+    $("td a").editable({
+        url: function (params) {
+            $(this).text(params.value);
+            calculateWages(this);
+        },
+        type: 'text'
+    });
+}
+
+/**
+ * 计算工资
+ */
+var calculateWages=function(data){
+    var index = $(data).data("index");
+    var baseWages = $(data).parents('tr').find('.addBalanceAmount').text();
+    ////惩罚金额
+    var punishAmount  = $(data).parents('tr').find('.punishAmount').text();
+    //奖励金额
+    var rewardAmount  =$(data).parents('tr').find('.rewardAmount').text();
+    //结算实发
+    var reallyWages =parseFloat(baseWages)+parseFloat(rewardAmount)-parseFloat(punishAmount);
+    $(data).parents('tr').find('.settlePayAmount').text(reallyWages);
+
+
+    settlementAddDetailTable.tableData[index].addBalanceAmount=baseWages-reallyWages;
+    settlementAddDetailTable.tableData[index].punishAmount=punishAmount;
+    settlementAddDetailTable.tableData[index].rewardAmount=parseFloat(rewardAmount);
+    settlementAddDetailTable.tableData[index].reallyWages=reallyWages;
+
+    sum();
+}
+
+
+/**
+ * 单价合计
+ */
+var sum = function () {
+    var baseWages = $('#' + settlementAddDetailTable.id).find("tr").find(".rewardAmount");
+    var sum = 0;
+    $(baseWages).each(function(){
+        sum+=parseInt($(this).text()==''?0:$(this).text());
+    });
+    //结算总奖励金额
+    $(".fixed-table-footer").find(".rewardAmount").text(sum);
+
+    /***********************/
+    var reallyWages = $('#' + settlementAddDetailTable.id).find("tr").find(".punishAmount");
+    var sum2 = 0;
+    $(reallyWages).each(function(){
+        sum2+=parseInt($(this).text()==''?0:$(this).text());
+    });
+    //结算总惩罚金额
+    $(".fixed-table-footer").find(".punishAmount").text(sum2);
+
+    /***********************/
+    var reallyWages = $('#' + settlementAddDetailTable.id).find("tr").find(".settlePayAmount");
+    var sum3 = 0;
+    $(reallyWages).each(function(){
+        sum3+=parseInt($(this).text()==''?0:$(this).text());
+    });
+    //结算应发总金额
+    $(".fixed-table-footer").find(".settlePayAmount").text(sum3);
+
+    var reallyWages = $('#' + settlementAddDetailTable.id).find("tr").find(".settleActualAmount");
+    var sum4 = 0;
+    $(reallyWages).each(function(){
+        sum4+=parseInt($(this).text()==''?0:$(this).text());
+    });
+    //结算实发总金额
+    $(".fixed-table-footer").find(".settleActualAmount").text(sum4);
+
+}
+
+/**
+ * 更新结算单
+ */
+var updateAccountInfo = function (index) {
+    console.info(this.accountDetailList[index]);
+}
+
+
+/**
+ * 添加页面的保存
+ */
+settlementAddDetailTable.saveSettlement=function(){
+    var ajax = new $ax(Feng.ctxPath + "/settlement/saveSettlement", function (data) {
+        Feng.success("操作成功!");
+        settlementAddDetailTable.table.refresh();
+    });
+
+    ajax.set("SettlementDetailList",JSON.stringify(settlementAddDetailTable.tableData));
+    ajax.set("settlement",JSON.stringify(settlementAddDetailTable.getSumCell()));
+    ajax.start();
+
+};
+
+
+$(function () {
+    var defaultColunms = settlementAddDetailTable.initColumn();
+    var table = new BSTable(settlementAddDetailTable.id, "/settlement/getWorkerMoneyTable", defaultColunms);
+    var workerIdListVal=$("#workerIdList").val()+"";
+    console.info("workerIdListVal:"+workerIdListVal);
+    table.setQueryParams({"projectCode": $("#projectCode").val(),"workerIdList": workerIdListVal});
+    table.onLoadSuccess = settlementAddDetailTable.tableOnloadSuccess;
+    table.pagination = false;
+    table.showFooter = true;
+    table.setPaginationType("client");
+    settlementAddDetailTable.table = table.init();
+});
+
+
+
+
+settlementAddDetailTable.getSumCell = function () {
+    //累计应发金额
+    var addPayAmount = $('.fixed-table-footer').find('.addPayAmount').text();
+    //累计实发金额
+    var addActualAmount = $('.fixed-table-footer').find('.addActualAmount').text();
+    //累计剩余工资
+    var addBalanceAmount = $('.fixed-table-footer').find('.addBalanceAmount').text();
+    //奖励金额
+    var rewardAmount= $('.fixed-table-footer').find('.rewardAmount').text();
+    //惩罚金额
+    var punishAmount = $('.fixed-table-footer').find('.punishAmount').text();
+
+    //结算应发
+    var settlePayAmount=$('.fixed-table-footer').find('.settlePayAmount').text();
+    //结算实发
+    var settleActualAmount=$('.fixed-table-footer').find('.settlePayAmount').text();
+    //total_amount  结算总金额应发金额
+    //actual_amount 结算总金额实发金额
+    //payed_money   结算总金额剩余工资
+
+    return {
+        //剩余金额应该是剩余金额总额=之前的剩余金额-实际结算金额
+        payedMoney:parseFloat(settlePayAmount)-parseFloat(settleActualAmount),
+        totalAmount:parseFloat(settlePayAmount),
+        actualAmount:parseFloat(settleActualAmount),
+        projectCode:$("#projectCode").val(),
+        payStatus:1,
+
+    }
+}

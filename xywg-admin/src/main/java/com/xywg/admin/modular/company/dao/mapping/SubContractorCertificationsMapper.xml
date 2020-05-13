@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.SubContractorCertificationsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.SubContractorCertifications">
+        <id column="id" property="id"/>
+        <result column="sys_no" property="sysNo"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="certification_type" property="certificationType"/>
+        <result column="certification_name" property="certificationName"/>
+        <result column="certification_code" property="certificationCode"/>
+        <result column="valid_begin_date" property="validBeginDate"/>
+        <result column="recent_valid_date" property="recentValidDate"/>
+        <result column="valid_end_date" property="validEndDate"/>
+        <result column="grant_org" property="grantOrg"/>
+        <result column="qualification_status" property="qualificationStatus"/>
+        <result column="certification_status" property="certificationStatus"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, sys_no AS sysNo, organization_code AS organizationCode, certification_type AS certificationType, certification_name AS certificationName, certification_code AS certificationCode, valid_begin_date AS validBeginDate, recent_valid_date AS recentValidDate, valid_end_date AS validEndDate, grant_org AS grantOrg, qualification_status AS qualificationStatus, certification_status AS certificationStatus, is_del AS isDel
+    </sql>
+    <select id="getSubContractorCertifications" resultType="Map">
+        SELECT
+        id as id,
+        certification_name as certificationName,
+        certification_type as certificationType,
+        certification_code as certificationCode,
+        valid_begin_date as validBeginDate,
+        valid_end_date as validEndDate,
+        recent_valid_date as recentValidDate,
+        grant_org as grantOrg,
+        qualification_status as qualificationStatus,
+        certification_status as certificationStatus
+        from buss_sub_contractor_certifications
+        where is_del=0
+        <if test="map.organizationCode!=null and map.organizationCode!=''">
+            and organization_code=#{map.organizationCode}
+        </if>
+        <if test="map.condition!=null and map.condition!=''">
+            and (
+            certification_name like concat('%',#{map.condition},'%') or certification_code like
+            concat('%',#{map.condition},'%')
+            )
+        </if>
+        <if test="map.certificationType!=null and map.certificationType!=''">
+            and certification_type=#{map.certificationType}
+        </if>
+        <if test="map.certificationStatus!=null and map.certificationStatus!=''">
+            and certificationType=#{map.certificationStatus}
+        </if>
+        <if test="map.startDate!=null and map.startDate!=''">
+            and recent_valid_date <![CDATA[>=]]> #{map.startDate}
+        </if>
+        <if test="map.endDate!=null and map.endDate!=''">
+            and recent_valid_date <![CDATA[<=]]> #{map.endDate}
+        </if>
+        order by id desc
+    </select>
+
+    <select id="getSubContractorCertificationsList" resultType="Map">
+        SELECT
+        c.company_name as companyName,
+        sc.organization_code as organizationCode,
+        sc.id as id,
+        sc.certification_name as certificationName,
+        sc.certification_type as certificationType,
+        sc.certification_code as certificationCode,
+        sc.valid_begin_date as validBeginDate,
+        sc.valid_end_date  as validEndDate,
+        sc.recent_valid_date as recentValidDate,
+        sc.grant_org as grantOrg,
+        sc.qualification_status as qualificationStatus,
+        sc.certification_status as certificationStatus
+        from buss_sub_contractor_certifications sc
+        left join buss_sub_contractor c on sc.organization_code=c.organization_code and c.is_del=0 and c.status=1
+        where sc.is_del=0
+        <if test="map.condition!=null and map.condition!=''">
+            and (
+            sc.certification_name like concat('%',#{map.condition},'%')
+            or sc.certification_code like concat('%',#{map.condition},'%')
+            or sc.organization_code like concat('%',#{map.condition},'%')
+            or  c.company_name like concat('%',#{map.condition},'%')
+
+            )
+        </if>
+        <if test="map.certificationType!=null and map.certificationType!=''">
+            and sc.certification_type=#{map.certificationType}
+        </if>
+        <if test="map.certificationStatus!=null and map.certificationStatus!=''">
+            and sc.certification_status=#{map.certificationStatus}
+        </if>
+        <if test="map.qualificationStatus!=null and map.qualificationStatus!=''">
+            and sc.qualification_status=#{map.qualificationStatus}
+        </if>
+        <if test="map.startDate1!=null and  map.startDate1!=''">
+            and sc.valid_begin_date <![CDATA[>=]]>
+            #{map.startDate1}
+        </if>
+        <if test="map.endDate1!=null and  map.endDate1!=''">
+            and sc.valid_begin_date<![CDATA[<=]]>
+            #{map.endDate1}
+        </if>
+        <if test="map.startDate2!=null and  map.startDate2!=''">
+            and sc.valid_end_date <![CDATA[>=]]>
+            #{map.startDate2}
+        </if>
+        <if test="map.endDate2!=null and  map.endDate2!=''">
+            and sc.valid_end_date <![CDATA[<=]]>
+            #{map.endDate2}
+        </if>
+        AND sc.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by sc.id desc
+    </select>
+
+    <update id="del">
+        UPDATE buss_sub_contractor_certifications
+        set is_del=1
+        where id=#{id}
+    </update>
+
+
+    <update id="deleteSubContractorCertifications">
+        update buss_sub_contractor_certifications set
+        is_del=1
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+    <update id="updateStatus">
+        update
+        buss_sub_contractor_certifications set
+        certification_status=
+       (select num from sys_dict where pid=(select id from sys_dict where name='企业资质证书状态') and name='过期')
+       where
+        valid_end_date &lt;NOW()
+    </update>
+
+</mapper>

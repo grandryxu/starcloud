@@ -1,0 +1,85 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>用户管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="col-sm-12" id="searchForm">
+                        <div class="row">
+<!--                            <div class="col-lg-3 col-sm-3">-->
+<!--                                <div id="tree"></div>-->
+<!--                            </div>-->
+<!--                            <div class="col-lg-9 col-sm-9">-->
+                                <div class="row">
+                                    <div class="inline-search-s">
+                                        <label class="label-search-s">姓名</label>
+                                        <input id="name" name="姓名" underline="true" maxlength="45"
+                                               placeholder="帐号/姓名/手机号" class="input-search-s"/>
+                                    </div>
+                                    <div class="inline-search-s">
+                                        <label class="label-search-s">公司</label>
+                                        <input type="text" class="fn-input dept-tree" id="pName" placeholder="请选择公司" readonly
+                                               onclick="MgrUser.showDeptSelectTree(); return false;"/>
+                                    </div>
+                                    <!-- 父级部门的选择框 -->
+                                    <div id="parentDeptMenu" class="menuContent ztree-parent"
+                                         style="display: none; position: absolute; z-index: 200;">
+                                        <ul id="parentDeptMenuTree" class="ztree tree-box"
+                                            style="width: 250px !important;"></ul>
+                                    </div>
+                                    <div class="inline-search-s">
+                                        <label class="label-search-s">时间</label>
+                                        <div class="" id="datepicker" style="display:inline-block;">
+                                            <input class="input-search-s" id="startDate" name="establishDate" style="width: 200px" readonly="readonly"/>
+                                            <span class="">-</span>
+                                            <input class="input-search-s" id="endDate" name="establishDate" style="width: 200px" readonly="readonly"/>
+                                        </div>
+                                    </div>
+                                    <#button name="搜索" icon="fa-search" clickFun="MgrUser.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+                                <div  id="managerTableToolbar" role="group">
+                                    @if(shiro.hasPermission("/mgr/add")){
+                                    <#button name="添加" icon="fa-plus" clickFun="MgrUser.openAddMgr()"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/edit")){
+                                    <#button name="修改" icon="fa-edit" clickFun="MgrUser.openChangeUser()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/delete")){
+                                    <#button name="删除" icon="fa-remove" clickFun="MgrUser.delMgrUser()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/reset")){
+                                    <#button name="重置密码" icon="fa-refresh" clickFun="MgrUser.resetPwd()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/freeze")){
+                                    <#button name="冻结" icon="fa-warning" clickFun="MgrUser.freezeAccount()"
+                                    space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/unfreeze")){
+                                    <#button name="解除冻结" icon="fa-check-circle" clickFun="MgrUser.unfreeze()"
+                                    space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/mgr/setRole")){
+                                    <#button name="角色分配" icon="fa-user-secret" clickFun="MgrUser.roleAssign()"
+                                    space="true"/>
+                                    @}
+                                    <#button name="项目分配" icon="fa-user-secret" clickFun="MgrUser.projectAssign()"
+                                            space="true"/>
+                                </div>
+                                <#table id="managerTable"/>
+                            </div>
+<!--                        </div>-->
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/system/user/user.js"></script>
+@}

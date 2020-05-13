@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.DictMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.Dict">
+        <id column="id" property="id"/>
+        <result column="num" property="num"/>
+        <result column="pid" property="pid"/>
+        <result column="name" property="name"/>
+        <result column="tips" property="tips"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id, num, pid, name, tips
+	</sql>
+
+    <select id="selectByCode" resultType="com.xywg.admin.modular.system.model.Dict">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_dict
+        where code = #{code}
+    </select>
+
+    <select id="list" resultType="map">
+        select * from sys_dict
+        where pid = 0
+        <if test="condition != null and condition != ''">
+            AND name like CONCAT('%',#{condition},'%')
+        </if>
+        order by id ASC
+    </select>
+    <select id="selectByName" resultType="com.xywg.admin.modular.system.model.Dict">
+        select sd2.id,sd2.num,sd2.pid,sd2.name, sd2.tips from sys_dict sd1
+	    left join sys_dict sd2 on sd1.id=sd2.pid
+        where sd1.name = #{name}
+    </select>
+
+    <!-- 查询单条字典记录的num yuaynang -->
+    <select id="selectNumByName" resultType="java.lang.Integer">
+        select a.num from ( select sd2.id,sd2.num,sd2.pid,sd2.name from sys_dict sd1
+	    left join sys_dict sd2 on sd1.id=sd2.pid where sd1.name = #{name1}) a
+	    where a.name =#{name2}
+    </select>
+    
+    <select id="selectNameByCode" resultType="java.lang.String">
+        select a.name from ( select sd2.id,sd2.num,sd2.pid,sd2.name from sys_dict sd1
+	    left join sys_dict sd2 on sd1.id=sd2.pid where sd1.name = #{name1}) a
+	    where a.num =#{num2}
+    </select>
+
+    <!--根据父id获取所有子 -->
+    <select id="getChildsByPid" resultType="com.xywg.admin.modular.system.model.Dict">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        sys_dict
+        WHERE pid = #{dictId}
+    </select>
+
+    <select id="getWorkNameListByWorkSet" resultType="java.lang.String">
+        SELECT
+sys_dict.`name`
+FROM
+sys_dict
+WHERE
+sys_dict.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+AND sys_dict.num in
+        <foreach collection="codes" close=")" open="(" separator=","
+                             index="index" item="item">
+        #{item}
+    </foreach>
+    </select>
+
+    <!-- 查询工种是否存在 -->
+    <select id="queryWorkTypeByNum" resultType="int">
+        SELECT count(1)
+		FROM sys_dict
+		WHERE pid = (SELECT id
+					FROM sys_dict
+					WHERE sys_dict.pid = 0 AND sys_dict.`name` = #{type})
+		AND num = #{num} 
+		<if test="name != null and name != ''">
+			and name = #{name}
+		</if>
+    </select>
+</mapper>

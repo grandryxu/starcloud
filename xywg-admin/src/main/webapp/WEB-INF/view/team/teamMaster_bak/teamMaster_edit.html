@@ -1,0 +1,37 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            
+                            <#input id="projectCode" name="项目编号" value="${item.projectCode}" underline="true"/>
+                            <#input id="organizationCode" name="所属企业组织机构代码" value="${item.organizationCode}" underline="true"/>
+                            <#input id="teamName" name="班组名称" value="${item.teamName}" underline="true"/>
+                            <#input id="teamLeader" name="联系人（默认为班组长）" value="${item.teamLeader}" underline="true"/>
+                            <#input id="contact" name="请填入班组长手机号" value="${item.contact}" underline="true"/>
+                            <#input id="teamLeaderIdNumber" name="班组长身份证号码" value="${item.teamLeaderIdNumber}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="responsiblePersonIdNumber" name="责任人身份证号码" value="${item.responsiblePersonIdNumber}" underline="true"/>
+                            <#input id="note" name="备注" value="${item.note}" underline="true"/>
+                           
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="TeamMasterInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="TeamMasterInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster_info.js"></script>
+@}

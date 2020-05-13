@@ -1,0 +1,126 @@
+package com.xywg.admin.task;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.handler.IJobHandler;
+import com.xxl.job.core.handler.annotation.JobHandler;
+import com.xywg.admin.modular.company.model.SubContractor;
+import com.xywg.admin.modular.company.service.ISubContractorService;
+import com.xywg.admin.modular.device.service.IDeviceRecordService;
+import com.xywg.admin.modular.device.service.IDeviceService;
+import com.xywg.admin.modular.project.service.IProjectMasterService;
+import com.xywg.admin.modular.project.service.IProjectTrainingService;
+import com.xywg.admin.modular.smz.model.IfaLabor;
+import com.xywg.admin.modular.smz.service.IfaLaborService;
+import com.xywg.admin.modular.system.service.IWorkKindService;
+import com.xywg.admin.modular.team.service.ITeamMasterService;
+import com.xywg.admin.modular.worker.service.IWorkerContractRuleService;
+import com.xywg.admin.modular.worker.service.IWorkerMasterService;
+import com.xywg.admin.modular.zr.model.ZrCompanyTpm;
+import com.xywg.admin.modular.zr.utils.HttpClientUtils;
+
+import net.sf.json.JSONObject;
+
+@JobHandler(value="SendDataToZRTaskHandler")
+@Component
+public class SendDataToZRTaskHandler extends IJobHandler {
+
+	private static final Log LOG = LogFactory.getLog(SendDataToZRTaskHandler.class);
+	
+	private static Properties systemParams = new Properties();
+	@Autowired
+    private IProjectMasterService zrInterfaceService;
+	/**
+	 * 加载配置文件
+	 */
+	static {
+		try {
+			systemParams.load(SendDataToZRTaskHandler.class.getClassLoader().getResourceAsStream("zr.properties"));
+		} catch (IOException e) {
+			LOG.error("zr.properties" + "配置文件加载失败");
+		}
+	}
+	
+	/**
+	 * 获取配置文件信息
+	 * @author jln
+	 * @param key
+	 * @return
+	 */
+	protected String getSystemStringParam(String key) {
+		return systemParams.getProperty(key);
+	}
+	
+	/**
+	 * 
+	 * @description 登录中如获取token
+	 * @author jln
+	 * @return
+	 *
+	 */
+	@SuppressWarnings("unchecked")
+	protected Map<String,String> loginZR() {
+		String httpUrlPrefix = this.getSystemStringParam("httpUrlPrefix");
+		String loginUrl = this.getSystemStringParam("loginUrl");
+		String userName = this.getSystemStringParam("userName");
+		String password = this.getSystemStringParam("password");
+		Map<String,Object> map = new HashMap<>();
+		map.put("userName", userName);
+		map.put("password", password);
+		String result = HttpClientUtils.post(httpUrlPrefix + loginUrl, map);
+		Map<String,Object> m = (Map<String,Object>) JSONObject.toBean(JSONObject.fromObject(result), Map.class);
+		Map<String,String> headers = new HashMap<>();
+		headers.put("token", (String) m.get("token"));
+		return headers;
+	}
+	
+    @Override
+    public ReturnT<String> execute(String s) throws Exception {
+    	Map<String, String> m = loginZR();
+    	String stoken = m.get("token");
+    	try{zrInterfaceService.SendCompanyInfo(stoken);}catch(Exception e) {log.error(e.getMessage()); }//企业信息        
+    	return null;
+    }
+    
+
+	@Override
+	public boolean SendCompanyInfo(String stoken) {
+		//获取企业信息
+		SubContractor company = this.subContractorMapper.getCompanyInfo();
+		
+		ZrCompanyTpm zrCompany = new ZrCompanyTpm();
+		zrCompany.setFullName(company.getCompanyName());
+		zrCompany.setSimpleName(company.getCompanyName());
+		zrCompany.setRegistration(company.getAreaCode());
+		zrCompany.setType(1);
+		zrCompany.setCode(company.getOrganizationCode());
+		zrCompany.setUserId("1");
+		zrCompany.setLevel(1);
+		zrCompany.setContact(company.getContactPeopleName());
+		zrCompany.setContactPhone(company.getContactPeopleCellPhone());
+		zrCompany.setDescription(company.getCompanyName());
+		zrCompany.setRegisterCapital(Long.valueOf(50000));
+		
+		String json = JSONObject.fromObject(zrCompany).toString();
+		String url = "/company/save";
+		String jsonResult = HttpClientUtils.sendPost("http://ceshi.smzapi.zhuren360.com" + url, json, stoken);
+		
+		JSONObject obj = new JSONObject().fromObject(jsonResult);//将json字符串转换为json对象
+		if("10000".equals(obj.getString("code"))){
+			System.out.println(obj.getString("id"));
+			return true;
+		}else{
+			return false;
+		}
+	}
+}

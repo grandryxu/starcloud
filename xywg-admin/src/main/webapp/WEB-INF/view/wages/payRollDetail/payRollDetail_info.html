@@ -1,0 +1,44 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="payRollCode" value="${payRollCode}">
+            <input type="hidden" id="type" value="${type}">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <form class="row" id="searchForm">
+                        <div class="clear-float">
+                            <div class="col-sm-4">
+                                <div class="fn-div">
+                                    <label class="fn-label">查询</label>
+                                    <input type="text" class="fn-input" id="condition" placeholder="名称/证件编号" />
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 fn-need-hide">
+                                <div class="fn-div">
+                                    <label class="fn-label">工种</label>
+                                    <select class="fn-input" id="workerType" name="工种" >
+                                        <option value="">请选择</option>
+                                        @for(item in workerType){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 fn-condition">
+                                <#button name="搜索" icon="fa-search" clickFun="PayRollDetailInfoDlg.search()"/>
+                                <#reset name="重置" icon="fa-search" formId="searchForm"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <#table id="DetailByAccount"/>
+            <#table id="DetailByTime"/>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/payRollDetail/payRollDetail_view.js"></script>
+@}

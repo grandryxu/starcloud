@@ -1,0 +1,62 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>考勤统计</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+	                    <div class="row">
+	                    	<form class="col-sm-12" id="searchForm" >
+		                    	 <div class="clear-float">
+			                        <div class="col-sm-4">
+		                                <div class="fn-div">
+		                                    <label class="label-search-s">项目</label>
+		                                    <select data-placeholder="选择项目"  class="input-search-s
+		                                    " id="projectCode"   underline="true" name="项目"  onchange="changeForm(this.value)">
+		                                        <option value="">请选择</option>
+		                                        @for(item in project){
+		                                        <option value="${item.projectCode}">${item.projectName}</option>
+		                                        @}
+		                                    </select>
+		                                </div>
+									</div>
+
+									 <div class="col-sm-4">
+										 <div class="fn-div">
+											 <label class="label-search-s">班组</label>
+											 <select id="teamSysNo" name="班组" underline="true" class="input-search-s">
+												 <option value="">请选择</option>
+											 </select>
+										 </div>
+									 </div>
+			                    </div>
+							</form>
+							<form class="col-sm-12" id="searchForm1" >
+								<div class="clear-float">
+									<div class="col-sm-4">
+										<div class="fn-div">
+											<label class="fn-label">时间</label>
+											<input type="text" class="input-search-s" id="chTime" readonly="readonly">
+										</div>
+									</div>
+
+									<div class="col-sm-4 fn-condition">
+										<#button name="搜索" icon="fa-search" clickFun="AttendanceReport.search()"/>
+										<#button name="导出" icon="fa-download" clickFun="AttendanceReport.download()"/>
+										<#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+									</div>
+								</div>
+							</form>
+						</div>
+						<#table id="AttendanceReportTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/report/attendanceReport/attendanceReport.js"></script>
+@}

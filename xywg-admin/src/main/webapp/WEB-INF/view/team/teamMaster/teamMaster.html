@@ -1,0 +1,116 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div id="info" data-flag="true" style="display: none;"></div>
+
+        
+            <div id="classList" class="tab-pane">
+                <div class="panel-body">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-5 no-before">
+                                <div class="ap-container">
+                                    <div class="ap-content">
+                                    	<input id="projectCode" value="${projectCode}" style="display: none;">
+                                    	 <div class="clear-float">
+                                            <div class="col-sm-4" style="width:50%">
+                                                <div class="fn-div">
+                                                    <input type="text" class="fn-input" id="teamName" placeholder="班组名称/班组长" style="width:100%"/>
+                                                    </div>
+                                                    
+                                            </div>
+                                            
+                                            <div class="col-sm-4">
+                                                <#button name="搜索" icon="fa-search"
+                                                        clickFun="TeamMaster.searchTeam()"/>
+                                            </div>
+                                        </div>
+                                        <div  id="TeamMasterTableToolbar" role="group">
+                                            <#button name="添加" icon="fa-plus" clickFun="TeamMaster.openAddTeamMaster()"/>
+                                            <#button name="编辑" icon="fa-edit" clickFun="TeamMaster.openTeamMasterDetail()"/>
+                                            <#button name="评价" icon="fa-edit" clickFun="TeamMaster.openProjectContractorEvaluation()"/>
+                                        </div>
+                                        <#table id="TeamMasterTable"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 no-before">
+                                <div class="ap-container">
+                                    <div class="ap-title">
+                                        <span id="teamName"></span>
+                                        <input id="teamSysNo" hidden/>
+                                    </div>
+                                    <div class="row" id="searchForm">
+                                        <div class="clear-float">
+                                            <div class="col-sm-4">
+                                                <div class="fn-div">
+                                                    <label class="fn-label">查询</label>
+                                                    <input type="text" class="fn-input" id="name" placeholder="姓名"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <#button name="搜索" icon="fa-search"
+                                                        clickFun="TeamWorker.search()"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ap-content">
+                                    <div  id="TeamMemberTableToolbar" role="group">
+                                        <#button name="添加" icon="fa-plus" clickFun="TeamMember.openWorkerDialog()"/>
+                                        <#button name="进场" icon="fa-edit" clickFun="TeamWorker.workerJoin()"/>
+                                        <#button name="退场" icon="fa-edit" clickFun="TeamWorker.workerOut()"/>
+                                        <#button name="删除" icon="fa-remove" clickFun="TeamWorker.delete()"/>
+                                        <#button name="设为组长" icon="fa-remove" clickFun="TeamWorker.setTeamLeader()"/>
+                                    </div>
+                                    <#table id="TeamMemberTable"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+</div>
+</div>
+<style>
+    .ap-container .ap-title {
+        height: 40px;
+        line-height: 40px;
+        background-color: #f9f9f9;
+        border: #EEE solid 1px;
+        padding: 0 25px;
+    }
+
+    .ap-container .ap-content {
+        min-height: 400px;
+        border: #EEE solid 1px;
+        border-top: none;
+        padding: 25px;
+    }
+
+    .ap-container .ap-add {
+        width: 40px;
+        text-align: right;
+        float: right;
+        font-size: 24px;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .span-but {
+        padding: 0 5px;
+        cursor: pointer;
+
+    }
+    .btn{
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+</style>
+
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/addMember.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMember.js"></script>
+
+@}

@@ -1,0 +1,54 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>版本管理管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">手机类型</label>
+                                        <select class="fn-input" id="phoneType" name="手机类型">
+                                            <option value="">选择手机类型</option>
+                                            <option value="1">IOS</option>
+                                            <option value="2">安卓</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">App端</label>
+                                        <select class="fn-input" id="kind" name="App端">
+                                            <option value="">选择App端</option>
+                                            <option value="1">企业端</option>
+                                            <option value="2">工人端</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <#button name="搜索" icon="fa-search" clickFun="Version.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+
+                            </div>
+                        </form>
+                        <div  id="VersionTableToolbar" role="group">
+                            <#button name="添加" icon="fa-plus" clickFun="Version.openAddVersion()"/>
+                            <#button name="修改" icon="fa-edit" clickFun="Version.openVersionDetail()" space="true"/>
+                            <#button name="删除" icon="fa-remove" clickFun="Version.delete()" space="true"/>
+                        </div>
+                        <#table id="VersionTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/version/version.js"></script>
+@}

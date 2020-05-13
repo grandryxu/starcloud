@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+@layout("/common/_container.html"){
+
+<html>
+<head>
+    <title>龙信劳务平台</title>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    h1,
+    h2 {
+        padding: 0;
+        margin: 0;
+    }
+
+    .tender__container {
+        background-color: #F5F6FA;
+        min-height: 1080px;
+    }
+
+    .tender__banner {
+        background-image: url('/static/img/banner.png');
+        /* background-size: cover; */
+        background-position: center;
+        height: 400px;
+        position: relative;
+        padding-top: 10px;
+    }
+
+    .tender__title {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 1200px;
+        margin: 0 auto;
+    }
+
+    .tender__title-logo {
+        color: #ffffff;
+    }
+
+    .tender__title-login {
+        width: 88px;
+        height: 32px;
+        background: transparent;
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    .tender__title-register {
+        width: 88px;
+        height: 32px;
+        background-color: #007cff;
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    .tender__banner-h1 {
+        width: 1200px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ffffff;
+        font-size: 48px;
+        font-weight: normal;
+    }
+
+    .tender__main {
+        width: 1200px;
+        margin: 16px auto 0;
+    }
+
+    .tender__main-title {
+        height: 64px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #ffffff;
+        margin-bottom: 2px;
+    }
+
+    .tender__switch {
+        height: 100%;
+        position: relative;
+    }
+
+    .tender__switch-item {
+        float: left;
+        width: 120px;
+        margin: 0 3px;
+        height: 64px;
+        line-height: 64px;
+        text-align: center;
+        cursor: pointer;
+        color: #03081b;
+    }
+
+    .tender__switch-item.active {
+        color: #007cff;
+    }
+
+    .tender__switch-line {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 120px;
+        height: 2px;
+        background-color: #007cff;
+        transition: all .1s linear;
+    }
+
+    .tender__main-search {
+        width: 240px;
+        display: flex;
+        align-items: center;
+        margin-right: 16px;
+    }
+
+    .tender__search-input {
+        width: 200px;
+        height: 16px;
+        outline: none;
+        padding: 8px;
+    }
+
+    .tender__search-botton {
+        width: 40px;
+        height: 36px;
+        background: #007cff;
+        border: 1px solid #007cff;
+        cursor: pointer;
+    }
+
+    .tender__main-table {
+        width: 100%;
+        color: #878a99;
+        font-size: 14px;
+    }
+
+    .tender__main-th {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #ffffff;
+        margin-bottom: 2px;
+    }
+
+    .tender__main-td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #ffffff;
+        margin-bottom: 2px;
+    }
+
+    .tender__main-item {
+        padding: 14px 24px;
+        margin-bottom: 2px;
+        float: left;
+    }
+
+    .tender__main-button {
+        width: 80px;
+        height: 32px;
+        background-color: #007cff;
+        border: none;
+        color: #ffffff;
+    }
+
+    .tender__pagination {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        background-color: #ffffff;
+        padding: 14px 24px;
+        margin-bottom: 2px;
+        color: #878a99;
+        font-size: 14px;
+        float: right;
+    }
+
+    .tender__pagination-item {
+        background-color: transparent;
+        border: none;
+        color: #878a99;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .tender__pagination-content {
+        margin: 0 32px;
+    }
+
+    .tender__pagination-jump {
+        align-items: center;
+
+    }
+
+    .tender__pagination-jump input {
+        width: 40px;
+        height: 24px;
+        outline: none;
+    }
+
+    .tender__title-box {
+        float: right;
+    }
+</style>
+<body>
+    <div class="tender__container">
+        <div class="tender__banner">
+            <div class="tender__title">
+                <img src="/static/img/logo.png">
+                <div class="tender__title-box">
+                    <button class="tender__title-login"id="login">登录</button>
+                    <button class="tender__title-register" id="register">企业注册</button>
+                </div>
+            </div>
+            <h1 class="tender__banner-h1">龙信建设劳务平台</h1>
+        </div>
+        <div class="tender__main">
+            <div class="tender__main-title">
+                <div class="tender__switch">
+                    <div class="tender__switch-item active" onclick="switchChange(0)">招标公告</div>
+                    <div class="tender__switch-item" onclick="switchChange(1)">中标公告</div>
+                    <div class="tender__switch-line"></div>
+                </div>
+
+            </div>
+            <div class="tender__main-table" style="display: block">
+                <div class="tender__main-th" >
+                    <div class="tender__main-item" style="width:30%;">招标内容</div>
+                    <div class="tender__main-item" style="width:14%;">招标方式</div>
+                    <div class="tender__main-item" style="width:14%;">招标单位</div>
+                    <div class="tender__main-item" style="width:16%;">截止时间</div>
+                    <div class="tender__main-item" style="width:14%;">开标时间</div>
+                    <div class="tender__main-item" style="width:12%;">操作</div>
+                </div>
+                <div id="tenderList">
+
+                </div>
+              </div>
+            <div class="tender__main-table" style="display: none">
+                <div class="tender__main-th">
+                    <div class="tender__main-item" style="width:30%;">中标内容</div>
+                    <div class="tender__main-item" style="width:14%;">招标方式</div>
+                    <div class="tender__main-item" style="width:14%;">招标单位</div>
+                    <div class="tender__main-item" style="width:16%;">截止时间</div>
+                    <div class="tender__main-item" style="width:14%;">开标时间</div>
+                    <div class="tender__main-item" style="width:12%;">操作</div>
+                </div>
+                    <div id="fix"></div>
+            </div>
+            <div class="tender__pagination">
+                <button class="tender__pagination-item" onclick="index()">
+                    首页
+                </button>
+                <button class="tender__pagination-item" onclick="prev()">
+                    上一页
+                </button>
+                <button class="tender__pagination-item" onclick="next()">
+                    下一页
+                </button>
+                <button class="tender__pagination-item" onclick="last()">
+                    尾页
+                </button>
+                <span class="tender__pagination-content">
+                    当前第<span id="current"></span>页共<span id="pages"></span>页
+                </span>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4"></script>
+<script>
+    function setNaviBar(current,pages,total){
+           $("#current").html(current);
+           $("#pages").html(pages);
+           $("#total").html(total);
+
+    }
+   function index(){
+        if(type==0){
+            showTenderList(1);
+        }else{
+
+            showTenderFix(1);
+
+        }
+   }
+    function prev(){
+
+            if(type==0){
+                if(tenderCurrent==1){
+                }else{
+                    showTenderList(tenderCurrent-1);
+                }
+            }else{
+                if(fixCurrent==1){
+                }else{
+                    showTenderFix(fixCurrent-1);
+                }
+            }
+    }
+
+    function next(){
+                if(type==0){
+
+                    if(tenderCurrent == tenderPages){
+
+                    }else{
+                            showTenderList(tenderCurrent+1);
+
+                    }
+                }else{
+
+                    if(fixCurrent == fixPages){
+                    }else{
+                        showTenderFix(fixCurrent+1);
+                    }
+
+                }
+
+
+    }
+
+    function last(){
+
+        if(type==0){
+            showTenderList(tenderPages);
+        }else{
+            showTenderFix(fixPages);
+
+        }
+    }
+
+
+
+
+    function switchChange(value) {
+
+        type = value
+        $('.tender__switch-item').removeClass('active');
+        $(this).addClass("active");
+        document.getElementsByClassName('tender__switch-line')[0].style.left = value == 0 ? '0' : value == 1 ? '129px' :
+            '0';
+        $('.tender__main-table').hide();
+        document.getElementsByClassName('tender__main-table')[value].style.display = 'block'
+
+
+        if(type==0){
+            showTenderList(1);
+        }else{
+            showTenderFix(1)
+        }
+
+
+
+    }
+    function bid(data){
+        window.location.href = "./"
+    }
+
+    var tenderCurrent = 1;
+    var tenderPages = 0;
+    var tenderTotal = 0
+    var fixCurrent = 1;
+    var fixPages = 0;
+    var fixTotal = 0;
+    var type =0;
+    function showTenderList(page){
+        $.post(Feng.ctxPath + "/blackboard/dashborad/tender",{"offset":(page-1)*6,"limit":6, "tenderType":"1"},function(data){
+            var html = "";
+            for(var i =0 ;i< data.records.length;i++){
+                var tenderType = data.records[i].tenderType == '' || data.records[i].tenderType == '0' ? '邀标' : '公开招标';
+                var deadline= new Date(Date.parse(data.records[i].deadline));
+                var nowDate= new Date();
+                html = html +  " <div class='tender__main-td' data-id='"+data.records[i].id+"'>"
+                        +"<div class='tender__main-item' style='width:30%;color: #03081b;'>"+data.records[i].fileName+"</div>"
+                        +"<div class='tender__main-item' style='width:14%;'>" + tenderType + "</div>"
+                        +"<div class='tender__main-item' style='width:14%;'>龙信集团</div>"
+                        +"<div class='tender__main-item' style='width:16%;'>"+data.records[i].deadline.slice(0,10)+"</div>"
+                        +"<div class='tender__main-item' style='width:14%;'>"+data.records[i].startTime.slice(0,10)+"</div>"
+                        +"<div class='tender__main-item' style='width:12%;'>";
+                if (nowDate > deadline) {
+                    html = html +  "<button class='tender__main-button' style=\"background-color:#DEDEDE\" disabled=\"disabled\">招标截止</button></div>  </div>"
+                } else {
+                    html = html +  "<button class='tender__main-button' onclick='bid(" + data.records[i].id + ")'>参与投标</button></div>  </div>"
+                }
+            }
+            $("#tenderList").html(html);
+            setNaviBar(data.current,data.pages,data.total)
+            tenderCurrent = data.current;
+            tenderPages = data.pages ;
+            tenderTotal = data.total ;
+            bindTender();
+        })
+    }
+
+    function bindTender(){
+
+        $(".tender__main-td").dblclick(function(e){
+            var index = layer.open({
+                type: 2,
+                title: '招标详情信息',
+                area: ['80%', '80%'], //宽高
+                fix: false, //不固定
+                maxmin: true,
+                skin: 'layer-no-title',
+                content: Feng.ctxPath + '/lx/tendering/homeview?id=' + e.currentTarget.dataset.id
+            });
+            this.layerIndex = index;
+        })
+
+    }
+
+    function showTenderFix(page){
+        $.post(Feng.ctxPath + "blackboard/dashborad/fix",{"offset":(page-1)*6,"limit":6},function(data){
+            console.log(data);
+            var html = "";
+            for(var i =0 ;i< data.records.length;i++){
+                var tenderType = data.records[i].tenderType == '' || data.records[i].tenderType == '0' ? '邀标' : '公开招标';
+                html = html +"<div class='tender__main-td' data-id='"+data.records[i].id+"'>"
+                            +"<div class='tender__main-item' style='width:30%;color: #03081b;'>"+data.records[i].fileName+"</div>"
+                        +" <div class='tender__main-item' style='width:14%;'>" + tenderType + "</div>"
+                        +" <div class='tender__main-item' style='width:14%;'>龙信集团</div>"
+                        +"<div class='tender__main-item' style='width:16%;'>"+data.records[i].deadline.slice(0,10)+"</div>"
+                        +"<div class='tender__main-item' style='width:14%;'>"+data.records[i].startTime.slice(0,10)+"</div>"
+                        +"  <div class='tender__main-item' style='width:12%;'>"
+                        +"     <button class='tender__main-button' data-id='"+data.records[i].id+"'>查看</button>"
+                        +"    </div>"
+                        +" </div>"
+            }
+            $("#fix").html(html);
+            setNaviBar(data.current,data.pages,data.total)
+            fixCurrent = data.current;
+            fixPages = data.pages ;
+            fixTotal = data.total ;
+            bindFix();
+        })
+    }
+
+    function bindFix(){
+        $(".tender__main-td").dblclick(function(e){
+            var index = layer.open({
+                type: 2,
+                title: '招标项目中标公告',
+                area: ['80%', '80%'], //宽高
+                fix: false, //不固定
+                maxmin: false,
+                content: Feng.ctxPath + '/lx/tendering/viewNotice?id=' + e.currentTarget.dataset.id
+            });
+            this.layerIndex = index;
+        });
+
+        $(".tender__main-button").click(function(e){
+            var index = layer.open({
+                type: 2,
+                title: '招标项目中标公告',
+                area: ['80%', '80%'], //宽高
+                fix: false, //不固定
+                maxmin: false,
+                content: Feng.ctxPath + '/lx/tendering/viewNotice?id=' + e.currentTarget.dataset.id
+            });
+            this.layerIndex = index;
+        })
+    }
+
+
+    $(function(){
+        //登录按钮点击事件
+        $("#login").click(function(){
+            window.location.href="/login";
+        })
+        //注册按钮点击事件
+        $("#register").click(function(){
+            window.location.href="/register";
+        })
+        showTenderList(1);
+
+
+    })
+</script>
+
+
+</html>
+
+@}

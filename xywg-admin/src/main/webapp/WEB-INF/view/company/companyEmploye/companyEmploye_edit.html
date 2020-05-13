@@ -1,0 +1,48 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="idCardNumber" name="证件编号" underline="true" requiredFlag="true" />
+                            <#input id="organizationCode" name="公司编码" value="${item.organizationCode}" underline="true"/>
+                            <#input id="job" name="岗位职务" value="${item.job}" underline="true"/>
+                            <#select id="jobType" name="聘用方式" >
+                                <option value="">请输入</option>
+                                <option value="0">全职</option>
+                                <option value="1">其他</option>
+                            </#select>
+                            <#select id="jobStatus" name="状态" >
+                                <option value="">请输入</option>
+                                <option value="0">离职</option>
+                                <option value="1">在职</option>
+                                <option value="2">退休</option>
+                            </#select>
+                            <#input id="hireDate" name="入职日期" underline="true" type="date" disabled="disabled"
+                                clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                            <#input id="terminationDate" name="离职日期" underline="true" type="date" disabled="disabled"
+                                clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                            <#input id="retire_date" name="退休日期" underline="true" type="date" disabled="disabled"
+                                clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="remark" name="备注信息" value="${item.remark}" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="CompanyEmployeInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="CompanyEmployeInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/companyEmploye/companyEmploye_info.js"></script>
+@}

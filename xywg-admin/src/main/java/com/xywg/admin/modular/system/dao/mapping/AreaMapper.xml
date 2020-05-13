@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.AreaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.Area">
+        <id column="id" property="id"/>
+        <result column="areaname" property="areaname"/>
+        <result column="parentid" property="parentid"/>
+        <result column="shortname" property="shortname"/>
+        <result column="areacode" property="areacode"/>
+        <result column="zipcode" property="zipcode"/>
+        <result column="pinyin" property="pinyin"/>
+        <result column="lng" property="lng"/>
+        <result column="lat" property="lat"/>
+        <result column="level" property="level"/>
+        <result column="position" property="position"/>
+        <result column="sort" property="sort"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, areaname, parentid, shortname, areacode, zipcode, pinyin, lng, lat, level, position, sort
+    </sql>
+    <!-- 查询籍贯 yuanyang -->
+    <select id="getBirthPlaceCode" resultType="com.xywg.admin.modular.system.model.Area">
+        select id,
+        shortname
+        from ref_area where parentid =0
+    </select>
+
+    <!-- 根据id查询籍贯名称 yuanyang -->
+    <select id="getShortNameById" resultType="java.lang.String">
+        select
+        shortname
+        from ref_area where id =#{id}
+    </select>
+
+    <!-- 根据id查询籍贯名称 yuanyang -->
+    <select id="getIdByShortName" resultType="java.lang.String">
+        select
+        id
+        from ref_area where shortname =#{shortname} and parentid =0
+    </select>
+
+    <!-- 根据名称查id caiwei -->
+    <select id="getCodeByAreaName" resultType="java.lang.String">
+        select
+        id
+        from ref_area where areaname = #{areaName} or  areaname like CONCAT("%",#{areaName},"区")
+    </select>
+
+
+    <!-- 根据区id查询省市区 caiwei -->
+    <select id="getAreaNameById" resultType="java.lang.String">
+        SELECT
+        CONCAT(rap.areaname , ras.areaname ,ra.areaname)
+        FROM ref_area ra
+        LEFT JOIN ref_area ras ON ras.id = ra.parentid
+        LEFT JOIN ref_area rap ON rap.id = ras.parentid
+        WHERE ra.id =#{areaCode}
+    </select>
+
+    <resultMap id="getAreasAppMap" type="com.xywg.admin.modular.system.model.dto.AreaDto">
+        <result property="id" column="pId"></result>
+        <result property="areaname" column="pName"></result>
+        <collection ofType="com.xywg.admin.modular.system.model.dto.AreaDto" property="areaList">
+            <result property="id" column="cId"></result>
+            <result property="areaname" column="cName"></result>
+            <collection ofType="com.xywg.admin.modular.system.model.dto.AreaDto" property="areaList">
+                <result property="id" column="aId"></result>
+                <result property="areaname" column="aName"></result>
+            </collection>
+        </collection>
+    </resultMap>
+    <!-- 获取所有的省市区 -->
+    <select id="getAreasApp" resultMap="getAreasAppMap">
+        SELECT
+          ra.id AS pId,
+          ra.areaname AS pName,
+          ras.id AS cId,
+          ras.areaname AS cName,
+          rap.id AS aId,
+          rap.areaname AS aName
+        FROM ref_area ra
+        JOIN ref_area ras ON ras.parentid = ra.id
+        LEFT JOIN ref_area rap ON rap.parentid = ras.id
+        WHERE
+		ra.parentid = 0
+    </select>
+
+</mapper>

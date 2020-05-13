@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.report.dao.PersonJoinReportMapper">
+
+
+	<!--统计人员进退场 -->
+	<select id="getReportList" resultType="map">
+		SELECT
+		t1.general_contractor_name AS companyName,
+		t1.project_name AS projectName,
+		t1. NAME AS projectType,
+		IFNULL(t2.joinCount, 0) AS joinCount,
+		IFNULL(t3.outCount, 0) AS outCount,
+		IFNULL(t4.totalCount, 0) AS totalCount,
+		IFNULL(t5.nowCount, 0) AS nowCount
+		FROM
+		(
+		SELECT
+		pw.id,
+		pw.project_code,
+		p.general_contractor_name,
+		p.project_name,
+		p.project_activity_type,
+		t. NAME
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_project_master AS p ON pw.project_code =
+		p.project_code
+		LEFT JOIN (
+		SELECT
+		s.num,
+		s.`name`
+		FROM
+		sys_dict AS s
+		WHERE
+		s.pid = 44
+		) AS t ON p.project_activity_type = t.num
+		WHERE
+		pw.is_del = 0
+		AND pw.organization_code  in 
+		<foreach collection="deptIds" close=")" open="(" separator=","
+			index="index" item="item">
+			#{item}
+		</foreach>
+		GROUP BY
+		pw.project_code
+		) AS t1
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS joinCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status = 2
+		GROUP BY
+		pw.project_code
+		) AS t2 ON t1.project_code = t2.project_code
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS outCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status = 3
+		GROUP BY
+		pw.project_code
+		) AS t3 ON t1.project_code = t3.project_code
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS totalCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status != 1
+		GROUP BY
+		pw.project_code
+		) AS t4 ON t1.project_code = t4.project_code
+		LEFT JOIN (
+		SELECT
+		d.project_code,
+		count(d.id_card_number) AS nowCount
+		FROM
+		(
+		SELECT
+		project_code,
+		id_card_number,
+		id_card_type
+		FROM
+		buss_device_record
+		WHERE
+		1 = 1
+		AND time >= #{searchTime}
+		AND is_valid = 1
+		GROUP BY
+		id_card_number,
+		id_card_type
+		) d
+		GROUP BY
+		d.project_code
+		) AS t5 ON t1.project_code = t5.project_code
+
+	</select>
+
+	<!--导出 -->
+	<select id="getPersonJoinReportsList" resultType="map">
+		SELECT
+		t1.general_contractor_name AS companyName,
+		t1.project_name AS projectName,
+		t1. NAME AS projectType,
+		IFNULL(t2.joinCount, 0) AS joinCount,
+		IFNULL(t3.outCount, 0) AS outCount,
+		IFNULL(t4.totalCount, 0) AS totalCount,
+		IFNULL(t5.nowCount, 0) AS nowCount
+		FROM
+		(
+		SELECT
+		pw.id,
+		pw.project_code,
+		p.general_contractor_name,
+		p.project_name,
+		p.project_activity_type,
+		t. NAME
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_project_master AS p ON pw.project_code =
+		p.project_code
+		LEFT JOIN (
+		SELECT
+		s.num,
+		s.`name`
+		FROM
+		sys_dict AS s
+		WHERE
+		s.pid = 44
+		) AS t ON p.project_activity_type = t.num
+		WHERE
+		pw.is_del = 0
+		AND pw.organization_code  in
+		<foreach collection="deptIds" close=")" open="(" separator=","
+				 index="index" item="item">
+			#{item}
+		</foreach>
+		GROUP BY
+		pw.project_code
+		) AS t1
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS joinCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status = 2
+		GROUP BY
+		pw.project_code
+		) AS t2 ON t1.project_code = t2.project_code
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS outCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status = 3
+		GROUP BY
+		pw.project_code
+		) AS t3 ON t1.project_code = t3.project_code
+		LEFT JOIN (
+		SELECT
+		pw.project_code,
+		COUNT(1) AS totalCount
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0
+		AND pw.join_status != 1
+		GROUP BY
+		pw.project_code
+		) AS t4 ON t1.project_code = t4.project_code
+		LEFT JOIN (
+		SELECT
+		d.project_code,
+		count(d.id_card_number) AS nowCount
+		FROM
+		(
+		SELECT
+		project_code,
+		id_card_number,
+		id_card_type
+		FROM
+		buss_device_record
+		WHERE
+		1 = 1
+		AND LEFT (time, 10) = curdate()
+		AND is_valid = 1
+		GROUP BY
+		id_card_number,
+		id_card_type
+		) d
+		GROUP BY
+		d.project_code
+		) AS t5 ON t1.project_code = t5.project_code
+
+	</select>
+</mapper>

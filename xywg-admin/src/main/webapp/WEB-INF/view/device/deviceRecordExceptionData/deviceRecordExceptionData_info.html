@@ -1,0 +1,39 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input_sjf id="workerName" name="姓名" value="${item.workerName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="deviceSn" name="考勤机sn" value="${item.deviceSn}" underline="true" disabled="disabled" />
+                            <#input_sjf id="idCardType" name="证件类型" value="${item.idCardTypeName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true" disabled="disabled" />
+                            <#input_sjf id="time" name="考勤时间" value="${item.time}" underline="true" disabled="disabled" />
+                            <#input_sjf id="type" name="类型" value="${item.typeName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="lng" name="经度" value="${item.lng}" underline="true" disabled="disabled" />
+                            <#input_sjf id="lat" name="纬度" value="${item.lat}" underline="true" disabled="disabled" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input_sjf id="projectCode" name="项目" value="${item.projectName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="teamSysNo" name="班组" value="${item.teamName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="source" name="来源" value="${item.sourceName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="shId" name="安全帽id" value="${item.shId}" underline="true" disabled="disabled" />
+                            <#input_sjf id="exceptionType" name="异常类型" value="${item.exceptionTypeName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="deviceType" name="考勤类型" value="${item.deviceTypeName}" underline="true" disabled="disabled" />
+                            <#input_sjf id="remark" name="备注" value="${item.remark}" underline="true" disabled="disabled" />
+                </div>
+            </div>
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/device/deviceRecordExceptionData/deviceRecordExceptionData_info.js"></script>
+@}

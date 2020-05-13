@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.SignMapper">
+
+    <select id="getSign" resultType="com.xywg.admin.modular.system.model.Sign">
+        SELECT
+        <include refid="fieldsName"/>
+        FROM buss_sign_up
+        where id=#{signId}
+    </select>
+
+
+    <insert id="insert" parameterType="com.xywg.admin.modular.system.model.Sign" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO buss_sign_up (
+            mobile,
+            type,
+            `code`,
+            register_time,
+            is_able
+        ) VALUES (
+            #{mobile},
+            #{type},
+            #{code},
+            #{registerTime},
+            #{isAble}
+        )
+    </insert>
+
+    <update id="update">
+        update buss_sign_up
+        <set>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="code != null">`code` = #{code},</if>
+
+            <if test="registerTime != null">`register_time` = #{registerTime},</if>
+            <if test="isAble != null">`is_able` = #{isAble},</if>
+        </set>
+        where   1==1
+        <if test="mobile != null and mobile !=''  ">
+           and  mobile = #{mobile}
+        </if>
+        <if test="id != null and id !=''  ">
+            and  id = #{id}
+        </if>
+
+    </update>
+
+
+    <sql id="fieldsName">
+        id,
+        mobile,
+        type,
+        `code`,
+        register_time as registerTime,
+        is_able as isAble
+    </sql>
+
+</mapper>

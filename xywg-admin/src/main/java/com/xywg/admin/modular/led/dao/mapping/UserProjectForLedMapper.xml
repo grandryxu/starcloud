@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.led.dao.UserProjectForLedMapper">
+
+	<!-- 根据项目名称，查询该项目目前的进场人数 -->
+	<select id="getPrjectUserCount" resultType="int">
+		SELECT
+		COUNT(t.id)
+		FROM
+		(SELECT
+		pw.id
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0 AND
+		pw.join_status = 2 AND
+		pw.project_code = (SELECT p.project_code from
+		buss_project_master AS p WHERE p.is_del
+		= 0 AND
+		p.project_name =
+		#{projectName} LIMIT 1
+		)
+		GROUP BY
+		pw.project_code,
+		pw.id_card_number) AS t
+	</select>
+
+	<!-- 存储上传人员信息 -->
+	<insert id="uploadUser">
+		INSERT INTO `led_upload`
+		( `work_id`, `create_date`,
+		`memo` )
+		VALUES
+		( #{workId}, NOW(), #{memo} );
+	</insert>
+
+	<!-- 获取单个人员信息 -->
+	<select id="getUserInfoByIdToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.face AS photo,
+		<!-- w.id_image AS photo, -->
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+		AND pw.project_code = (SELECT project_code
+		FROM buss_project_master WHERE
+		project_name =#{projectName} AND
+		is_del=0 ORDER BY id
+		DESC LIMIT 1 )
+		AND pw.id_card_number = #{idCard}
+		LIMIT 1
+	</select>
+
+	<!-- 根据项目名称，查询出该项目已进场的人员信息 -->
+	<select id="queryUserInfoByNameToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.face AS photo,
+		<!-- w.id_image AS photo, -->
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+		AND pw.project_code = (SELECT project_code
+		FROM buss_project_master WHERE
+		project_name =#{projectName} AND
+		is_del=0 ORDER BY id
+		DESC LIMIT 1 )
+		AND pw.join_status = 2
+
+	</select>
+
+	<!-- 批量查找人员信息 -->
+	<select id="queryUserInfoToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.id_image AS
+		photo,
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS
+		projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT
+		JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN
+		buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code
+		AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num
+		AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+	</select>
+
+	<!-- 统计今日考勤 -->
+	<select id="getCountByProjectNameToLed" resultType="int">
+		SELECT
+		count( t.id_card_number )
+		FROM
+		(
+		SELECT
+		r.id_card_number,
+		r.id_card_type
+
+		FROM
+		buss_device_record AS r
+		WHERE
+		r.project_code = ( SELECT project_code FROM buss_project_master WHERE
+		is_del = 0 AND project_name = #{projectName} ORDER BY id DESC LIMIT 1 )
+		AND
+		LEFT ( time, 10 ) = curdate( )
+		AND is_valid = 1
+		GROUP BY
+		id_card_number,
+		id_card_type
+		) t
+	</select>
+
+	<select id="getRecordByProjectNameToLed" resultType="com.xywg.admin.modular.led.model.Record">
+		SELECT
+		COUNT(1) AS count,
+		work_type_code AS workKind,
+		`name` AS workKindName
+		FROM(
+		SELECT
+		r.id_card_number,
+		r.id_card_type,
+		w.work_type_code,
+		sd.`name`
+		FROM
+		buss_device_record AS r
+		LEFT JOIN buss_worker_master AS w ON r.id_card_type = w.id_card_type AND
+		r.id_card_number = w.id_card_number AND w.is_del = 0
+		LEFT JOIN sys_dict AS sd ON w.work_type_code = sd.num AND sd.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		WHERE
+		r.project_code = ( SELECT project_code FROM buss_project_master WHERE is_del = 0 AND
+		project_name = #{projectName} ORDER BY id DESC LIMIT 1 ) 
+		AND
+		LEFT ( time, 10 ) = curdate( ) 
+		AND
+		r.is_valid = 1
+		GROUP BY
+		r.id_card_number,
+		r.id_card_type
+		) AS d
+		GROUP BY
+		d.work_type_code
+	</select>
+
+
+
+	<!-- 统计今日班组考勤 -->
+	<select id="getCountByProjectCodeToTv" resultType="java.util.Map">
+		SELECT
+
+		bt.team_name AS teamName,
+		bt.team_sys_no AS teamId,
+		(
+		SELECT count(DISTINCT bdr.id_card_number,bdr.id_card_type)
+		FROM
+		buss_team_member btm
+		LEFT JOIN buss_device_record bdr ON bdr.id_card_type = btm.id_card_type
+		AND bdr.id_card_number = btm.id_card_number
+		where 	 bdr.time <![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bdr.time <![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59')
+		AND btm.team_sys_no = bt.team_sys_no
+		) AS teamCheckInPeopleNumber
+		FROM
+		buss_team_master bt
+		where bt.team_sys_no in(select team_sys_no from buss_team_master where project_code=#{projectCode})
+		and bt.is_del=0
+
+	</select>
+	<!-- 工人詳情 -->
+	<select id="getWorkerInfoToTv" resultType="java.util.Map">
+
+
+		SELECT
+		bwm.worker_name AS workerName,
+		bwm.face AS headImage,
+		sd.id AS workKindId,
+		sd.name AS workKindName,
+		tm.team_sys_no AS teamId,
+		tm.team_name AS teamName,
+		bwm.id_card_number AS idCardNumber
+		FROM buss_worker_master bwm
+		LEFT JOIN buss_project_worker bpw ON bpw.id_card_number = bwm.id_card_number AND bpw.id_card_type = bwm.id_card_type
+		LEFT join buss_team_master tm ON bpw.team_sys_no = tm.team_sys_no
+		LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+		AND sd.pid = (
+		SELECT id FROM sys_dict
+		WHERE NAME = '工种字典数据'
+		)
+		WHERE bpw.project_code = #{projectCode} and bpw.is_del=0 and bwm.is_del=0
+		and bwm.id_card_number = #{idCardNumber}
+		GROUP BY bwm.id_card_number, bwm.id_card_type
+	<!-- SELECT
+	bwm.worker_name AS workerName,
+	bwm.face AS headImage,
+	sd.id AS workKindId,
+	sd. NAME AS workKindId,
+	btm.team_sys_no AS teamId,
+	(
+		SELECT
+			team_name
+		FROM
+			buss_team_master
+		WHERE
+			team_sys_no = btm.team_sys_no
+	) AS teamName
+FROM
+	buss_worker_master bwm
+LEFT JOIN buss_project_worker bpw ON bpw.id_card_number = bwm.id_card_number
+AND bpw.id_card_type = bwm.id_card_type
+LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+AND sd.pid = (
+	SELECT
+		id
+	FROM
+		sys_dict
+	WHERE
+		NAME = '工种字典数据'
+)
+LEFT JOIN buss_team_member btm ON btm.id_card_number = bwm.id_card_number
+AND btm.id_card_type = bwm.id_card_type
+WHERE
+	bpw.project_code = #{projectCode} and bpw.is_del=0 and bwm.is_del=0
+and bwm.id_card_number=#{idCardNumber}
+GROUP BY
+	bwm.id_card_number,
+	bwm.id_card_type -->
+
+	</select>
+	<!-- 项目詳情 -->
+	<select id="getProjectInfoToTv" resultType="java.util.Map">
+		SELECT
+		project_name AS projectName,
+		general_contractor_name AS companyName,
+		project_description AS projectAnnouncement
+		FROM
+		buss_project_master
+		WHERE
+		project_code = #{projectCode} and is_del=0
+
+	</select>
+
+
+
+	<select id="getProjectPeopleNumber" resultType="int">
+	SELECT
+	  IFNULL(count(DISTINCT(id_card_number)),0)
+   FROM
+	  buss_project_worker
+   WHERE
+	  project_code = #{projectCode} and is_del=0
+	</select>
+
+	<select id="getPeopleOnTheSpotInfo" resultType="java.util.Map">
+		select a.id_card_number as idCardNumber,a.id_card_type as idCardType
+		from (
+		(SELECT
+		max(bdr.time) as time,
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		FROM
+		buss_device_record bdr
+		LEFT JOIN buss_device bd ON bd.sn = bdr.device_sn
+		WHERE
+		bdr.project_code =#{projectCode}
+		and bdr.time<![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59') and bdr.time<![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bd.is_del=0
+		GROUP BY
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		HAVING bd.type is not null)
+		union all
+		(SELECT
+		max(bdr.time) as time,
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		FROM
+		buss_device_record bdr
+		LEFT JOIN buss_device bd ON bd.sn = bdr.device_sn
+		WHERE
+		bdr.project_code = #{projectCode}
+		and bdr.time<![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59') and bdr.time<![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bd.is_del=0
+		GROUP BY
+		bdr.id_card_number,
+		bdr.id_card_type
+		HAVING bd.type is not null)
+		)a
+		GROUP BY a.time,a.id_card_number,a.id_card_type,a.type
+		HAVING count(1) > 1 and a.type=3
+
+	<!--	select a.id_card_number,a.id_card_type
+		from (
+
+		(SELECT
+		max(bdr.time) as time,
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		FROM
+		buss_device_record bdr
+		LEFT JOIN buss_device bd ON bd.sn = bdr.device_sn
+		WHERE
+		bdr.project_code =#{projectCode}
+		and bdr.time<![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59') and bdr.time<![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bd.is_del=0
+		GROUP BY
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		HAVING bd.type is not null)
+		union all
+		(SELECT
+		max(bdr.time) as time,
+		bdr.id_card_number,
+		bdr.id_card_type,bd.type
+		FROM
+		buss_device_record bdr
+		LEFT JOIN buss_device bd ON bd.sn = bdr.device_sn
+		WHERE
+		bdr.project_code = #{projectCode}
+		and bdr.time<![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59') and bdr.time<![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bd.is_del=0
+		GROUP BY
+		bdr.id_card_number,
+		bdr.id_card_type
+		HAVING bd.type is not null)
+		)a
+		GROUP BY a.time,a.id_card_number,a.id_card_type,a.type
+		HAVING count(1) > 1 and a.type=3   -->
+
+	</select>
+
+	<select id="getCheckInNumber" resultType="int">
+
+
+		select IFNULL(sum(t.number),0) from(select 1 AS number from buss_team_member btm left join buss_device_record bdr ON bdr.id_card_type = btm.id_card_type
+		AND bdr.id_card_number = btm.id_card_number
+		where 	bdr.time <![CDATA[>=]]>CONCAT(#{tTime},' 00:00:00')
+		and bdr.time <![CDATA[<=]]>CONCAT(#{tTime},' 23:59:59')
+		and	bdr.project_code =#{projectCode} and btm.is_del=0
+		group by btm.id_card_number,btm.id_card_type)t
+	</select>
+
+
+	<select id="getProjectEnteryExitPeople" resultType="com.xywg.admin.modular.led.model.Dto.UserProjectForLedDto">
+		(
+		SELECT
+		if(COUNT(b.worker_name)=0,'null',b.worker_name) workerName,
+		if(COUNT(b.face)=0,'null',b.face)headImage,
+		if(COUNT(b.time)=0,0,UNIX_TIMESTAMP(b.time) * 1000)peopleInOrOutTime,
+		if(COUNT(b.team_name)=0,'null',b.team_name)teamName,
+		if(COUNT(b.team_sys_no)=0,'0',b.team_sys_no)teamId,
+		if(COUNT(b.name)=0,'null',b.name)workKindName,
+		if(COUNT(b.num)=0,'0',b.num)workKindId,
+		if(COUNT(b.device_type)=0,'0',b.device_type)deviceType
+		FROM (
+		SELECT
+		bwm.worker_name ,
+		bwm.face ,
+		bdr.TIME,
+		btm.team_name,
+		btm.team_sys_no,
+		sd.NAME,
+		sd.num,
+		bdr.device_type
+		FROM buss_device_record bdr
+		LEFT JOIN buss_worker_master bwm ON bdr.id_card_type=bwm.id_card_type AND bdr.id_card_number=bwm.id_card_number
+		LEFT JOIN buss_project_worker bpw ON bdr.id_card_type=bpw.id_card_type AND bdr.id_card_number=bpw.id_card_number AND bdr.project_code = bpw.project_code
+		LEFT JOIN buss_team_master btm ON btm.team_sys_no=bpw.team_sys_no
+		LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+		AND sd.pid = (
+		SELECT id FROM sys_dict
+		WHERE NAME = '工种字典数据')
+		WHERE bdr.device_type = 3
+		AND bdr.project_code = #{projectCode}
+		ORDER BY bdr.time DESC LIMIT 0,#{number}
+		)b
+		)
+		UNION all(
+		SELECT  if(COUNT(a.worker_name)=0,'null',a.worker_name) workerName,
+		if(COUNT(a.face)=0,'null',a.face)headImage,
+		if(COUNT(a.time)=0,0,UNIX_TIMESTAMP(a.time) * 1000)peopleInOrOutTime,
+		if(COUNT(a.team_name)=0,'null',a.team_name)teamName,
+		if(COUNT(a.team_sys_no)=0,'0',a.team_sys_no)teamId,
+		if(COUNT(a.name)=0,'null',a.name)workKindName,
+		if(COUNT(a.num)=0,'0',a.num)workKindId,
+		if(COUNT(a.device_type)=0,'0',a.device_type)deviceType
+		FROM (SELECT
+		bwm.worker_name ,
+		bwm.face,
+		bdr.TIME,
+		btm.team_name,
+		btm.team_sys_no,
+		sd.NAME,
+		sd.num,
+		bdr.device_type
+		FROM buss_device_record bdr
+		left join buss_worker_master bwm on bdr.id_card_type=bwm.id_card_type and bdr.id_card_number=bwm.id_card_number
+		left join buss_project_worker bpw on bdr.id_card_type=bpw.id_card_type and bdr.id_card_number=bpw.id_card_number
+		and bdr.project_code = bpw.project_code
+		left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+		LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+		AND sd.pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' )
+		WHERE bdr.device_type = 4
+		AND bdr.project_code =#{projectCode}
+		ORDER BY bdr.TIME  DESC
+		LIMIT 0,#{number}
+		)a
+		)
+		<!--	(
+            SELECT
+                bwm.worker_name AS workerName,
+                bwm.face AS headImage,
+                bdr.time AS peopleInOrOutTime,
+                btm.team_name AS teamName,
+                btm.team_sys_no AS teamId,
+                sd.name AS workKindName,
+                sd.num AS workKindId,
+                bdr.device_type
+            FROM
+                buss_device_record bdr
+        left join buss_worker_master bwm
+        on bdr.id_card_type=bwm.id_card_type
+        and bdr.id_card_number=bwm.id_card_number
+
+
+        left join buss_project_worker bpw
+        on bdr.id_card_type=bpw.id_card_type
+        and bdr.id_card_number=bpw.id_card_number
+        and bdr.project_code = bpw.project_code
+
+
+        left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+
+        LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+        AND sd.pid = (
+            SELECT
+                id
+            FROM
+                sys_dict
+            WHERE
+                NAME = '工种字典数据'
+        )
+
+
+            WHERE
+                bdr.device_type = 3
+            AND bdr.project_code =#{projectCode}
+            ORDER BY
+                bdr.time DESC
+            LIMIT 0,
+            #{number}
+        )
+        UNION
+            (
+                SELECT
+                bwm.worker_name AS workerName,
+                bwm.face AS headImage,
+                bdr.time AS peopleInOrOutTime,
+                btm.team_name AS teamName,
+                btm.team_sys_no AS teamId,
+                sd.name AS workKindName,
+                sd.num AS workKindId,bdr.device_type
+            FROM
+                buss_device_record bdr
+        left join buss_worker_master bwm
+        on bdr.id_card_type=bwm.id_card_type
+        and bdr.id_card_number=bwm.id_card_number
+
+
+        left join buss_project_worker bpw
+        on bdr.id_card_type=bpw.id_card_type
+        and bdr.id_card_number=bpw.id_card_number
+         and bdr.project_code = bpw.project_code
+
+
+        left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+
+        LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+        AND sd.pid = (
+            SELECT
+                id
+            FROM
+                sys_dict
+            WHERE
+                NAME = '工种字典数据'
+        )
+
+
+            WHERE
+                bdr.device_type = 4
+            AND bdr.project_code =#{projectCode}
+            ORDER BY
+                bdr.time DESC
+            LIMIT 0,
+            #{number}
+            )
+            </select>
+
+            <select id="getProjectEnteryExitPeopleThree" resultType="java.util.Map">
+
+                SELECT
+                bwm.worker_name AS workerName,
+                bwm.face AS headImage,
+                bdr.time AS peopleInOrOutTime,
+                btm.team_name AS teamName,
+                btm.team_sys_no AS teamId,
+                sd.name AS workKindName,
+                sd.num AS workKindId,
+                bdr.device_type
+                FROM
+                buss_device_record bdr
+                left join buss_worker_master bwm
+                on bdr.id_card_type=bwm.id_card_type
+                and bdr.id_card_number=bwm.id_card_number
+
+
+                left join buss_project_worker bpw
+                on bdr.id_card_type=bpw.id_card_type
+                and bdr.id_card_number=bpw.id_card_number
+                AND bdr.project_code = bpw.project_code
+                AND bpw.is_del=0
+
+                left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+
+                LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+                AND sd.pid = (
+                SELECT
+                id
+                FROM
+                sys_dict
+                WHERE
+                NAME = '工种字典数据'
+                )
+
+
+                WHERE
+                 bdr.project_code =#{projectCode}
+                ORDER BY
+                bdr.time DESC
+                LIMIT 0,
+                #{number}
+        -->
+	</select>
+
+
+	<select id="getProjectPeopleNumberByName" resultType="int">
+		SELECT COUNT(a.id_card_number) FROM
+		(
+			SELECT p.id_card_number
+		   FROM buss_project_worker p
+		   LEFT JOIN buss_project_master m ON p.project_code = m.project_code
+		   WHERE m.project_name =#{projectName}
+			AND p.is_del=0 AND m.is_del = 0   GROUP BY p.id_card_number
+	   )a
+	</select>
+
+	<select id="queryPeronByled" resultType="java.util.Map">
+			SELECT a.id_card_number AS idCardNumber,a.id_card_type AS idCardType
+			FROM (
+					(
+						SELECT MAX(bdr.time) AS TIME,
+								bdr.id_card_number,
+								bdr.id_card_type,bdr.device_type AS type
+						FROM buss_device_record bdr
+						LEFT JOIN buss_project_master p ON bdr.project_code = p.project_code
+						WHERE p.project_name =#{projectName}
+							  and LEFT(bdr.time,10)= #{tTime}
+						GROUP BY bdr.id_card_number, bdr.id_card_type,bdr.device_type
+						HAVING bdr.device_type IS NOT NULL
+					)
+			UNION ALL
+					(
+							SELECT MAX(bdr.time) AS TIME,
+									bdr.id_card_number,
+									bdr.id_card_type,
+									bdr.device_type AS type
+							FROM buss_device_record bdr
+							LEFT JOIN buss_project_master p ON bdr.project_code = p.project_code
+							WHERE p.project_name =#{projectName}
+							     and LEFT(bdr.time,10)=#{tTime}
+						GROUP BY
+								bdr.id_card_number,
+								bdr.id_card_type
+						HAVING bdr.device_type IS NOT NULL
+				 )
+			)a
+			GROUP BY a.time,a.id_card_number,a.id_card_type,a.type
+			HAVING COUNT(1) > 1 AND a.type=3
+	</select>
+
+
+	<select id="getCheckInNumberByName" resultType="int">
+		 select IFNULL(sum(t.number),0)
+		  from(
+  			select 1 AS number
+			  from buss_team_member btm
+			  left join buss_device_record bdr ON bdr.id_card_type = btm.id_card_type
+			  LEFT JOIN buss_project_master m ON bdr.project_code = m.project_code
+				AND bdr.id_card_number = btm.id_card_number
+				where
+				 LEFT(bdr.time,10)  =#{tTime}
+				and	m.project_name =#{projectName} and btm.is_del=0
+				GROUP by btm.id_card_number,btm.id_card_type)t
+
+	</select>
+	<select id="getWorkerInfoByDay" resultType="com.xywg.admin.modular.led.model.Dto.UserProjectForLedDto">
+					SELECT
+				bdr.id_card_type AS idCardType,
+				bdr.id_card_number AS idCardNumber
+		FROM buss_device_record bdr
+		WHERE	bdr.project_code = #{projectCode}
+		      and LEFT(bdr.time,10) =#{tTime}
+				GROUP BY bdr.id_card_number, bdr.id_card_type
+
+	</select>
+
+	<select id="getProjectEnteryExitPeopleThree" resultType="java.util.Map">
+
+		SELECT
+		bwm.worker_name AS workerName,
+		bwm.face AS headImage,
+		bdr.time AS peopleInOrOutTime,
+		btm.team_name AS teamName,
+		btm.team_sys_no AS teamId,
+		sd.name AS workKindName,
+		sd.num AS workKindId,
+		bdr.device_type as deviceType
+		FROM
+		buss_device_record bdr
+		left join buss_worker_master bwm
+		on bdr.id_card_type=bwm.id_card_type
+		and bdr.id_card_number=bwm.id_card_number
+
+
+		left join buss_project_worker bpw
+		on bdr.id_card_type=bpw.id_card_type
+		and bdr.id_card_number=bpw.id_card_number
+		AND bdr.project_code = bpw.project_code
+		AND bpw.is_del=0
+
+		left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+
+		LEFT JOIN sys_dict sd ON bpw.work_type_code = sd.num
+		AND sd.pid = (
+		SELECT
+		id
+		FROM
+		sys_dict
+		WHERE
+		NAME = '工种字典数据'
+		)
+
+
+		WHERE
+		 bdr.project_code =#{projectCode}
+		ORDER BY
+		bdr.time DESC
+		LIMIT 0,
+		#{number}
+	</select>
+
+	<select id="getProjectByMac" resultType="java.util.Map">
+			SELECT
+			m.project_code AS projectCode,
+			p.area_code AS cityCode
+		FROM  buss_project_mac m
+		LEFT JOIN buss_project_master p  ON p.project_code = m.project_code
+		WHERE m.is_del = 0 AND p.is_del = 0 AND m.mac = #{mac}
+	</select>
+</mapper>

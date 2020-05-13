@@ -1,0 +1,120 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>企业详情</h5>
+            </div>
+            <div class="tabs-container">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a data-toggle="tab" href="#constructionInfo" aria-expanded="true"> 企业基础信息</a>
+                    </li>
+                    <li class="">
+                        <a data-toggle="tab" href="#constructionEvaluate" aria-expanded="false">企业评价</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="constructionInfo" class="tab-pane active">
+                        <div class="panel-body">
+                            <div class="ibox-content">
+                                <div class="form-horizontal">
+
+                                    <input type="hidden" id="id" value="${item.id}">
+
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <#input_sjf id="companyName" name="企业名称" value="${item.companyName}" underline="false" disabled="disabled"/>
+                                            <#select_sjf id="organizationType" name="单位性质" underline="false" value="${item.organizationType}" disabled="disabled">
+                                                @for(i in organizationType){
+                                                @if(i.num+""==item.organizationType+""){
+                                                <option value="${i.num}" selected>${i.name}</option>
+                                                @}else{
+                                                <option value="${i.num}">${i.name}</option>
+                                                @}
+                                                @}
+                                            </#select_sjf>
+                                            <#input_sjf id="organizationCode" name="组织机构编号" value="${item.organizationCode}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="bizRegisterCode" name="工商营业执照号" value="${item.bizRegisterCode}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="socialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="areaCode" name=" 地区" value="${item.areaName}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="address" name="营业地址" value="${item.address}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="zipCode" name="邮政编码" value="${item.zipCode}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="phoneNumber" name="办公电话" value="${item.phoneNumber}"  disabled="disabled"/>
+
+
+
+
+
+
+
+
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <#input_sjf id="representativeName" name="法定代表人" value="${item.representativeName}" underline="false" disabled="disabled"/>
+                                            <#select_sjf id="representativeIdcardType" name="证件类型" underline="false" disabled="disabled">
+                                                @for(item in representativeIdcardType){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </#select_sjf>
+                                            <#input_sjf id="representativeIdcardNumber" name="证件号码" value="${item.representativeIdcardNumber}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="email" name="企业联系邮箱" value="${item.email}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="capitalCurrency" name="币种" value="${item.capitalCurrencyName}" underline="false" disabled="disabled"/>
+                                            <#input_sjf id="establishDate" name="成立日期" value="${item.establishDate}" underline="false" disabled="disabled"/>
+                                            <#select_sjf id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="false" disabled="disabled">
+                                                @for(item in businessStatus){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </#select_sjf>
+                                            <#textarea_sjf id="memo" name="企业备注" underline="true" value="${item.memo}" disabled="disabled"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div id="constructionEvaluate" class="tab-pane">
+                        <div class="ibox-content">
+
+                            <div class="row row-lg">
+                                <div class="col-sm-12 evaluation-table-sss">
+                                    <div id="ConstructionEvaluateTableToolbar" role="group">
+                                        @if(shiro.hasPermission("/constructionEvaluate/add")){
+                                        <#button name="添加" icon="fa-plus" clickFun="ConstructionEvaluate.openAddConstructionEvaluate()"/>
+                                        @}
+                                        @if(shiro.hasPermission("/constructionEvaluate/update")){
+                                        <#button name="修改" icon="fa-edit" clickFun="ConstructionEvaluate.openConstructionEvaluateDetail()" space="true"/>
+                                        @}
+                                        @if(shiro.hasPermission("/constructionEvaluate/delete")){
+                                        <#button name="删除" icon="fa-remove" clickFun="ConstructionEvaluate.delete()" space="true"/>
+                                        @}
+                                    </div>
+                                    <input id="projectCode" value="${projectCode}" hidden="hidden">
+                                    <#table id="ConstructionEvaluateTable"/>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet"> -->
+<link href="/static/js/plugins/bootstrapStarRating/css/star-rating.css" media="all" rel="stylesheet" type="text/css" />
+<script src="/static/js/plugins/bootstrapStarRating/js/star-rating.js" type="text/javascript"></script>
+
+<script src="${ctxPath}/static/modular/company/constructionEvaluate/constructionEvaluate.js"></script>
+@}

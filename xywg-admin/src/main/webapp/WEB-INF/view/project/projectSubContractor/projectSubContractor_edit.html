@@ -1,0 +1,60 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="page" value="ZBXM">
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="projectName" name="项目名称" underline="true" value="${item.projectName}"/>
+                    <#input id="organizationName" name="企业名称" underline="true" value="${item.companyName}"/>
+                    <#select id="contractorType" name="参建类型" underline="true" >
+                        @for(i in contractorType){
+                        @if(i.num==item.contractorType){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select>
+
+                    <#input id="entryTime" name="进场时间" underline="true" clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" value="${item.entryTime}"/>
+                    <#input id="exitTime" name="退场时间" underline="true" clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" value="${item.exitTime}"/>
+                    <#input id="bankName" name="发放工资的银行名称" underline="true" value="${item.bankName}"/>
+                    <#input id="bankLinkNumber" name="银行联号" underline="true" value="${item.bankLinkNumber}"/>
+                    <#input id="bankNumber" name="发放工资的共管银行账户" value="${item.bankNumber}"/>
+                    <#input id="payMode" name="工资发放模式" underline="true" value="${item.payMode}"/>
+                    <#input id="pmName" name="项目经理名称" underline="true" value="${item.pmName}"/>
+                    <#select id="pmIdcardType" name="身份类型" underline="true" >
+                        @for(i in pmIdcardType){
+                        @if(i.num==item.pmIdcardType){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select>
+                    <#input id="pmIdcardNumber" name="身份证号码" underline="true" value="${item.pmIdcardNumber}"/>
+                    <#input id="pmPhone" name="项目经理电话" underline="true" value="${item.pmPhone}"/>
+
+                </div>
+
+                <div class="col-sm-6">
+                    <#input id="projectCode" name="项目编号" underline="true" value="${item.projectCode}"/>
+                    <#input id="organizationCode" name="企业组织机构代码" underline="true" value="${item.organizationCode}"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectSubContractorInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectSubContractorInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectSubContractor/projectSubContractor_info.js"></script>
+@}

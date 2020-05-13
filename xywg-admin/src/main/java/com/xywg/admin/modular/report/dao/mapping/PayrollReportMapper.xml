@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.report.dao.PayrollReportMapper">
+
+
+     <!--根据社会信用统一代码获取工资统计-->
+    <select id="getReportListByOrganizationCodeList" resultType="com.xywg.admin.modular.report.model.PayrollReport">
+        select
+        f.project_code as projectCode,
+        m.project_name as projectName,
+        m.project_activity_type as projectActivityType,
+        sd.name as projectActivityTypeVal,
+        sum(f.pay_amount) as payAmount,
+        sum(f.actual_amount) as actualAmount,
+        sum(f.balance_amount) as balanceAmount
+        from buss_pay_roll_flow	f
+        left join buss_project_master m on m.project_code=f.project_code and  m.is_del=0
+        left  join  sys_dict sd  on    num = m.project_activity_type  and sd.pid=(select id from sys_dict d2 where pid=0 and `name`="项目活动类型")
+        where  f.is_del=0
+        and   f.organization_code in
+        <foreach collection="deptIds" item="item" index="index" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        GROUP BY f.project_code
+    </select>
+
+
+    <select id="getDetailByProjectCodeAndWorkerInfo" resultType="com.xywg.admin.modular.report.model.WorkerPayrollDetailReport">
+        select
+        m.worker_name as workerName,
+        f.id_card_type as idCardType,
+        f.id_card_number as idCardNumber,
+        m.cell_phone as cellPhone,
+        f.project_code as projectCode,
+        pm.project_name as projectName,
+        (
+        select count(1) from buss_device_record rd where rd.project_code = #{map.projectCode}
+        and  rd.id_card_type=f.id_card_type and rd.id_card_number=f.id_card_number
+        )as countDays,
+        sum(f.pay_amount) as payAmount,
+        sum(f.actual_amount) as actualAmount,
+        sum(f.balance_amount) as balanceAmount
+        from 	buss_pay_roll_flow f
+        LEFT JOIN  buss_worker_master  m  on m.id_card_type=f.id_card_type and m.id_card_number=f.id_card_number  and  m.is_del=0
+        LEFT JOIN  buss_project_master pm  on pm.project_code=f.project_code and  pm.is_del=0
+        where f.is_del=0 and   f.project_code=#{map.projectCode}
+        <if test=" map.size()>0  and  map.workerInfo != null and  map.workerInfo != ''  ">
+            and (
+            m.worker_name like CONCAT('%',#{map.workerInfo},'%')
+            or  m.id_card_number like CONCAT('%',#{map.workerInfo},'%')
+            or  m.cell_phone  like CONCAT('%',#{map.workerInfo},'%')
+            )
+        </if>
+        GROUP BY f.id_card_type,f.id_card_number
+    </select>
+    <!--导出-->
+    <select id="getExportList" resultType="map">
+        select
+        f.project_code as projectCode,
+        m.project_name as projectName,
+        m.project_activity_type as projectActivityType,
+        sd.name as projectActivityTypeVal,
+        sum(f.pay_amount) as payAmount,
+        sum(f.actual_amount) as actualAmount,
+        sum(f.balance_amount) as balanceAmount
+        from buss_pay_roll_flow	f
+        left join buss_project_master m on m.project_code=f.project_code and  m.is_del=0
+        left  join  sys_dict sd  on    num = m.project_activity_type  and sd.pid=(select id from sys_dict d2 where pid=0 and `name`="项目活动类型")
+        where  f.is_del=0
+        and   f.organization_code in
+        <foreach collection="deptIds" item="item" index="index" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        GROUP BY f.project_code
+    </select>
+</mapper>

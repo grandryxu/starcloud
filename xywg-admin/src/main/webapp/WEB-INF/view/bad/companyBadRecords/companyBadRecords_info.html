@@ -1,0 +1,42 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="page" value="view"/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" disabled="true" underline="true"/>
+                    <#input_sjf id="companyName" name="企业名称" value="${item.companyName}" disabled="true" underline="true"/>
+                    <#input_sjf id="socialCreditNumber" name="社会信用代码" value="${item.organizationCode}" underline="true" disabled="true"/>
+                    <#select_sjf id="badRecordTypeCode" name="事件类别" underline="true" requiredFlag="true" disabled="true">
+                        @for(i in dictBadRecordTypeCode){
+                        @if(i.num==parseInt(item.badRecordTypeCode)){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="badRecordLevelType" name="事件级别" underline="true" requiredFlag="true" disabled="true">
+                        @for(i in dictBadRecordLevelType){
+                        @if(i.num==item.badRecordLevelType){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+
+                </div>
+                <div class="col-sm-6">
+                    <#input_sjf id="occurrenceDate" name="发生时间" value ="${item.occurrenceDate}" underline="true"  requiredFlag="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" disabled="true"/>
+                    <#textarea_sjf id="reason" name="不良记录原因" value="${item.reason}" underline="true" disabled="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/companyBadRecords/companyBadRecords_info.js"></script>
+@}

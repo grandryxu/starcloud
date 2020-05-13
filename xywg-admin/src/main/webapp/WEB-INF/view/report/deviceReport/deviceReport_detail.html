@@ -1,0 +1,47 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <input type="hidden" value="${sid}" id="sid">
+        <input type="hidden" value="${sday}" id="sday">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5></h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="col-sm-10">
+                            <h3>日期：${datas.nowDate}</h3>
+                            <table border="1" width="400" height="150">
+                                <tr>
+                                    <td align="center" valign="middle">员工姓名</td>
+                                    <td align="center" valign="middle">证件类型</td>
+                                    <td align="center" valign="middle">证件号码</td>
+                                </tr>
+                                <tr>
+                                    <td align="center" valign="middle">${datas.workerName}</td>
+                                    <td align="center" valign="middle">${datas.idCardType}</td>
+                                    <td align="center" valign="middle">${datas.idCardNumber}</td>
+                                </tr>
+                                <tr>
+                                    <td align="center" valign="middle">有效时长</td>
+                                    <td align="center" valign="middle">开始时间</td>
+                                    <td align="center" valign="middle">结束时间</td>
+                                </tr>
+                                <tr>
+                                    <td align="center" valign="middle">${datas.totalTime}</td>
+                                    <td align="center" valign="middle">${datas.startTime}</td>
+                                    <td align="center" valign="middle">${datas.endTime}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <#table id="DeviceReportTable1"/>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/report/deviceReport/deviceReportDetail.js"></script>
+@}

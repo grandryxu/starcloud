@@ -1,0 +1,248 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="tabs-container">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#companyInfo" aria-expanded="true">企业信息</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#certifications" aria-expanded="false">企业资质</a>
+                </li>
+                <li class="">
+                    <a data-toggle="tab" href="#projectHistory" aria-expanded="false">项目记录</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="companyInfo" class="tab-pane active">
+                    <div class="panel-body">
+                        <div class="ibox-content">
+                            <div class="form-horizontal">
+
+                                <input type="hidden" id="id" value="${item.id}">
+
+                                <div class="row">
+                                    <div class="col-sm-6 b-r">
+                                        <#input id="companyName" name="企业名称" value="${item.companyName}" underline="true" disabled="disabled"/>
+                                        <#input id="organizationCode" name="组织机构编号" value="${item.organizationCode}" underline="true" disabled="disabled"/>
+                                        <#input id="socialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="true" disabled="disabled"/>
+                                        <#input id="areaCode" name=" 注册地区" value="${item.areaCode}" underline="true" disabled="disabled"/>
+                                        <#input id="representativeName" name="法定代表人" value="${item.representativeName}" underline="true" disabled="disabled"/>
+                                        <#select id="representativeIdcardType" name="证件类型" underline="true" disabled="disabled">
+                                            @for(item in representativeIdcardType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </#select>
+                                        <#input id="zipCode" name="邮政编码" value="${item.zipCode}" underline="true" disabled="disabled"/>
+                                        <#input id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="true" disabled="disabled"/>
+                                        <#input id="phoneNumber" name="办公电话" value="${item.phoneNumber}"  disabled="disabled"/>
+                                        <#input id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="true" disabled="disabled"/>
+                                        <#input id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="true" disabled="disabled"/>
+                                        <#input id="email" name="企业联系邮箱" value="${item.email}" underline="true" disabled="disabled"/>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <#select id="organizationType" name="单位性质" underline="true" value="${item.organizationType}" disabled="disabled">
+                                            @for(item in organizationType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </#select>
+                                        <#select id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="true" disabled="disabled">
+                                            @for(item in businessStatus){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </#select>
+                                        <#input id="bizRegisterCode" name="工商营业执照号" value="${item.bizRegisterCode}" underline="true" disabled="disabled"/>
+                                        <#input id="address" name="营业地址" value="${item.address}" underline="true" disabled="disabled"/>
+                                        <label>法人联系电话</label>
+                                        <#input id="representativeIdcardNumber" name="证件号码" value="${item.representativeIdcardNumber}" underline="true" disabled="disabled"/>
+                                        <#input id="establishDate" name="成立日期" value="${item.establishDate}" underline="true" disabled="disabled"/>
+                                        <#input id="capitalCurrency" name="币种" value="${item.capitalCurrency}" underline="true" disabled="disabled"/>
+                                        <#input id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="true" disabled="disabled"/>
+                                        <#input id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="true" disabled="disabled"/>
+                                        <#input id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="true" disabled="disabled"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <#input id="memo" name="企业备注" value="${item.memo}" underline="true" disabled="disabled"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="certifications" class="tab-pane">
+                    <div class="panel-body">
+                        <div class="ibox-content">
+                            <div class="form-horizontal">
+                                <input type="hidden" id="" value="">
+                                <div class="row row-lg">
+                                    <div class="col-sm-12">
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <#input id="abc" name="企业名称" value="${item.organizationCode}" underline="true" disabled="disabled"/>
+                                                <#NameCon id="condition" name="名称" />
+                                                <label class="col-sm-3 control-label">证书类型：</label>
+                                                <select class="form-control" id="certificationType" name="证书类型" underline="true">
+                                                    <option value="">请选择</option>
+                                                    @for(item in certificationType){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                                <label class="col-sm-3 control-label">企业资质证书状态：</label>
+                                                <select class="form-control" id="certificationStatus" name="企业资质证书状态" underline="true">
+                                                    <option value="">请选择</option>
+                                                    @for(item in certificationStatus){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                                <label class="col-sm-3 control-label">最近发放时间：</label>
+                                                <div class="input-daterange input-group" id="datepicker">
+                                                    <input class="form-control" id="startDate12" name="establishDate"
+                                                           type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                                    <span class="input-group-addon">-</span>
+                                                    <input class="form-control" id="endDate12" name="establishDate"
+                                                           type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <#button name="搜索" icon="fa-search" clickFun="SubContractorCertifications.search()"/>
+                                            </div>
+                                        </div>
+                                        <!--<div class="hidden-xs" id="SubContractorCertificationsTableToolbar"
+                                             role="group">
+                                            @if(shiro.hasPermission("/subContractorCertifications/add")){
+                                            <#button name="添加" icon="fa-plus" clickFun="SubContractorCertifications.openAddSubContractorCertifications()"/>
+                                            @}
+                                            @if(shiro.hasPermission("/subContractorCertifications/update")){
+                                            <#button name="修改" icon="fa-edit" clickFun="SubContractorCertifications.openSubContractorCertificationsDetail()" space="true"/>
+                                            @}
+                                            @if(shiro.hasPermission("/subContractorCertifications/delete")){
+                                            <#button name="删除" icon="fa-remove" clickFun="SubContractorCertifications.delete()" space="true"/>
+                                            @}
+                                        </div>-->
+                                        <#table id="SubContractorCertificationsTable"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="projectHistory" class="tab-pane">
+                    <div class="panel-body">
+                        <div class="ibox-content">
+                            <div class="row row-lg">
+                                <div class="col-sm-12">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <#NameCon id="condition" name="名称" />
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <#select id="projectStatus" name="项目状态" underline="true" >
+                                                <option value="">请选择</option>
+                                                @for(item in projectStatus){
+                                                <option value="${item.num}">${item.name}</option>
+                                                @}
+                                            </#select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            进场时间<input class="form-control" id="startDate" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">--
+                                            <input class="form-control" id="endDate" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            退场时间<input class="form-control" id="startDate1" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">--
+                                            <input class="form-control" id="endDate1" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <#button name="搜索" icon="fa-search" clickFun="ProjectSubContractor.search()"/>
+                                        </div>
+                                    </div>
+                                    <div  id="ProjectSubContractorTableToolbar" role="group">
+                                        @if(shiro.hasPermission("/projectSubContractor/add")){
+                                        <#button name="添加" icon="fa-plus" clickFun="ProjectSubContractor.openAddProjectSubContractor()"/>
+                                        @}
+                                        @if(shiro.hasPermission("/projectSubContractor/update")){
+                                        <#button name="修改" icon="fa-edit" clickFun="ProjectSubContractor.openProjectSubContractorDetail()" space="true"/>
+                                        @}
+                                        @if(shiro.hasPermission("/projectSubContractor/delete")){
+                                        <#button name="删除" icon="fa-remove" clickFun="ProjectSubContractor.delete()" space="true"/>
+                                        @}
+                                        @if(shiro.hasPermission("/projectSubContractor/changeState")){
+                                        <#button name="启用" icon="fa-check-circle" clickFun="ProjectSubContractor.changeState(1)" space="true"/>
+                                        @}
+                                        @if(shiro.hasPermission("/projectSubContractor/changeState")){
+                                        <#button name="禁用" icon="fa-remove" clickFun="ProjectSubContractor.changeState(2)" space="true"/>
+                                        @}
+
+                                        <#button name="评价" icon="fa-remove" clickFun="ProjectSubContractor.openProjectContractorEvaluation()" space="true"/>
+
+                                    </div>
+                                    <#table id="ProjectSubContractorTable"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--<div class="form-horizontal">
+
+        <input type="hidden" id="id" value="${item.id}">
+
+        <div class="row">
+            <div class="col-sm-6 b-r">
+                <#input id="companyName" name="企业名称" value="${item.companyName}" underline="true" disabled="disabled"/>
+                <#input id="organizationCode" name="组织机构编号" value="${item.organizationCode}" underline="true" disabled="disabled"/>
+                <#input id="socialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="true" disabled="disabled"/>
+                <#input id="areaCode" name=" 注册地区" value="${item.areaCode}" underline="true" disabled="disabled"/>
+                <#input id="representativeName" name="法定代表人" value="${item.representativeName}" underline="true" disabled="disabled"/>
+                <#select id="representativeIdcardType" name="证件类型" underline="true" disabled="disabled">
+                    @for(item in representativeIdcardType){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                </#select>
+                <#input id="zipCode" name="邮政编码" value="${item.zipCode}" underline="true" disabled="disabled"/>
+                <#input id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="true" disabled="disabled"/>
+                <#input id="phoneNumber" name="办公电话" value="${item.phoneNumber}"  disabled="disabled"/>
+                <#input id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="true" disabled="disabled"/>
+                <#input id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="true" disabled="disabled"/>
+                <#input id="email" name="企业联系邮箱" value="${item.email}" underline="true" disabled="disabled"/>
+            </div>
+
+            <div class="col-sm-6">
+                <#select id="organizationType" name="单位性质" underline="true" value="${item.organizationType}" disabled="disabled">
+                    @for(item in organizationType){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                </#select>
+                <#select id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="true" disabled="disabled">
+                    @for(item in businessStatus){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                </#select>
+                <#input id="bizRegisterCode" name="工商营业执照号" value="${item.bizRegisterCode}" underline="true" disabled="disabled"/>
+                <#input id="address" name="营业地址" value="${item.address}" underline="true" disabled="disabled"/>
+                <label>法人联系电话</label>
+                <#input id="representativeIdcardNumber" name="证件号码" value="${item.representativeIdcardNumber}" underline="true" disabled="disabled"/>
+                <#input id="establishDate" name="成立日期" value="${item.establishDate}" underline="true" disabled="disabled"/>
+                <#input id="capitalCurrency" name="币种" value="${item.capitalCurrency}" underline="true" disabled="disabled"/>
+                <#input id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="true" disabled="disabled"/>
+                <#input id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="true" disabled="disabled"/>
+                <#input id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="true" disabled="disabled"/>
+            </div>
+        </div>
+
+        <div>
+            <#input id="memo" name="企业备注" value="${item.memo}" underline="true" disabled="disabled"/>
+        </div>
+    </div>-->
+
+</div>
+
+<script src="${ctxPath}/static/modular/company/subContractor/subContractor_info.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/subContractorCertifications.js"></script>
+<script src="${ctxPath}/static/modular/company/subContractor/projectSubContractor.js"></script>
+@}

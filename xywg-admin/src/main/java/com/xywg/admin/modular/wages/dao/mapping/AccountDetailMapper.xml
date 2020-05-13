@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.AccountDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.AccountDetail">
+        <id column="id" property="id"/>
+        <result column="account_id" property="accountId"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="record_day" property="recordDay"/>
+        <result column="type" property="type"/>
+        <result column="unit" property="unit"/>
+        <result column="price" property="price"/>
+        <result column="number" property="number"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="reward_amount" property="rewardAmount"/>
+        <result column="punish_amount" property="punishAmount"/>
+        <result column="pay_amuont" property="payAmuont"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="is_sign" property="isSign"/>
+        <result column="sign" property="sign"/>
+        <result column="icon_sign" property="iconSign"/>
+        <result column="photo" property="photo"/>
+        <result column="icon_photo" property="iconPhoto"/>
+        <result column="sign_date" property="signDate"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="note" property="note"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, account_id AS accountId, id_card_type AS idCardType, id_card_number AS idCardNumber, record_day AS recordDay, type, unit, price, number, total_amount AS totalAmount, reward_amount AS rewardAmount, punish_amount AS punishAmount, pay_amuont AS payAmuont, start_date AS startDate, end_date AS endDate, is_sign AS isSign, sign, icon_sign AS iconSign, photo, icon_photo AS iconPhoto, sign_date AS signDate, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, note
+    </sql>
+
+    <select id="getList" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT
+        b.id_card_type AS idCardType,
+        b.id_card_number AS idCardNumber,
+        bd.name AS idCardName,
+        bwm.worker_name AS workerName,
+        bdt.name AS workKindName,
+        bwm.work_type_code AS workerType ,
+        sum( b.total_amount ) AS amount,
+        sum( b.reward_amount ) AS rewardAmount,
+        sum( b.punish_amount ) AS punishAmount,
+        sum( b.pay_amuont ) AS payAmount,
+        0 AS balanceAmount
+        FROM
+        buss_account_detail b
+        JOIN buss_worker_master bwm ON bwm.id_card_type = b.id_card_type
+        AND bwm.id_card_number = b.id_card_number and bwm.is_del = 0
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' ) ) bd ON
+        bd.num = b.id_card_type
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' ) ) bdt
+        ON bdt.num = bwm.work_type_code
+        WHERE 1=1
+        <if test="map.ids !=null and map.ids != ''">
+            AND FIND_IN_SET( b.account_id, #{map.ids} )
+        </if>
+        <if test="map.month !=null and map.month != ''">
+            AND (b.create_date >= #{map.month} AND b.create_date <![CDATA[<]]>
+            CONCAT(left(#{map.month},5),LPAD((Right(#{map.month},2)+ 1 ),2,0) ))
+        </if>
+        GROUP BY
+        b.id_card_type,
+        b.id_card_number
+    </select>
+
+    <!--  分页 -->
+    <select id="list" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo"
+            parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+        b.id_card_type AS idCardType,
+        b.id_card_number AS idCardNumber,
+        bd.name AS idCardName,
+        bwm.worker_name AS workerName,
+        bwk.name AS workKindName,
+        bwm.work_type_code AS workerType ,
+        ifnull(sum( b.total_amount ),0) AS amount,
+        ifnull(sum( b.reward_amount ),0) AS rewardAmount,
+        ifnull(sum( b.punish_amount ),0) AS punishAmount,
+        ifnull(sum( b.pay_amuont ),0) AS payAmount ,
+        0 AS balanceAmount
+        FROM
+        buss_account_detail b
+        LEFT JOIN buss_account ba ON ba.id = b.account_id
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = b.id_card_type AND bwm.id_card_number = b.id_card_number
+        LEFT JOIN buss_work_kind bwk ON bwk.organization_code = (SELECT organization_code FROM buss_team_master btm WHERE btm.team_sys_no = ba.team_sys_no) AND bwk.num = bwm.work_type_code
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' ) ) bd ON
+        bd.num = b.id_card_type
+        WHERE 1=1
+        <if test="map.ids !=null and map.ids != ''">
+            AND FIND_IN_SET( b.account_id, #{map.ids} )
+        </if>
+        <if test="map.month !=null and map.month != ''">
+            AND (b.create_date >= #{map.month} AND b.create_date <![CDATA[<]]>
+            CONCAT(left(#{map.month},5),LPAD((Right(#{map.month},2)+ 1 ),2,0) ))
+        </if>
+        GROUP BY
+        b.id_card_type,
+        b.id_card_number
+        ORDER BY b.id DESC
+    </select>
+
+    <!-- 无分页 -->
+    <select id="getListNoPages" resultType="com.xywg.admin.modular.wages.model.PayRollDetailVo">
+        SELECT
+        b.id_card_type AS idCardType,
+        b.id_card_number AS idCardNumber,
+        bd.name AS idCardName,
+        bwm.worker_name AS workerName,
+        bwk.name AS workKindName,
+        bwm.work_type_code AS workerType ,
+        ifnull(sum( b.total_amount ),0) AS amount,
+        ifnull(sum( b.reward_amount ),0) AS rewardAmount,
+        ifnull(sum( b.punish_amount ),0) AS punishAmount,
+        ifnull(sum( b.pay_amuont ),0) AS payAmount ,
+        0 AS balanceAmount
+        FROM
+        buss_account_detail b
+        LEFT JOIN buss_account ba ON ba.id = b.account_id
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = b.id_card_type AND bwm.id_card_number = b.id_card_number
+        LEFT JOIN buss_work_kind bwk ON bwk.organization_code = (SELECT organization_code FROM buss_team_master btm WHERE btm.team_sys_no = ba.team_sys_no) AND bwk.num = bwm.work_type_code
+        LEFT JOIN ( SELECT num, NAME FROM sys_dict WHERE pid = ( SELECT id FROM sys_dict WHERE NAME = '人员证件类型' ) ) bd ON
+        bd.num = b.id_card_type
+        WHERE 1=1
+        <if test="map.ids !=null and map.ids != ''">
+            AND FIND_IN_SET( b.account_id, #{map.ids} )
+        </if>
+        <if test="map.month !=null and map.month != ''">
+            AND (b.create_date >= #{map.month} AND b.create_date <![CDATA[<]]>
+            CONCAT(left(#{map.month},5),LPAD((Right(#{map.month},2)+ 1 ),2,0) ))
+        </if>
+        GROUP BY
+        b.id_card_type,
+        b.id_card_number
+        ORDER BY b.id DESC
+    </select>
+
+    <insert id="insertDetailList">
+        insert into  buss_account_detail(
+                account_id,
+                id_card_type,
+                id_card_number,
+                record_day,
+                `type`,
+                unit,
+                price,
+                `number`,
+                total_amount,
+                reward_amount,
+                punish_amount,
+                pay_amuont,
+                create_date,
+                note,
+                start_date,
+                end_date
+        )VALUES
+        <foreach collection="list" item="item" open="(" separator="),(" close=")">
+            #{id},
+            #{item.idCardType},
+            #{item.idCardNumber},
+            #{item.recordDay},
+            <if test="item.type=='' or item.type==null">
+                1
+            </if>
+            <if test="item.type!='' and item.type!=null">
+                #{item.type}
+            </if>
+            ,#{item.unit},#{item.price},#{item.number},#{item.totalAmount},#{item.rewardAmount},#{item.punishAmount},#{item.payAmuont},now(),#{item.note},#{item.startDate},#{item.endDate}
+        </foreach>
+    </insert>
+
+    <select id="getAccountDetailByAccountId" resultType="Map" parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+        ad.id as id,
+        wm.worker_name AS workerName,
+        ad.id_card_number AS idCardNumber,
+        ad.id_card_type AS idCardType,
+        sd2.name AS idCardTypeName ,
+        ad.record_day AS recordDay,
+        wm.work_type_code as workerType,
+        ad.type AS type,
+        ad.unit AS unit,
+        ad.price AS price,
+        ad.number AS number,
+        ad.total_amount AS totalAmount,
+        ad.reward_amount AS rewardAmount,
+        ad.punish_amount AS punishAmount,
+        ad.pay_amuont AS payAmuont,
+        d.name AS unitName
+        FROM
+        buss_account_detail ad
+        LEFT JOIN  buss_account ba ON ba.id = ad.account_id
+        LEFT JOIN sys_dict d ON d.num= ad.unit AND d.pid= (select id from sys_dict where name='单位' and num = 0)
+        JOIN buss_worker_master wm ON wm.id_card_number = ad.id_card_number AND wm.id_card_type = ad.id_card_type AND wm.is_del = 0
+        LEFT JOIN sys_dict sd2 ON sd2.pid = (select id from sys_dict where name='人员证件类型' and num = 0) AND sd2.num = ad.id_card_type
+        WHERE ad.account_id =#{map.accountId}
+        <if test="map.workerName!=null and map.workerName!=''">
+            and wm.worker_name like concat('%',#{map.workerName},'%') or
+            ad.id_card_number like concat('%',#{map.workerName},'%')
+        </if>
+        ORDER BY id ASC
+    </select>
+
+    <select id="getAccountDetailByAccountIdNoPage" resultType="Map" parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+        ad.id as id,
+        wm.worker_name AS workerName,
+        ad.id_card_number AS idCardNumber,
+        ad.id_card_type AS idCardType,
+        sd2.name AS idCardTypeName ,
+        ad.record_day AS recordDay,
+        wm.work_type_code as workerType,
+        ad.type AS type,
+        ad.unit AS unit,
+        ad.price AS price,
+        ad.number AS number,
+        ad.total_amount AS totalAmount,
+        ad.reward_amount AS rewardAmount,
+        ad.punish_amount AS punishAmount,
+        ad.pay_amuont AS payAmuont,
+        d.name AS unitName
+        FROM
+        buss_account_detail ad
+        LEFT JOIN  buss_account ba ON ba.id = ad.account_id
+        LEFT JOIN sys_dict d ON d.num= ad.unit AND d.pid= (select id from sys_dict where name='单位' and num = 0)
+        JOIN buss_worker_master wm ON wm.id_card_number = ad.id_card_number AND wm.id_card_type = ad.id_card_type AND wm.is_del = 0
+        LEFT JOIN sys_dict sd2 ON sd2.pid = (select id from sys_dict where name='人员证件类型' and num = 0) AND sd2.num = ad.id_card_type
+        WHERE ad.account_id =#{map.accountId}
+        <if test="map.workerName!=null and map.workerName!=''">
+            and wm.worker_name like concat('%',#{map.workerName},'%') or
+            ad.id_card_number like concat('%',#{map.workerName},'%')
+        </if>
+        ORDER BY id ASC
+    </select>
+
+    <select id="getAccountDetailByAccountIds" parameterType="String" resultType="Map">
+        select
+        ad.id as id,
+        wm.worker_name as workerName,
+        wm.id_card_type as idCardType,
+        wm.id_card_number as idCardNumber,
+        ad.is_sign as isSign,
+        ad.start_date as startDate,
+        ad.end_date as endDate,
+        ad.type as type,
+        ad.record_day as recordDay,
+        ad.sign_date  as signDate,
+        ad.sign as sign,
+        ad.icon_sign as iconSign,
+        ad.icon_photo as iconPhoto,
+        ad.photo as photo,
+        ad.note as note,
+        a.closing_time as closingTime,
+        ad.pay_amuont as payAmuont
+        from buss_account_detail ad
+        left join buss_worker_master wm on wm.id_card_number=ad.id_card_number and ad.id_card_type=wm.id_card_type
+        left join buss_account a on ad.account_id=a.id
+        where FIND_IN_SET(ad.account_id,#{ids})
+    </select>
+
+    <select id="v116GetAccountDetailByAccountIds"  resultType="Map">
+        select
+        ad.id as id,
+        wm.worker_name as workerName,
+        wm.id_card_type as idCardType,
+        wm.id_card_number as idCardNumber,
+        ad.is_sign as isSign,
+        ad.start_date as startDate,
+        ad.end_date as endDate,
+        ad.type as type,
+        ad.record_day as recordDay,
+        ad.sign_date  as signDate,
+        ad.sign as sign,
+        ad.icon_sign as iconSign,
+        ad.icon_photo as iconPhoto,
+        ad.photo as photo,
+        ad.note as note,
+        a.closing_time as closingTime,
+        ad.pay_amuont as payAmuont
+        from buss_account_detail ad
+        left join buss_worker_master wm on wm.id_card_number=ad.id_card_number and ad.id_card_type=wm.id_card_type
+        left join buss_account a on ad.account_id=a.id
+        where FIND_IN_SET(ad.account_id,#{ids})
+         limit #{index},#{pageSize}
+    </select>
+
+    <update id="accountSign" parameterType="com.xywg.admin.modular.wages.model.AccountDetail">
+        update buss_account_detail
+        set sign=#{sign} , photo=#{photo},is_sign=1 ,
+        icon_sign = CONCAT("icon/",#{sign}) , icon_photo = CONCAT("icon/",#{photo}) 
+        where id=#{id}
+    </update>
+
+    <update id="updateDetail" parameterType="com.xywg.admin.modular.wages.model.AccountDetail">
+        update buss_account_detail
+        set number=#{number},
+        pay_amuont=#{payAmuont},
+        price=#{price},
+        punish_amount=#{punishAmount},
+        reward_amount=#{rewardAmount},
+        total_amount=#{totalAmount},
+        type=#{type},
+        unit=#{unit},
+        id_card_number=#{idCardNumber},
+        id_card_type=#{idCardType},
+        update_date=now()
+        where id=#{id}
+    </update>
+
+    <select id="getAccountIdByDetailId" resultType="int">
+        select
+        a.id as id
+        from buss_account a
+        left join buss_account_detail ad on a.id=ad.account_id
+        where ad.id=#{id}
+    </select>
+    <select id="selectIdByAccountIdAndIdCard" resultType="java.util.Map">
+        SELECT id, count(id) AS num from buss_account_detail  where account_id=#{accountId} AND id_card_number=#{idCardNumber}
+    </select>
+
+    <update id="updateTotalAmount">
+UPDATE
+ buss_account
+SET total_amount = (
+	SELECT
+		sum(ad.pay_amuont)
+	FROM
+		buss_account_detail ad
+	LEFT JOIN (select * from buss_account) a ON a.id = ad.account_id
+	WHERE
+		a.id = #{id}
+)
+WHERE
+	id = #{id}
+    </update>
+</mapper>

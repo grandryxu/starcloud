@@ -1,0 +1,39 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="trainForm" novalidate="novalidate">
+            <div class="row">
+                <div class="col-sm-6 porject-sss-898">
+                    <input type="hidden" class="input-search-s" id="projectCode"  value="${projectCode}"/>
+                    <#input_sjf id="trainingName" name="培训名称" underline="true"  requiredFlag="true" type="datetime"/>
+                    <#input_sjf id="trainingTime" name="培训时间" underline="true"  requiredFlag="true" type="datetime"/>
+                    <#input_sjf id="trainer" name="培训人" underline="true"  requiredFlag="true" type="datetime"/>
+                </div>
+                <div class="col-sm-6">
+                    <#select_sjf id="trainingTypeCode" name="培训类型" underline="false"  requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(item in trainingTypeCode){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="trainingDuration" name="培训时长(H)" underline="true"  requiredFlag="true" type="datetime"/>
+
+                </div>
+
+            </div>
+            <div class="row input-textarea remark1">
+                <#textarea_sjf id="description" name="培训简述" underline="false" requiredFlag="true"/>
+            </div>
+            <div class="row" style="padding-top:20px;">
+                <div class="col-sm-12" style="text-align: center;">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="trainInfoData.submit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="trainInfoData.cancel()"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectTraining/projectTrainingTrain.js"></script>
+@}
+

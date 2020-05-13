@@ -1,0 +1,77 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="LedInfoForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="imei" name="终端编号" underline="true" requiredFlag="true" value="${item.imei}"/>
+                    <#input id="clientName" name="终端名称" underline="true" requiredFlag="true" value="${item.clientName}"/>
+                    <#select id="projectCode" name="所属项目" underline="true" requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(i in project){
+                        <option value="${i.projectCode}"
+                            @if(i.projectCode == item.projectCode){
+                                selected
+                                @}
+                        >${i.projectName}</option>
+                        @}
+                    </#select>
+                    <#input id="screenWidth" name="屏宽" underline="true" requiredFlag="true" value="${item.screenWidth}"/>
+                    <#input id="screenHeight" name="屏高" underline="true" requiredFlag="true" value="${item.screenHeight}"/>
+                    <#input id="stayTime" name="停留时间" underline="true" requiredFlag="true" value="${item.stayTime}"/>
+                </div>
+
+                <div class="col-sm-6">
+                    <#input id="displayText" name="内容模板" underline="true"  requiredFlag="true" value="${item.displayText}"/>
+                    <#select id="displayType" name="显示特技" underline="true" requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(i in displayType){
+                        @if(i.num == 3 || i.num == 4 || i.num == 5 || i.num == 18 || i.num == 19 || i.num == 20 || i.num == 21 || i.num == 32 || i.num == 33){
+                        <option value="${i.num}"
+                                @if(""+i.num == item.displayType){
+                                selected
+                                @}
+                        >${i.name}</option>
+                        @}
+                        @}
+                    </#select>
+                    <#input id="displaySpeed" name="显示速度" underline="true" requiredFlag="true" value="${item.displaySpeed}"/>
+                    <#select id="fontColor" name="字体颜色" requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(i in fontColor){
+                        <option value="${i.num}"
+                                @if(""+i.num == item.fontColor){
+                                selected
+                                @}
+                        >${i.name}</option>
+                        @}
+                    </#select>
+                    <#input id="fontSize" name="字体大小" underline="true" requiredFlag="true" value="${item.fontSize}"/>
+                    <#select id="flag" name="是否启用" requiredFlag="true">
+                        <option value="">请选择</option>
+                        @for(i in status){
+                        <option value="${i.num}"
+                                @if(i.num == item.flag){
+                                selected
+                                @}
+                        >${i.name}</option>
+                        @}
+                    </#select>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="LedInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="LedInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/led/led_info.js"></script>
+@}

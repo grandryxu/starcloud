@@ -1,0 +1,323 @@
+@layout("/common/_container.html"){
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="${ctxPath}/static/css/longxin/reset.css">
+    <link rel="stylesheet" href="${ctxPath}/static/css/longxin/base.css">
+    <link rel="stylesheet" href="${ctxPath}/static/css/longxin/index.css">
+    <link rel="stylesheet" href="${ctxPath}/static/css/longxin/home.css">
+    <title>home</title>
+</head>
+
+<body>
+<div id="app">
+    <main>
+        <div class="section__two">
+            <div class="index__aside_article bg__white">
+                <h4 class="index__aside_title section__two_title">
+                    <span>招标信息</span>
+                </h4>
+                <ul class="index__aside_ul section__two_ul" id='tenderul'>
+                </ul>
+                <div class="page" style="float:right">
+    				<div id="page">
+    				</div>
+ 				</div>
+            </div>
+            <div class="index__aside_article bg__white">
+                <h4 class="index__aside_title section__two_title">
+                    <span>中标公告</span>
+                </h4>
+                <ul class="index__aside_ul section__two_ul" id='fixul'>
+                </ul>
+                <div class="page" style="float:right">
+    				<div id="pageFix">
+    				</div>
+ 				</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+
+</body>
+<script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4"></script>
+<script src="${ctxPath}/static/js/vue.min.js"></script>
+<script src="${ctxPath}/static/js/base.js"></script>
+
+
+<script>
+    $(function(){
+        
+
+    })
+
+
+
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                "outEnterpriseTotal": 0,
+                "tenderFileTotal": 0,
+                "tenderTotal": 0,
+                "targetTotal": 0,
+                infoList: [],
+                tenderList: [],
+            }
+        },
+        methods: {
+            getProjectInfo() {
+                const self = this;
+                $.ajax({
+                    url:  "/lxIndex/getApprovalResult",
+                    success: function (data) {
+                        self.outEnterpriseTotal = data.data.outEnterpriseTotal;
+                        self.tenderFileTotal = data.data.tenderFileTotal;
+                        self.tenderTotal = data.data.tenderTotal;
+                        self.targetTotal = data.data.targetTotal;
+                    }
+                });
+            },
+            /**
+             * 双击查看
+             */
+          getInfo() {
+                const self = this;
+                $.ajax({
+                    url: baseUrl + "/infoList",
+                    success: function (data) {
+                        self.infoList = data.data.list;
+                    }
+                });
+            },
+            getTenderFile () {
+                const self = this;
+                $.ajax({
+                    url: baseUrl + "/tenderFile",
+                    success: function (data) {
+                        self.tenderList = data.data.list;
+                    }
+                });
+            }
+        },
+        mounted() {
+            this.getProjectInfo();
+            this.getInfo();
+            this.getTenderFile();
+        }
+    })
+    
+    
+    
+    var zz=getzz()
+    var pageno=1 ; //当前页
+    var pagesize=10; //每页多少条信息
+    var records = {};
+    if(zz.length%pagesize==0){
+        var  pageall =zz.length/pagesize ;
+    }else{
+        var  pageall =parseInt(zz.length/pagesize)+1;
+    }   //一共多少页
+    change(1);
+    
+    
+    function getzz() {
+        var a = $("ul#all li");
+        var zz =new Array(a.length);
+        for(var i=0;i <a.length;i++){
+            zz[i]=a[i].innerHTML;
+        } //div的字符串数组付给zz
+        return zz;
+    }
+    function change(e){
+        pageno=e;
+        tender(pageno,pagesize);
+        if(e<1){
+            e=1;pageno=1;//就等于第1页 ， 当前页为1
+        }
+        if(e>pageall){  //如果输入页大于最大页
+            e=pageall;pageno=pageall; //输入页和当前页都=最大页
+        }
+        $("#all").html("");//全部清空
+        var html="";
+        for(var i=0;i<pagesize;i++){
+            html += '<li>' + zz[(e-1)*pagesize+i] +'</li>';//创建一页的li列表
+            if(zz[(e-1)*pagesize+i+1]==null) break;//超出最后的范围跳出
+        }
+        $("ul#all").html(html);//给ul列表写入html
+        var ye="";
+        for(var j=1;j<=pageall;j++){
+            if(e==j){
+                ye=ye+"<span><a href='#' onClick='change("+j+")' style='color:#FF0000'>"+j+"</a></span> "
+            }else{
+                ye=ye+"<a href='#' onClick='change("+j+")'>"+j+"</a> "
+            }
+        }
+        var pageContent="";
+        pageContent +='第<span id=\"a2\">'+pageno+'</span>/';
+        pageContent +='<span id="a1">'+pageall+'</span>页';
+        pageContent +='<span id="a3">'+ye+'</span>';
+        if(pageno != 1){
+        	pageContent +='<a href="#" onClick="change(--pageno)">上一页</a>';
+        }
+        if(pageno != pageall){
+        	pageContent +='<a href="#" onClick="change(++pageno)">下一页</a>';
+        }
+        $("#page").html(pageContent);
+        
+        var tenderHtml = '';
+        //加载数据
+        for(var i=0;i<records.length;i++){
+        	tenderHtml += '<li>';
+        	tenderHtml +=  '<p class="section__two_name" data-id="'+records[i].id+'" >'+records[i].projectName+'  &nbsp  '+records[i].fileName+'</p>';
+        	tenderHtml +=  '<span>['+records[i].createTime+']</span>';
+        	tenderHtml +=   '</li>';
+        }
+        $("#tenderul").html(tenderHtml);
+        bindTender();
+    }
+    
+    
+    
+    /**
+     * 请求页面数据
+     */
+   function tender (current,pageSize) {
+                var ajax = new $ax(Feng.ctxPath + "/blackboard/dashborad/tender", 
+               	function (data) {
+                   pageall = data.pages;
+                   records = data.records;
+                });
+                ajax.set("offset", (current-1) * pageSize);
+                 ajax.set("limit", pageSize);
+                ajax.start();
+	    };
+
+
+
+	    var zzFix=getzzFix()
+	    var pagenoFix=1 ; //当前页
+	    var pagesizeFix=10; //每页多少条信息
+	    var recordsFix = {};
+	    if(zzFix.length%pagesizeFix==0){
+	        var  pageallFix =zzFix.length/pagesizeFix ;
+	    }else{
+	        var  pageallFix =parseInt(zzFix.length/pagesizeFix)+1;
+	    }   //一共多少页
+	    changeFix(1);
+	    
+	    
+	    function getzzFix() {
+	        var a = $("ul#all li");
+	        var zz =new Array(a.length);
+	        for(var i=0;i <a.length;i++){
+	            zz[i]=a[i].innerHTML;
+	        } //div的字符串数组付给zz
+	        return zz;
+	    }
+	    function changeFix(e){
+	        pagenoFix=e;
+	        fix(pagenoFix,pagesizeFix);
+	        if(e<1){
+	            e=1;pagenoFix=1;//就等于第1页 ， 当前页为1
+	        }
+	        if(e>pageallFix){  //如果输入页大于最大页
+	            e=pageallFix;pagenoFix=pageallFix; //输入页和当前页都=最大页
+	        }
+	        $("#all").html("");//全部清空
+	        var html="";
+	        for(var i=0;i<pagesizeFix;i++){
+	            html += '<li>' + zzFix[(e-1)*pagesizeFix+i] +'</li>';//创建一页的li列表
+	            if(zzFix[(e-1)*pagesizeFix+i+1]==null) break;//超出最后的范围跳出
+	        }
+	        $("ul#all").html(html);//给ul列表写入html
+	        var ye="";
+	        for(var j=1;j<=pageallFix;j++){
+	            if(e==j){
+	                ye=ye+"<span><a href='#' onClick='changeFix("+j+")' style='color:#FF0000'>"+j+"</a></span> "
+	            }else{
+	                ye=ye+"<a href='#' onClick='changeFix("+j+")'>"+j+"</a> "
+	            }
+	        }
+	        var pageContent="";
+	        pageContent +='第<span id=\"a2\">'+pagenoFix+'</span>/';
+	        pageContent +='<span id="a1">'+pageallFix+'</span>页';
+	        pageContent +='<span id="a3">'+ye+'</span>';
+	        if(pagenoFix != 1){
+	        	pageContent +='<a href="#" onClick="changeFix(--pageno)">上一页</a>';
+	        }
+	        if(pagenoFix != pageallFix){
+	        	pageContent +='<a href="#" onClick="changeFix(++pageno)">下一页</a>';
+	        }
+	        $("#pageFix").html(pageContent);
+	        
+	        var tenderHtml = '';
+	        //加载数据
+	        for(var i=0;i<recordsFix.length;i++){
+	        	tenderHtml += '<li>';
+	        	tenderHtml +=  '<p class="section__two_name2" data-id="'+recordsFix[i].id+'" >'+recordsFix[i].projectName+'  &nbsp  '+recordsFix[i].fileName+'</p>';
+	        	tenderHtml +=  '<span>['+recordsFix[i].createTime+']</span>';
+	        	tenderHtml +=   '</li>';
+	        }
+	        $("#fixul").html(tenderHtml);
+	        bindFix();
+	    }
+	 
+	    
+	    /**
+	     * 请求页面数据
+	     */
+	   function fix (current,pageSize) {
+	                var ajax = new $ax(Feng.ctxPath + "/blackboard/dashborad/fix", 
+	               	function (data) {
+	                   pageallFix = data.pages;
+	                   recordsFix = data.records;
+	                });
+	                ajax.set("offset", (current-1) * pageSize);
+	                ajax.set("limit", pageSize);
+	                ajax.start();
+		    };
+		    
+		    function bindTender(){
+		    	
+		    	$(".section__two_name").click(function(e){
+
+		            var index = layer.open({
+		                type: 2,
+		                title: '工人详情信息',
+		                area: ['80%', '80%'], //宽高
+		                fix: false, //不固定
+		                maxmin: true,
+		                skin: 'layer-no-title',
+		                content: Feng.ctxPath + '/lx/tendering/view?id=' + e.currentTarget.dataset.id
+		            });
+		            this.layerIndex = index;
+		        })
+		    	
+		    }
+		    
+		    
+		    
+		function bindFix(){
+			$(".section__two_name2").click(function(e){
+        	var index = layer.open({
+            type: 2,
+            title: '招标项目中标公告',
+            area: ['80%', '80%'], //宽高
+            fix: false, //不固定
+            maxmin: false,
+            content: Feng.ctxPath + '/lx/tendering/viewNotice?id=' + e.currentTarget.dataset.id
+        });
+        this.layerIndex = index;
+	    })
+		}
+		    
+	        
+</script>
+
+</html>
+@}

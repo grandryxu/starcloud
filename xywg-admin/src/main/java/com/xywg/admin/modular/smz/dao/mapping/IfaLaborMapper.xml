@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.smz.dao.IfaLaborMapper">
+    <!--查询id List的接口-->
+    <select id="getIdList" resultType="Long">
+        select
+        id
+        from ifa_labor
+        where table_name=#{tableName}
+    </select>
+    <delete id="del">
+        DELETE
+        from ifa_labor
+        where table_name=#{tableName}
+    </delete>
+    
+    <!-- 批量删除 -->
+    <delete id="delbatch">
+        DELETE
+        from ifa_labor
+        where table_name=#{tableName}
+        <if test="ids != null and ids.size>0">
+        	and id in
+	        <foreach item="id" collection="ids" open="(" separator="," close=")">
+	            #{id}
+	        </foreach>
+        </if>
+    </delete>
+    
+
+    <insert id="insert">
+        insert into ifa_labor
+        (id,
+        table_name)
+        values (
+        #{id},
+        #{tableName}
+        )
+    </insert>
+    <select id="getLastNumber" resultType="java.lang.Long">
+        SELECT
+        id
+        from ifa_labor
+        where table_name=#{tableName}
+    </select>
+    
+     <select id="getLastNumberByTableName" resultType="int">
+        SELECT
+        (case when max(id) is null then 0 else id end )id
+        from ifa_labor
+        where table_name =#{tableName}
+    </select>
+    <update id="updateNumber">
+        update ifa_labor set id=#{id} where table_name=#{tableName}
+    </update>
+    
+    <select id="findSynchro" resultType="java.util.HashMap" parameterType="com.baomidou.mybatisplus.plugins.Page">
+    	<if test="param.type == 'buss_sub_contractor' or param.type == '' or param.type == null ">
+			select p.id,p.company_name as name ,ifnull(b.state,'已同步')as state
+			from  buss_sub_contractor p
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_sub_contractor' ) b on b.id = p.id
+			where  p.is_synchro = 1 and p.is_del = 0
+			group by p.id 
+			order by p.id desc 
+		</if>
+		<if test="param.type == 'buss_project_master'">
+			select p.id,p.project_name  as name,ifnull(b.state,'已同步')as state
+			from  buss_project_master p
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_project_master' ) b on b.id = p.id
+			where  p.is_synchro = 1 and p.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+			group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_project_worker'">
+			select p.id,a.project_name  as name,m.worker_name as workerName,p.id_card_number,ifnull(b.state,'已同步')as state
+			from  buss_project_worker p
+			inner join buss_worker_master m on p.id_card_number = m.id_card_number and p.id_card_type = m.id_card_type
+			inner join buss_project_master a on p.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_project_worker' ) b on b.id = p.id
+			where  a.is_synchro = 1 and p.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+			group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_device_record'">
+			select p.id,a.project_name as name,m.worker_name as workerName,p.time,
+			(case when p.id > (select i.id from ifa_labor i where i.table_name ='buss_device_record') then '未同步' else '已同步' end)state
+			from buss_device_record p
+			left join buss_project_master a on p.project_code = a.project_code
+			left join buss_worker_master m on p.id_card_type = m.id_card_type and p.id_card_number =m.id_card_number
+			where a.is_synchro = 1 
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+				group by p.id 	
+			order by p.id desc	
+		</if>
+		<if test="param.type == 'buss_team_master'">
+			select p.id,a.project_name as name,p.team_name as teamName,ifnull(b.state,'已同步')as state
+			from  buss_team_master p
+			left join buss_project_master a on p.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_team_master' ) b on b.id = p.id
+			where  a.is_synchro = 1 and p.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+				group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_work_kind'">
+		select p.id,p.name as workKindName,s.company_name  as name,ifnull(b.state,'已同步')as state
+			from  buss_work_kind p
+			left join buss_sub_contractor s on p.organization_code = s.organization_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_work_kind' ) b on b.id = p.id
+			where s.is_synchro = 1
+				group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_worker_contract_rule'">
+			select p.id,a.project_name as name,m.worker_name as workerName, p.contract_code as contractCode,ifnull(b.state,'已同步')as state
+			from buss_worker_contract_rule p
+			inner join buss_worker_master m on p.id_card_type = m.id_card_type and p.id_card_number = m.id_card_number
+			inner join buss_project_master a on p.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_worker_contract_rule' ) b on b.id = p.id
+			where a.is_synchro = 1 and p.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_device'">
+			select p.id,a.project_name as name,p.sn,ifnull(b.state,'已同步')as state
+			from  buss_device p
+			left join buss_project_master a on p.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_device' ) b on b.id = p.id
+			where  a.is_synchro = 1 and p.is_del = 0 and p.id != a.virtual_id
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+				group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_project_training'">
+			select p.id,a.project_name as name,p.training_name as trainingName,ifnull(b.state,'已同步')as state
+			from  buss_project_training p
+			left join buss_project_master a on p.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_project_training' ) b on b.id = p.id
+			where  a.is_synchro = 1 and p.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+				group by p.id 
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_project_training_file'">
+			select p.id,a.project_name as name,c.training_name as trainingName,ifnull(b.state,'已同步')as state
+			from  buss_file_info p
+			left join buss_project_training c on c.id=p.relevance_id  
+			left join buss_project_master a on c.project_code = a.project_code
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_project_training_file' ) b on b.id = p.id
+			where  a.is_synchro = 1 and  c.is_del = 0 and p.`type` = 'buss_project_training' 
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and p.project_code = #{param.projectCode}
+			</if>
+			order by p.id desc
+		</if>
+		<if test="param.type == 'buss_project_training_person'">
+			select p.train_id,a.project_name as name,c.training_name as trainingName,m.worker_name  as workerName,ifnull(b.state,'已同步')as state
+			from  buss_project_train_record p 
+			left join buss_project_training c on c.id=p.train_id  
+			left join buss_project_master a on c.project_code = a.project_code
+			left join buss_worker_master m on m.id_card_type = p.id_card_type and m.id_card_number = p.id_card_number
+			left join (select i.id,'未同步' as state from ifa_labor i where i.table_name = 'buss_project_training_person' ) b on b.id = p.train_id
+			where  a.is_synchro = 1 and  c.is_del = 0
+			<if test="param.projectCode != null and param.projectCode != ''">
+				and c.project_code = #{param.projectCode}
+			</if> 
+				<!-- group by p.train_id -->
+			order by p.train_id desc
+		</if>
+    </select>
+
+	<insert id="batchInsert">
+		insert into ifa_labor
+		(id,
+		table_name)
+		values
+		<foreach item="id" collection="ids" open="(" separator="),(" close=")">
+			#{id},
+			#{tableName}
+		</foreach>
+	</insert>
+</mapper>

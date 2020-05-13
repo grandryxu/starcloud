@@ -1,0 +1,348 @@
+
+@layout("/common/_container.html"){
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/reset.css">
+
+    <title>Document</title>
+</head>
+<script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4">
+
+
+</script>
+<script src="${ctxPath}/static/js/plugins/layer/laydate/laydate.js"></script>
+
+
+<style>
+    .form {
+        padding: 20px;
+        font-size: 14px;
+    }
+    .form__row  {
+        margin-bottom: 15px;
+    }
+    .form__row label {
+        display: inline-block;
+        min-width: 110px;
+    }
+    .form__row input[type=text] {
+        display: inline-block;
+        width: 220px;
+        height: 28px;
+        border: solid 1px #ddd;
+    }
+
+    .file {
+        position: relative;
+        width: 100px;
+        text-align: center;
+        border: solid 1px #ddd;
+        height: 28px;
+        line-height: 28px;
+        border-radius: 2px;
+    }
+    .file__btn {
+        position: absolute;
+        z-index: 11;
+        left: -9999px;
+        visibility: hidden;
+    }
+
+    .btn {
+        margin: 20px;
+        padding: 8px 18px;
+        border: none;
+        color: #fff;
+        background: #409EFF;
+    }
+</style>
+<body>
+<form action="#" class="form">
+    <div class="form__row">
+        <label>项目名称:</label>
+
+        <input  type="text"  disabled="disabled" value = ${project.projectName} />
+    </div>
+    <div class="form__row">
+        <label>招标编号：</label>
+        <input type="text" disabled="disabled" id="tenderCode" value="${uuid}"/>
+    </div>
+    <input type="text"  style="display:none"  id="projectId" value =${project.id} />
+    <div class="form__row">
+       <!-- <label>文件名：</label>-->
+        <label>招标内容：</label>
+        <input type="text" id="fileName" />
+    </div>
+    <div class="form__row">
+      <!--  <label>文件描述：</label>-->
+        <label>招标内容概述：</label>
+        <textarea  id="resume"   cols="36"   rows="6"   ></textarea>
+    </div>
+
+    <div class="form__row">
+      <!--  <label>截止日期：</label> -->
+        <label>报名截止时间：</label>
+        <input type="text" id="deadline">
+    </div>
+
+    <div class="form__row">
+       <!-- <label>开标时间：</label>  -->
+        <label>招标开标时间：</label>
+        <input type="text" id="startTime">
+    </div>
+
+
+    <div class="form__row">
+        <label>招标方式：</label>
+        <select id="tenderType">
+            <option  value ="0">邀标</option>
+            <option value ="1">公开招标</option>
+        </select>
+    </div>
+   
+
+
+    <div class="form__row">
+        <label>文件上传：</label>
+        <label for="fileList" class="file">上传文件
+            <input  type="file" class="file__btn" id="fileList" multiple="multiple" onchange="fileChange()"/>
+        </label>
+        <ul  id="files" style="display: inline-block;">
+        </ul>
+    </div>
+    
+    
+    
+    <table id="tr" width="100%" style="margin-bottom: 20px;">
+            <tr>
+                <th>名称：</th>
+                <th>类别：</th>
+                <th>描述：</th>
+                <th>操作：</th>
+            </tr>
+            <tr>
+                <td><input class="form-control" name='name' type="text"  requiredFlag="true" /></td>
+                <td><input class="form-control" name='type'  type="text"  /></td>
+                <td><input class="form-control" name='desc' type="text"  /></td>
+                <td><input class="btn" type="button"  onclick="addDetail()"   value="新增明细"></td>
+            </tr>
+
+     </table>
+
+    <input class="btn" type="button"  id="shagnchuan" onclick="uploadFile()"   value="确定">
+
+</form>
+
+
+<script>
+    laydate.render({
+        elem: '#deadline' //指定元素
+        ,trigger : 'click'
+        ,type:'datetime'
+    });
+    laydate.render({
+        elem: '#startTime' //指定元素
+        ,trigger : 'click'
+        ,type:'datetime'
+    });
+</script>
+
+<script type="text/javascript">
+        function addSelectRow(){
+
+            $.get("${ctxPath}/mgr/getUserList",{},function(data){
+                console.log(data)
+                var html = "<select class='flowDesigns'>";
+                for(var i=0;i<data.length;i++){
+                    if(data[i].roleName!="超级管理员"&&data[i].roleName!="企业名录"&&data[i].roleName!="龙信管理员"){
+                        html = html + "<option value='"+data[i].id+"'>" + data[i].name + "</option>";
+                    }
+                }
+                html = html + "</select>";
+                html = html + "<i class='fa fa-plus-circle' onclick='addSelectRow()'></i>"
+
+                $("#flowLabel").append(html);
+            })
+        }
+
+
+         function flowChange(){
+             var flag =   $("#flowSelect").val();
+             if(flag=="1"){
+                 $("#defaultFlow").attr("style","");
+                 $("#designFlow").attr("style","display:none");
+
+            //展示流程界面
+             }else{
+                 $("#designFlow").html("   <label id='flowLabel'>流程设计：</label>")
+
+
+                 $("#defaultFlow").attr("style","display:none");
+                 $("#designFlow").attr("style","");
+                this.addSelectRow();
+
+
+             }
+         }
+
+	function addDetail(){
+		var html = '<tr id='+ Math.floor(Math.random () * 900) + 100 +'>'+
+            '<td><input  class="form-control"  name="name"  type="text" /></td>' +
+            '<td><input  class="form-control"  name="type"  type="text" /></td>' +
+            '<td><input  class="form-control"  name="desc"  type="text" /></td>' +
+            '<td><input class="btn" type="button"  onclick="deleteRow(this)"   value="删除"></td>' +
+        '</tr>';
+		$("#tr").append(html);
+	}
+	
+    function deleteRow(e){
+        var id = $(e).parent().parent().attr('id');
+        $('#'+id).remove();
+    }
+
+
+    var  fileList ;
+    function  fileChange  (){
+          fileList = document.getElementById("fileList").files;
+          if(fileList.length > 0){
+          	var suffixArr =['doc','docx','ppt','pptx','xls','pdf','gif','png','bmp','jpeg','jpg','tiff','pcx'
+         		 ,'tga','exif','fpx','svg','psd','cdr','pcd','dxf','ufo','eps','ai','raw','wmf','webp'];
+          	let fileName = fileList[0].name.lastIndexOf(".");//取到文件名开始到最后一个点的长度
+          	let fileNameLength = fileList[0].name.length;//取到文件名长度
+          	let fileFormat = fileList[0].name.substring(fileName + 1, fileNameLength);//截
+          	var ret = $.inArray(fileFormat,suffixArr);
+          	if(ret == -1){
+          		Feng.error("文件格式不正确！");
+          		$("#fileList").val("");
+          		return;
+          	}
+          }
+        var html = "";
+         for(var i = 0 ; i< fileList.length ; i++){
+            html = html +"<li>" +fileList[i].name + "</li>";
+         }
+        $("#files").html(html);
+    }
+
+
+    /**
+     *文件上传
+     */
+     function uploadFile(){
+    	 
+    	 
+    	var arr = [];
+    	var flag = false;
+    	$("input[name='name']").each(function(i,val){
+    		if(flag){ return ;}
+    		let obj = {};
+    		var name = $(this).val();
+    		var type = $("input[name='type']").eq(i).val();
+    		var desc = $("input[name='desc']").eq(i).val();
+    		if(name.trim() == ''){
+    			Feng.error("名称不能为空！");
+    			flag = true;
+    			return;
+    		}
+    		if(type.trim() == ''){
+    			Feng.error("类型不能为空！");
+    			flag = true;
+    			return;
+    		}
+    		if(desc.trim() == ''){
+    			Feng.error("描述不能为空！");
+    			flag = true;
+    			return;
+    		}
+    	   obj.name = name;
+    	   obj.type = type;
+    	   obj.desc = desc;
+    	   arr.push(obj);
+    	  });
+    	if(flag){
+    		return;
+    	}
+      var index = layer.open({type:3});
+      var form = new FormData();
+//        debugger;
+         fileList = document.getElementById("fileList").files;
+        if(fileList.length==0){
+            layer.close(index);
+            Feng.error("请选择文件");
+            return ;
+        }
+         for(var i = 0;i<fileList.length;i++){
+             form.append("file",fileList[i]);
+         }
+         //截止时间不能晚于开标时间
+         var deadline = $("#deadline").val();
+         var startTime = $("#startTime").val();
+         if(!deadline){
+        	 layer.close(index);
+        	 Feng.error("请选择截止时间！");
+        	 return;
+         }
+         if(!startTime){
+        	 layer.close(index);
+        	 Feng.error("请选择开标时间！");
+        	 return;
+         }
+         if(startTime&&deadline){
+        	 if(deadline > startTime){
+        		 layer.close(index);
+        		 Feng.error("截止时间不能晚于开标时间！");
+        		 return;
+        	 }
+         }
+         
+        form.append("id",$("#projectId").val());
+        form.append("fileName",$("#fileName").val() );
+        form.append("resume",$("#resume").val());
+
+        form.append("priceTemp",JSON.stringify(arr));
+        form.append("deadline",$("#deadline").val());
+        form.append("startTime",$("#startTime").val());
+        form.append("tenderCode",$("#tenderCode").val());
+        form.append("tenderType",$("#tenderType").val());
+        /* var flag= $("#flowSelect").val();
+        form.append("proId",$("#flow").val());
+        form.append("flag",flag);
+        var list = $(".flowDesigns");
+        var ids = "";
+        for(var i=0;i<list.length;i++){
+            ids =ids+ list[i].value+","
+         }
+        form.append("ids",ids); */
+
+      $.ajax({
+                  url: Feng.ctxPath + "/lxProject/tender/upload" ,
+                  type: "POST",
+                  data: form,
+                  contentType: false,
+                  processData: false,
+                  async:true,
+                  success: function (data) {
+                      if(data.code!=200){
+                          layer.close(index);
+                          Feng.error(data.message);
+                      }else{
+                          layer.close(index);
+                          Feng.success(data.message);
+                          parent.layer.close(window.parent.Tendering.layerIndex);
+                          window.parent.Tendering.table.refresh();
+                      }
+                  },
+                  error: function (data) {
+                      Feng.error(data.message);
+                  }
+              });
+          }
+
+</script>
+
+</body>
+</html>
+@}

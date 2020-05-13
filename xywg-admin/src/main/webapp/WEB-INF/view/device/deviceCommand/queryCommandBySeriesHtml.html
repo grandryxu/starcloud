@@ -1,0 +1,42 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>历史命令查询</h5>
+            </div>
+            <input type="hidden"  value="${projectCode}"  id="projectCode" />
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <form class="col-sm-10" id="searchForm">
+                                <div class="inline-search-s hidden" >
+                                    <label class="label-search-s">序列号</label>
+                                    <input type="text" class="input-search-s" id="deviceSns" placeholder="设备序列号" value="${deviceSns}" disabled/>
+                                </div>
+                                <div class="inline-search-s">
+                                    <label class="label-search-s">时间</label>
+                                    <div class="fn-datepicker" id="datepicker" style="display:inline-block;">
+                                        <input class="fn-datepicker-input" id="startDate" name="establishDate" readonly="readonly">
+                                        <span class="">-</span>
+                                        <input class="fn-datepicker-input" id="endDate" name="establishDate" readonly="readonly">
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="col-sm-2 ta-right">
+                                <#button name="搜索" icon="fa-search" clickFun="QueryCommandBySeriesHtml.search()"/>
+                                <#reset name="重置" icon="fa-search" formId="searchForm"/>
+                            </div>
+                        </div>
+
+                    </div>
+                    <#table id="queryCommandBySeriesHtmlTable"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script src="${ctxPath}/static/modular/device/deviceCommand/queryCommandBySeriesHtml.js"></script>
+@}

@@ -1,0 +1,82 @@
+@layout("/common/_container.html"){
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=G8Gd8tZvStagwsAL6HX01acf93BenlEk"></script>
+<script type="text/javascript"
+        src="http://api.map.baidu.com/library/AreaRestriction/1.2/src/AreaRestriction_min.js"></script>
+<style type="text/css">
+    body, html, #subMap {
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: "微软雅黑";
+    }
+</style>
+
+<div>
+    <!-- 百度地图 -->
+    <div id="subMap"></div>
+
+    <div id="myZoomCtrl">
+
+        <div class="fn-div">
+            <select class="fn-input search-chosen" id="projectCode" name="请选择项目">
+                <option value="">选择项目</option>
+                @for(item in project){
+                <option value="${item.projectCode}">${item.projectName}</option>
+                @}
+            </select>
+            <span><label for="projectCode">所属</label></span>
+        </div>
+
+        <div class="top-s1 clear-float">
+            <div class="col-sm-6 col-sm-6-right">
+                <div class="box-s right-s bdwhite">
+                    <p class="p-title">人员统计</p>
+                    <div class="tac-sss clear-float">
+                        <div class="col-sm-6 padding0 brs">
+                            <p class="pt1">进场工人数</p>
+                            <p class="pt2">${getTotalJoin}</p>
+                        </div>
+                        <div class="col-sm-6 padding0">
+                            <p class="pt1">今日考勤人数</p>
+                            <p class="pt2">${getTotalDevice}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="top-s2 clear-float">
+            <div id="workerAttendance" style="width: 100%;height:400px;"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts-en.common.js"></script>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.js"></script>
+<script src="http://gallery.echartsjs.com/dep/echarts/map/js/china.js"></script>
+<script src="${ctxPath}/static/modular/blackboard/echarts-projectWorker.js"></script>
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerType.js"></script> -->
+<!--<script src="${ctxPath}/static/modular/blackboard/echarts-workerNativePlace.js"></script>
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerAge.js"></script>-->
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerAttendance.js"></script>
+<script src="${ctxPath}/static/modular/subAddress/subAddress.js"></script>
+<script>
+    $("#select-company").on('click', function () {
+        var index = layer.open({
+            type: 2,
+            title: '项目切换',
+            area: ['80%', '50%'], //宽高
+            fix: false, //不固定
+            maxmin: false,
+            content: '/dept/selectCompany'
+        });
+    });
+</script>
+
+@}

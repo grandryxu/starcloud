@@ -1,0 +1,69 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="teamBadRecordsForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="projectCode" name="所属项目" underline="true" requiredFlag="true" onchange="TeamBadRecordsInfoDlg.projectChange(this)">
+                        <option value=''>请选择</option>
+                        @for(item in project){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </#select_sjf>
+
+                    <div class="form-group form-group-sss">
+                        <label class="col-sm-3 control-label control-label-sss" style="margin-top:-5px;">
+                            班组名称:</label>
+                        <div class="col-sm-9">
+                            <p class="select-disabled-p">
+                                <select class="input-search-s search-chosen" id="teamId" name="班组名称"  onchange="TeamBadRecordsInfoDlg.teamChange(this)"
+                                        requiredFlag="true">
+                                    <option value=''>请选择</option>
+                                </select>
+                                <span class="select-disabled-block"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <#input_sjf id="teamSysNo" name="班组编号" underline="true" disabled="true"/>
+                    <#input_sjf id="teamLeader" name="班组长" underline="true"  disabled="true"/>
+                    <input type="hidden" id="organizationCode" >
+                    <#input_sjf id="companyName" name="所属单位" underline="true" disabled="true"/>
+                    <input type="hidden" id="type" value="2">
+                    <#select_sjf id="badRecordTypeCode" name="事件类别" underline="true" requiredFlag="true" >
+                        <option value=''>请选择</option>
+                        @for(item in dictBadRecordTypeCode){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <#select_sjf id="badRecordLevelType" name="事件级别" underline="true" requiredFlag="true" >
+                        <option value=''>请选择</option>
+                        @for(item in dictBadRecordLevelType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="occurrenceDate" name="发生时间" underline="true" requiredFlag="true"
+                            clickFun="laydate({istime: false, format: 'YYYY-MM-DD',max:laydate.now()})"/>
+                    <#textarea_sjf id="reason" name="不良记录原因" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="TeamBadRecordsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="TeamBadRecordsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/teamBadRecords/teamBadRecords_info.js"></script>
+@}

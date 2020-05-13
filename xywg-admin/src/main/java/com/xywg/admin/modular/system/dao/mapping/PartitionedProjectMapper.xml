@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.PartitionedProjectMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.PartitionedProject">
+        <id column="id" property="id" />
+        <result column="p_num" property="pNum" />
+        <result column="num" property="num" />
+        <result column="name" property="name" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, p_num AS pNum, num, name
+    </sql>
+
+    <select id="getChildrenByNum" resultType="com.xywg.admin.modular.system.model.PartitionedProject">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        sys_partitioned_project
+        WHERE
+        p_num = #{num}
+    </select>
+
+</mapper>

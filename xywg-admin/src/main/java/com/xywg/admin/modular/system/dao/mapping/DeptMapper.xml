@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.DeptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.Dept">
+        <id column="id" property="id"/>
+        <result column="num" property="num"/>
+        <result column="pid" property="pid"/>
+        <result column="pids" property="pids"/>
+        <result column="simplename" property="simplename"/>
+        <result column="fullname" property="fullname"/>
+        <result column="tips" property="tips"/>
+        <result column="version" property="version"/>
+        <result column="social_credit_number" property="socialCreditNumber"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+    </resultMap>
+
+    <select id="tree" resultType="com.xywg.admin.core.node.ZTreeNode">
+        SELECT
+            d.id,
+            d.pid        AS pId,
+            d.simplename AS name ,
+            d.social_credit_number AS socialCreditNumber ,
+            (
+                CASE
+                WHEN (d.pId = 0 OR d.pId IS NULL)
+                    THEN
+                        'true'
+                ELSE
+                    'false'
+                END
+            )          AS isOpen
+        from sys_dept d,sys_user s
+        where   s.account = #{account} and s.status!=3 AND (d.id=s.deptid   or  d.pids LIKE concat('%[', s.deptid, ']%'))
+    </select>
+
+    <select id="treeByDeptId" resultType="com.xywg.admin.core.node.ZTreeNode">
+        SELECT
+        d.id,
+        d.pid        AS pId,
+        d.simplename AS name ,
+        d.social_credit_number AS socialCreditNumber ,
+        (
+        CASE
+        WHEN (d.pId = 0 OR d.pId IS NULL)
+        THEN
+        'true'
+        ELSE
+        'false'
+        END
+        )          AS isOpen
+        from sys_dept d
+        where   d.id=#{deptid} or d.pids LIKE concat('%[',#{deptid}, ']%')
+    </select>
+
+
+    <select id="list" resultType="map">
+        select
+            d.id,
+            d.num,
+            d.pid,
+            d.pids,
+            d.simplename,
+            d.version,
+            d.tips,
+            d.fullname,
+            d.social_credit_number as socialCreditNumber,
+        DATE_FORMAT(d.start_time,'%Y-%m-%d') AS startTime,
+        DATE_FORMAT(d.end_time,'%Y-%m-%d') AS endTime
+        from sys_dept d,sys_user s
+        where   s.account = #{account} and s.status!=3 AND (d.id=s.deptid   or  d.pids LIKE concat('%[', s.deptid, ']%'))
+        <if test="condition != null and condition != ''">
+            and (simplename like CONCAT('%',#{condition},'%') or fullname like CONCAT('%',#{condition},'%'))
+        </if>
+        order by num ASC
+    </select>
+    <!-- 获取当前登陆者所有部门信息(未删除) yuanyang -->
+    <select id="getList" resultType="map">
+        select
+        d.id,
+        d.num,
+        d.pid,
+        d.pids,
+        d.simplename,
+        d.version,
+        d.tips,
+        d.fullname,
+        c.company_name as companyName,
+        d.social_credit_number as socialCreditNumber
+        from sys_dept d LEFT JOIN sys_user s on d.id=s.deptid  and s.status!=3 or  d.pids LIKE concat('%[', s.deptid, ']%')
+		left join buss_sub_contractor c on c.organization_code = d.social_credit_number
+		where s.account =#{account}
+        and  c.is_del=0 and c.`status`=1
+        order by num ASC
+    </select>
+
+
+    <select id="getUserDeptAndSubdivision" parameterType="string" resultType="int">
+        SELECT d.id
+        FROM sys_user s, sys_dept d
+        WHERE s.account = #{account} and s.status!=3   AND d.pids LIKE concat('%[', s.deptid, ']%')
+        union
+        select
+                d2.id
+        from 	sys_dept  d2,sys_user u2  where d2.id=u2.deptid and u2.account = #{account} and u2.status!=3
+    </select>
+
+
+    <select id="getUserDeptAndSubdivisionOrganizationCode" parameterType="string" resultType="string">
+        select
+                d.social_credit_number as  socialCreditNumber
+        from 	sys_dept  d
+        where d.pids LIKE concat('%[', (select u.deptid from sys_user  u  where u.account = #{account} and u.status !=3), ']%')
+        union
+        select
+                d2.social_credit_number as  socialCreditNumber
+        from 	sys_dept  d2,sys_user u2  where d2.id=u2.deptid and u2.account =#{account} and u2.status !=3
+    </select>
+
+    <select id="getAPPUserDeptAndSubdivisionOrganizationCode" resultType="string">
+        SELECT
+            d.social_credit_number AS socialCreditNumber
+        FROM
+            sys_dept d
+        WHERE
+            d.pids LIKE concat('%[',(SELECT id FROM sys_dept where social_credit_number=#{organizationCode}), ']%')
+            AND social_credit_number != ''
+            AND social_credit_number IS NOT NULL
+        UNION
+        select #{organizationCode}  as socialCreditNumber
+    </select>
+
+
+    <select id="getOrganizationCodeByDeptId" resultType="string">
+        select
+           d.social_credit_number as  socialCreditNumber
+        from 	sys_dept  d
+        where d.pids LIKE concat('%[',#{deptId}, ']%')  and  social_credit_number !=''  and  social_credit_number is not null
+        union
+        select
+                d2.social_credit_number as  socialCreditNumber
+        from 	sys_dept  d2 where d2.id=#{deptId}
+    </select>
+
+
+    <select id="getOrganizationalStructureByOrganizationCode" resultType="com.xywg.admin.modular.system.model.OrganizationalStructure">
+        select
+            t.id,
+			t.fullname  as  companyName,
+            t.pid,
+			t.pids,
+			t.num,
+            t.social_credit_number as socialCreditNumber
+        from  sys_dept t,sys_user u
+		where t.id=u.deptid  and  u.id=#{userId} and u.status !=3
+    </select>
+
+
+    <select id="getOrganizationalStructure"  resultMap="organizationalStructureMap">
+        SELECT id,fullname,pid,pids,num,social_credit_number as socialCreditNumber  from sys_dept
+        where   pid  = #{pid}
+    </select>
+
+    <resultMap id="organizationalStructureMap" type="com.xywg.admin.modular.system.model.OrganizationalStructure">
+        <id column="id" property="id"></id>
+        <result column="fullname" property="companyName"></result>
+        <result column="pid" property="pid"></result>
+        <collection property="subList"  select="getOrganizationalStructure" column="id"></collection>
+    </resultMap>
+
+    <select id="getDept" resultMap="BaseResultMap">
+        SELECT * from  sys_dept  where id=#{id}
+    </select>
+
+    <select id="hasDeptWithSocialCreditNumber" resultType="com.xywg.admin.modular.system.model.Dept">
+        SELECT id FROM sys_dept WHERE social_credit_number = #{socialCreditNumber}
+    </select>
+
+    <update id="addPid">
+        UPDATE sys_dept
+        SET
+          pids = CONCAT(pids,'[',#{pId},'],') ,
+          pid = #{pId}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateAllGrantChildrenByChildId">
+        UPDATE sys_dept
+        SET
+          pids = CONCAT(pids,'[',#{pId},'],')
+        WHERE
+          pids LIKE CONCAT('%','[',#{id},']','%')
+    </update>
+
+    <select id="selectSubContractorIdByDeptId" resultType="Long">
+        SELECT
+        bsc.id
+        FROM
+        sys_dept sd
+        LEFT JOIN buss_sub_contractor bsc ON bsc.social_credit_number = sd.social_credit_number AND bsc.is_del = 0
+        WHERE sd.id = #{deptId}
+    </select>
+    <select id="selectCompanyName" resultType="java.lang.String">
+        select
+        simplename as  companyName from
+        sys_dept
+        where  social_credit_number=#{contractorOrgCode}
+
+    </select>
+    <select id="selectOrgCodeByDeptId" resultType="java.lang.String">
+        select  social_credit_number from sys_dept where id=#{deptId}
+
+    </select>
+
+    <!--设置有效期 -->
+    <update id="setTime">
+        UPDATE sys_dept
+        SET
+        start_time = #{startTime},
+        end_time = #{endTime}
+        WHERE
+        id=#{id}
+    </update>
+</mapper>

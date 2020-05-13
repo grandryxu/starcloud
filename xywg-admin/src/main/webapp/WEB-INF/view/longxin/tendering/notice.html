@@ -1,0 +1,205 @@
+@layout("/common/_container.html"){
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/reset.css">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/wb.css">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/zb.css">
+    <script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4"> </script>
+        <title>招标信息详情</title>
+</head>
+
+<body>
+<div class="main">
+    <table width="100%">
+        <tr class="cellBg">
+            <td colspan="2">${tb.fileName}</td>
+        </tr>
+        <tr>
+            <td class="col1" style="width:200px;">招标信息：</td>
+            <td>${tb.fileName}</td>
+        </tr>
+        
+        <tr>
+            <td>招标描述：</td>
+            <td>${tb.tenderResume}</td>
+        </tr>
+        <tr>
+            <td>招标编号：</td>
+            <td>${tb.tenderCode}</td>
+        </tr>
+        <tr>
+            <td>招标类型：</td>
+
+            <td>
+                @if(tb.tenderType == null || tb.tenderType == "0"){
+                <span > 邀标 </span>
+                @}else if(tb.tenderType == "1" ){
+                <span > 公开招标 </span>
+                @}
+            </td>
+        </tr>
+        <tr>
+            <td>
+               中标日期：
+            </td>
+            <td>${bidDate}</td>
+        </tr>
+        <tr>
+            <td>
+                中标单位：
+            </td>
+            <td>
+                ${bidCompany}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+               <Strong> 中标内容<Strong>：
+            </td>
+
+            
+        </tr>
+        <tr>
+        	<td colspan="2" style="padding-left: 0px;padding-bottom: 0px;padding-top: 0px;padding-right: 0px;">
+                   
+                        <table width="100%">
+                        <tr>
+                        <th>名称</th>
+                        <th>类别</th>
+                        <th>描述</th>
+                        <th>价格</th>
+                        </tr>
+                        
+                        @for(var i= 0;priceTempSize>i;i++ ){
+                        <tr>
+                        <td>${priceTemp[i].name}</td>
+                        <td>${priceTemp[i].type}</td>
+                        <td>${priceTemp[i].desc}</td>
+                        <td>${priceArr[i]}</td>
+                        </tr>
+                        @}
+                        
+                        </table>
+         
+            </td>
+
+        </tr>
+        <tr>
+            <td>
+               中标单位地址：
+            </td>
+            <td>
+                   ${bidAddress}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                中标单位联系人：
+            </td>
+            <td>
+              ${contactPeopleName}
+            </td>
+        </tr>
+        
+        <tr>
+            <td>
+                中标单位联系人电话：
+            </td>
+            <td>
+                ${contactPeopleCellPhone}
+            </td>
+        </tr>
+
+    </table>
+    
+</div>
+</body>
+<script type="text/javascript">
+
+    var TenderDetail = {
+        id: "TenderDetail",	//表格id
+        seItem: null,		//选中的条目
+        table: null,
+        layerIndex: -1,
+    };
+    function  pb1(id){
+        var index = layer.open({
+            type: 2,
+            title: '新增评标信息',
+            area: ['600px', '400px'], //宽高
+            fix: false, //不固定
+            maxmin: true,
+            skin: 'layer-no-title',
+            content: Feng.ctxPath + '/lx/tendering/pingbiao?id=' + id +"&flag=1"
+        });
+        this.layerIndex = index;
+
+    }
+    function  pb2(id){
+        var index = layer.open({
+            type: 2,
+            title: '新增评标信息',
+            area: ['600px', '400px'], //宽高
+            fix: false, //不固定
+            maxmin: true,
+            skin: 'layer-no-title',
+            content: Feng.ctxPath + '/lx/tendering/pingbiao?id=' + id +"&flag=2"
+        });
+        this.layerIndex = index;
+
+    }
+    function  pb3(id){
+        var index = layer.open({
+            type: 2,
+            title: '新增评标信息',
+            area: ['600px', '400px'], //宽高
+            fix: false, //不固定
+            maxmin: true,
+            skin: 'layer-no-title',
+            content: Feng.ctxPath + '/lx/tendering/pingbiao?id=' + id +"&flag=3"
+        });
+        this.layerIndex = index;
+
+    }
+
+    function  priceDetail(e,a){
+
+        var index = layer.open({
+            type: 2,
+            title: true?'查看竞标价格':'添加竞标价格',
+            area: ['40%', '40%'], //宽高
+            fix: false, //不固定
+            maxmin: false,
+            content: Feng.ctxPath + '/lxInviteBid/price_add_view?bidId=' + e +'&tenderId=' + a + '&flag=' + true
+            // content: Feng.ctxPath + '/subContractor/getAllSubContractor'
+        });
+        this.layerIndex = index;
+
+
+    }
+    
+    
+    function  viewNotice(){
+		var tenderId = $('#tenderId').val();
+        var index = layer.open({
+            type: 2,
+            title: '招标项目中标公告',
+            area: ['80%', '80%'], //宽高
+            fix: false, //不固定
+            maxmin: false,
+            content: Feng.ctxPath + '/lx/tendering/viewNotice?id=' + tenderId
+        });
+        this.layerIndex = index;
+
+
+    }
+
+
+</script>
+
+</html>
+@}

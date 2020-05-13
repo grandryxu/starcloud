@@ -1,0 +1,184 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div id="edit" data-flag="true" style="display: none;"></div>
+    <div class="tabs-container">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#projectInfo" aria-expanded="true"> 项目信息</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" onclick="ProjectMasterInfoDlg.anchorCheck()" href="#joinedSubContractor"  aria-expanded="false">参建单位</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+
+                            <input type="hidden" id="id" value="${item.id}">
+
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                    <#input id="projectName" name="项目名称" underline="true" requiredFlag="true" value="${item.projectName}"/>
+                                    <#select id="isMajorProject" name="重点项目" underline="true" requiredFlag="true" value="${item.isMajorProject}">
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </#select>
+                                    <#input id="generalContractorCode" name="承包单位编号" underline="true" disabled="disabled" value="${item.generalContractorCode}"/>
+                                    <#select id="projectActivityType" name="项目活动类型" underline="true" requiredFlag="true" value="${item.projectActivityType}">
+                                        @for(item in projectActivityType){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </#select>
+
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="input-group" style="width: 300px;">
+                                                <text style="color:red;">*</text>
+                                                建设单位名称
+                                                <input type="text" class="form-control" id="ownerName" autocomplete="off" value="${item.ownerName}">
+                                                <div class="input-group-btn">
+                                                    <button type="button" class="btn btn-white dropdown-toggle" data-toggle="">
+                                                        <span>搜索</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-right" role="menu"
+                                                        style="padding-top: 0px; max-height: 375px; max-width: 800px; overflow: auto; width: auto; transition: 0.3s; left: -267px; right: auto; min-width: 300px;">
+                                                    </ul>
+                                                </div>
+                                                <!-- /btn-group -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <#input id="builderLicenceNum" name="施工许可证编号" underline="true" requiredFlag="true" value="${item.builderLicenceNum}"/>
+                                    <#input id="buildingArea" name="建筑面积(平方米)" underline="true" value="${item.buildingArea}"/>
+                                    <#input id="address" name="项目地址" underline="true" requiredFlag="true" value="${item.address}"/>
+                                    <#select id="deviceType" name="考勤类型" underline="true" >
+                                        @for(i in deviceType){
+                                        @if(i.num==item.deviceType){
+                                        <option value="${i.num}" selected>${i.name}</option>
+                                        @}else{
+                                        <option value="${i.num}">${i.name}</option>
+                                        @}
+                                        @}
+                                    </#select>
+                                    <#input id="startDate" name="开工时间" underline="true" type="date" clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" requiredFlag="true" value="${item.startDate}"/>
+                                    <#input id="projectSource" name="项目来源" underline="true" value="${item.projectSource}"/>
+                                </div>
+
+                                <div class="col-sm-6">
+
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="input-group" style="width: 300px;">
+                                                <text style="color:red;">*</text>
+                                                承包商名称
+                                                <input type="text" class="form-control" id="generalContractorName" autocomplete="off" value="${item.generalContractorName}">
+                                                <div class="input-group-btn">
+                                                    <button type="button" class="btn btn-white dropdown-toggle" data-toggle="">
+                                                        <span>搜索</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-right" role="menu"
+                                                        style="padding-top: 0px; max-height: 375px; max-width: 800px; overflow: auto; width: auto; transition: 0.3s; left: -267px; right: auto; min-width: 300px;">
+
+                                                    </ul>
+                                                </div>
+                                                <!-- /btn-group -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <#input id="contractorOrgCode" name="承包单位组织机构代码" underline="true" requiredFlag="true" disabled="disabled" value="${item.contractorOrgCode}"/>
+                                    <#select id="projectCategory" name="项目分类" underline="true"  requiredFlag="true" value="${item.projectCategory}">
+                                        @for(item in projectCategory){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </#select>
+                                    <#input id="buildCorporationCode" name="建设单位社会信用代码" underline="true" requiredFlag="true" disabled="disabled" value="${item.buildCorporationCode}"/>
+                                    <#input id="areaCode" name="项目行政区划,参见地区字典数据" requiredFlag="true" value="${item.areaCode}"/>
+                                    <#input id="totalContractAmt" name="承包合同额(万元)" underline="true" requiredFlag="true" value="${item.totalContractAmt}"/>
+                                    <#input id="completeDate" name="竣工时间" underline="true" type="date" clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})" requiredFlag="true" value="${item.completeDate}"/>
+                                    <#select id="projectStatus" name="项目状态" underline="true" requiredFlag="true" value="${item.projectStatus}">
+                                        @for(item in projectStatus){
+                                        <option value="${item.num}">${item.name}</option>
+                                        @}
+                                    </#select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <#input id="radius" name="考勤范围" underline="true" value="${item.radius}"/>
+                                <#input id="lng" name="经度" underline="true" value="${item.lng}"/>
+                                <#input id="lat" name="纬度" underline="true" value="${item.lat}"/>
+                            </div>
+
+                            <div class="row btn-group-m-t">
+                                <div class="col-sm-10">
+                                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterInfoDlg.editSubmit()"/>
+                                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterInfoDlg.close()"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div id="joinedSubContractor" class="tab-pane">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="row row-lg">
+                            <div class="col-sm-12">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <#NameCon id="condition" name="名称" />
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <#select id="projectStatus" name="项目状态" underline="true">
+                                            <option value="">请选择</option>
+                                            @for(item in projectStatus){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </#select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        进场时间<input class="form-control" id="startDate" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">--
+                                        <input class="form-control" id="endDate" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        退场时间<input class="form-control" id="startDate1" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">--
+                                        <input class="form-control" id="endDate1" name="establishDate" type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <#button name="搜索" icon="fa-search" clickFun="ProjectSubContractor.search()"/>
+                                    </div>
+                                </div>
+                                <div class="hidden-xs" id="ProjectSubContractorTableToolbar" role="group">
+                                    @if(shiro.hasPermission("/projectSubContractor/add")){
+                                    <#button name="添加" icon="fa-plus" clickFun="ProjectSubContractor.openAddProjectSubContractor()"/>
+                                    @}
+                                    @if(shiro.hasPermission("/projectSubContractor/update")){
+                                    <#button name="修改" icon="fa-edit" clickFun="ProjectSubContractor.openProjectSubContractorDetail()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/projectSubContractor/delete")){
+                                    <#button name="删除" icon="fa-remove" clickFun="ProjectSubContractor.delete()" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/projectSubContractor/changeState")){
+                                    <#button name="启用" icon="fa-check-circle" clickFun="ProjectSubContractor.changeState(1)" space="true"/>
+                                    @}
+                                    @if(shiro.hasPermission("/projectSubContractor/changeState")){
+                                    <#button name="禁用" icon="fa-remove" clickFun="ProjectSubContractor.changeState(2)" space="true"/>
+                                    @}
+                                </div>
+                                <#table id="ProjectSubContractorTable"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<script src="${ctxPath}/static/modular/project/cooperationProjectMaster/cooperationProjectMaster_info.js"></script>
+<script src="${ctxPath}/static/modular/project/cooperationProjectMaster/cooperationProjectSubContractor.js"></script>
+@}

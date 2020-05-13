@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.PersonPositionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.PersonPosition">
+        <id column="id" property="id" />
+        <result column="imei" property="imei" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="lng" property="lng" />
+        <result column="lat" property="lat" />
+        <result column="time" property="time" />
+        <result column="range" property="range" />
+        <result column="remark" property="remark" />
+        <result column="bd_lng" property="bdLng" />
+        <result column="bd_lat" property="bdLat" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, imei, id_card_type AS idCardType, id_card_number AS idCardNumber, lng, lat, time, range, remark, bd_lng AS bdLng, bd_lat AS bdLat
+    </sql>
+
+<!-- 查询未计算数据 -->
+	<select id="findNotCalculate" resultType="com.xywg.admin.modular.device.model.PersonPosition" >
+	   SELECT
+        p.project_code AS "project.projectCode",
+        p.organization_code AS "project.contractorOrgCode",
+        p.team_sys_no AS "personel.teamSysNo",
+        r.lng AS "project.lng",
+        r.lat AS "project.lat",
+        r.radius AS "project.radius",
+        s.id,
+        s.imei,
+        s.time,
+        s.lng,
+        s.lat,
+        s.bd_lng AS "bdLng",
+        s.bd_lat AS "bdLat",
+        s.id_card_type AS "idCardType",
+        s.id_card_number AS "idCardNumber",
+        sh.imei ,
+        p.project_code
+        FROM
+        buss_person_position s
+        INNER JOIN buss_worker_master wm ON wm.id_card_type = s.id_card_type
+        AND wm.id_card_number = s.id_card_number
+        AND wm.is_del = 0
+        INNER JOIN buss_safety_helmet sh ON s.imei = sh.imei
+        AND sh.is_del = 0
+        INNER JOIN buss_project_worker p ON wm.id_card_type = p.id_card_type
+        AND wm.id_card_number = p.id_card_number and p.project_code = sh.project_code
+        INNER JOIN buss_project_master r ON p.project_code = r.project_code
+        AND r.is_del = 0
+        WHERE
+        s.`range` IS NULL
+	</select>
+	
+	<!-- 查询用户当天最后一次考勤情况 -->
+	<select id="findLastRecord" resultType="java.lang.Boolean">
+	    select p.`range` 
+		from buss_person_position p 
+		where p.id_card_type = #{idCardType} and p.id_card_number = #{idCardNumber}
+			  and p.`range` is not null
+			  and day(p.time)=day(now())
+		order by p.time desc
+		limit 1
+	</select>
+
+	<!-- 修改用户id -->
+	<update id="updatePersonPositionInfo" >
+		 update buss_person_position pp
+		 left join buss_safety_helmet sh on pp.imei = sh.imei
+		 left join buss_project_worker pw on sh.imei = pw.sh_imei and sh.project_code = pw.project_code
+			 set pp.id_card_type = pw.id_card_type,
+			    pp.id_card_number = pw.id_card_number
+	where pp.id_card_type is null  and pp.id_card_number  is null and  pp.range is null 
+	</update>
+	
+	<!-- 修改用户id是否在圈内圈外 -->
+	<update id="updateRange" >
+		    update buss_person_position set `range` = #{range}	where id=#{id}
+	</update>
+	
+	<select id="queryPositionByImei" parameterType="java.util.Map" resultType="com.xywg.admin.modular.device.model.PersonPosition">
+		select p.range,p.bd_lng as lng,p.bd_lat as lat,p.time
+		from buss_person_position p 
+		WHERE p.imei = #{imei} AND p.id_card_number = #{idCardNumber}
+			  and p.time between STR_TO_DATE(#{startDate},'%Y-%m-%d %H:%i:%s') and STR_TO_DATE(#{endDate},'%Y-%m-%d %H:%i:%s')
+		order by p.time asc
+	</select>
+</mapper>

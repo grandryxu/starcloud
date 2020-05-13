@@ -1,0 +1,450 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Baidu Map </title>
+<style type="text/css">
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+    }
+
+    #container {
+        height: 500px;
+        width: 100%;
+    }
+
+    /* 百度地图label与bootstrap样式冲突 */
+    #container label {
+        max-width: none;
+        border-radius: 2px;
+        padding: 2px;
+    }
+</style>
+<div class="ibox float-e-margins">
+    <input type="hidden" id="page" value="ZBXM">
+    <input type="hidden" id="pageType" value="view">
+    <input type="hidden" id="projectAddressList" value='${projectAddressList}'>
+    <div id="info" data-flag="true" style="display: none;"></div>
+    <div class="tabs-container">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#projectInfo" aria-expanded="true"> 项目信息</a>
+            </li>
+         <li class="">
+            <a data-toggle="tab" onclick="ProjectMasterInfoDlg.anchorCheck()" href="#joinedSubContractor"
+               aria-expanded="false">中标公司</a>
+        </li>
+            <!--   <li class="">
+                <a data-toggle="tab" href="#classList" aria-expanded="false">班组列表</a>
+            </li>
+            <li class="">
+                <a data-toggle="tab" href="#deviceRecord" aria-expanded="false">考勤列表</a>
+            </li>-->
+        </ul>
+        <div class="tab-content">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+
+                            <input type="hidden" id="id" value="${item.id}">
+
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                    <#input_sjf id="projectName" name="项目名称" underline="true" requiredFlag="true" value="${item.projectName}" disabled="disabled"/>
+                                    <#input_sjf id="generalContractorName" name="公司名称" underline="true" requiredFlag="true" disabled="disabled" value="${item.generalContractorName}"/>
+                                    <#select_sjf id="projectActivityType" name="项目活动类型" underline="true"  value="${item.projectActivityType}" disabled="disabled">
+                                    @for(i in projectActivityType){
+                                    @if(""+i.num==""+item.projectActivityType){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+
+                                <#input_sjf id="builderLicenceNum" name="施工许可证编号" underline="true"  value="${item.builderLicenceNum}" disabled="disabled"/>
+                                <#input_sjf id="buildingArea" name="建筑面积(平方米)" underline="true" value="${item.buildingArea}" disabled="disabled"/>
+
+
+
+                                <!--   <#input_sjf id="generalContractorCode" name="公司编号" underline="true" disabled="disabled" value="${item.generalContractorCode}" disabled="disabled"/>-->
+                                    <#input_sjf visible="visible" id="contractorOrgCode" name="公司编号" underline="true" requiredFlag="true" disabled="disabled" value="${item.contractorOrgCode}"/>
+
+
+
+
+                   <!--                 <#input_sjf id="buidContacts" name="建设单位联系人" underline="true"  value="${item.buidContacts}" disabled="disabled"/>
+                                    <#input_sjf id="contractorLeader" name="企业分管领导" underline="true"  value="${item.contractorLeader}" disabled="disabled"/>
+                                    <#input_sjf id="projectDirector" name="项目总监" underline="true"  value="${item.projectDirector}" disabled="disabled"/>
+                                    <#select_sjf id="isCivilization" name="是否申报文明工地" underline="true"  value="${item.isCivilization}" disabled="disabled">
+                                        @if("0"==""+item.isCivilization){
+                                        <option value="0">否</option>
+                                        @}else{
+                                        <option value="1">是</option>
+                                        @}
+                                    </#select_sjf>
+                                    <#select_sjf id="isGovernment" name="是否政府工程" underline="true"  value="${item.isGovernment}" disabled="disabled">
+                                        @if("0"==""+item.isGovernment){
+                                        <option value="0">否</option>
+                                        @}else{
+                                        <option value="1">是</option>
+                                        @}
+                                    </#select_sjf>-->
+                                  <!--  <#input_sjf id="projectCode" name="项目编号" underline="true" visible="true" requiredFlag="true" value="${item.projectCode}" disabled="disabled"/>-->
+                       <!--             <div class="form-group form-group-sss" style="padding:6px 0;">
+                                        <label class="col-sm-3 control-label control-label-sss"
+                                               style="padding-top:5px;">
+                                           		 实名制同步
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <div class="radio radio-info2 radio-inline">
+                                                <input type="radio" id="inlineRadio4" value="1" name="isSynchro"
+                                                       @if(item.isSynchro==1){
+                                                       checked
+                                                       @}
+                                                       disabled
+                                                >
+                                                <label for="inlineRadio4"> 是</label>
+                                            </div>
+
+                                            <div class="radio radio-info2 radio-inline">
+                                                <input type="radio" id="inlineRadio3" value="0" name="isSynchro"
+                                                       @if(item.isSynchro==0){
+                                                       checked
+                                                       @}
+                                                       disabled
+                                                >
+                                                <label for="inlineRadio3"> 否</label>
+                                            </div>
+                                        </div>
+                                    </div>-->
+
+                                </div>
+
+                                <div class="col-sm-6">
+
+
+                                    <#select_sjf id="projectCategory" name="项目分类" underline="true"  requiredFlag="true" value="${item.projectCategory}" disabled="disabled">
+                                    @for(i in projectCategory){
+                                    @if(""+i.num==""+item.projectCategory){
+                                    <option value="${i.num}" selected>${i.name}</option>
+                                    @}else{
+                                    <option value="${i.num}">${i.name}</option>
+                                    @}
+                                    @}
+                                </#select_sjf>
+
+                           <!-- <#input_sjf id="buildCorporationCode" name="社会信用代码" underline="true"  disabled="disabled" value="${item.buildCorporationCode}"/>-->
+
+
+                   <!--         <#input_sjf id="totalContractAmt" name="承包合同额(万元)" underline="true"  value="${item.totalContractAmt}" disabled="disabled"/>-->
+                            <#select_sjf id="projectStatus" name="项目状态" underline="true" requiredFlag="true"  disabled="disabled">
+                            @for(i in projectStatus){
+                            @if(""+i.num==item.projectStatus){
+                            <option value="${i.num}" selected>${i.name}</option>
+                            @}else{
+                            <option value="${i.num}">${i.name}</option>
+                            @}
+                            @}
+                        </#select_sjf>
+
+                        <#input_sjf id="startDate" name="开工时间" underline="true"  disabled="disabled" value="${item.startDate}"/>
+                        <#input_sjf id="completeDate" name="竣工时间" underline="true"   disabled="disabled"  value="${item.completeDate}"/>
+                        <#input_sjf id="areaName" name="项目所在地" requiredFlag="true" value="${item.areaName}" disabled="disabled"/>
+                        <#input_sjf id="address" name="详细地址" underline="true"  value="${item.address}" disabled="disabled"/>
+
+                      <!--  <#input_sjf id="radius" name="考勤范围" underline="true" value="${item.radius}" disabled="disabled"/>-->
+
+
+
+                            <!--<#input_sjf id="projectSource" name="项目来源" underline="true" value="${item.projectSource}" disabled="disabled"/>
+
+                                    <#select_sjf id="deviceType" name="考勤类型" requiredFlag="true" underline="true" disabled="disabled">
+                                        @for(i in deviceType){
+                                        @if(""+i.num==""+item.deviceType){
+                                        <option value="${i.num}" selected>${i.name}</option>
+                                        @}else{
+                                        <option value="${i.num}">${i.name}</option>
+                                        @}
+                                        @}
+                                    </#select_sjf>
+
+                                    <#select_sjf id="isMajorProject" name="重点项目" underline="true"  value="${item.isMajorProject}" disabled="disabled">
+                                        @if("0"==""+item.isMajorProject){
+                                        <option value="0">否</option>
+                                        @}else{
+                                        <option value="1">是</option>
+                                        @}
+                                    </#select_sjf>
+                                    <#input_sjf id="ownerName" name="建设单位名称" underline="true" value="${item.ownerName}" disabled="disabled"/>
+                                    <#input_sjf id="buildPhone" name="建设单位联系人电话" underline="true" value="${item.buildPhone}" disabled="disabled"/>
+                                    <#input_sjf id="contractorLeaderPhone" name="企业分管领导电话" underline="true" value="${item.contractorLeaderPhone}" disabled="disabled"/>
+                                    <#input_sjf id="projectDirectorPhone" name="项目总监联系电话" underline="true"  value="${item.projectDirectorPhone}" disabled="disabled"/>
+                                    <#select_sjf id="isHighGrade" name="是否申报优质工程" underline="true"  value="${item.isHighGrade}" disabled="disabled">
+                                        @if("0"==""+item.isHighGrade){
+                                        <option value="0">否</option>
+                                        @}else{
+                                        <option value="1">是</option>
+                                        @}
+                                    </#select_sjf>
+                                    <#input_sjf id="personLiable" name="责任人联系电话" underline="true"  value="${item.personLiable}" disabled="disabled"/>-->
+                           <!--         <#input_sjf id="lng" name="经度" underline="true"  value="${item.lng}" disabled="disabled"/>
+                                    <#input_sjf id="lat" name="纬度" underline="true"  value="${item.lat}" disabled="disabled"/>-->
+                                </div>
+                            </div>
+
+                            <div id="container">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div id="joinedSubContractor" class="tab-pane">
+                <div class="ibox-content">
+                    <div class="row row-lg">
+                        <form class="col-sm-12" id="searchForm1">
+                            <div class="clear-float">
+                        <!--        <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">企业名称</label>
+                                        <input type="text" class="fn-input" id="workKeys" placeholder="企业名称"/>
+                                    </div>
+                                </div>-->
+
+                   <!--             <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">参建类型</label>
+                                        <select class="fn-input search-chosen" id="queryContractorType" name="参建类型">
+                                            <option value="">全部</option>
+                                            @for(item in contractorType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>-->
+
+                                <div class="col-sm-4 fn-condition">
+                             <!--       <#button name="搜索" icon="fa-search" clickFun="ProjectSubContractor.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm1"/>-->
+                                  <!--  <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>-->
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">进场时间</label>
+                                        <div class="fn-datepicker" id="datepicker">
+                                            <input class="fn-datepicker-input" id="queryStartDate" name="establishDate"
+                                                   readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="queryEndDate" name="establishDate"
+                                                   readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">退场时间</label>
+                                        <div class="fn-datepicker" id="datepicker1">
+                                            <input class="fn-datepicker-input" id="queryStartDate1" name="establishDate"
+                                                   readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="queryEndDate1" name="establishDate"
+                                                   readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                            <input hidden id="projectId" value="${projectId}">
+                            <div id="ProjectSubContractorTableToolbar" role="group">
+
+                                <!--<#button name="修改" icon="fa-edit" clickFun="ProjectSubContractor.openProjectSubContractorDetail()" space="true"/>-->
+                                <!--<#button name="删除" icon="fa-remove" clickFun="ProjectSubContractor.delete()" space="true"/>-->
+
+                                <#button name="评价" icon="fa-edit" clickFun="ProjectSubContractor.openProjectContractorEvaluation()" space="true"/>
+                 <!--               <#button name="进场" icon="fa-remove" clickFun="ProjectSubContractor.changeJoinStatus(0)" space="true"/>
+                                <#button name="退场" icon="fa-remove" clickFun="ProjectSubContractor.changeJoinStatus(1)" space="true"/>-->
+                            </div>
+                            <#table id="ProjectSubContractorTable"/>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            <div id="classList" class="tab-pane">
+                <div class="panel-body">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-5 no-before">
+                                <div class="ap-container">
+                                    <!-- <div class="ap-title">
+                                        <span id="projectName">${item.projectName}</span>
+                                    </div> -->
+                                    <div class="ap-content" style="border-top:#EEE solid 1px;">
+                                        <div id="TeamMasterTableToolbar" role="group">
+                                            <#button name="添加" icon="fa-plus" clickFun="TeamMaster.openAddTeamMaster()"/>
+                                            <#button name="编辑" icon="fa-edit" clickFun="TeamMaster.openTeamMasterDetail()"/>
+                                            <#button name="评价" icon="fa-edit" clickFun="TeamMaster.openProjectContractorEvaluation()"/>
+                                        </div>
+                                        <#table id="TeamMasterTable"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 no-before">
+                                <div class="ap-container">
+                                    <div class="ap-title" style="display: none;">
+                                        <span id="teamName"></span>
+                                        <input id="teamSysNo" hidden/>
+                                    </div>
+                                    <!-- <div class="row" id="searchForm">
+                                        <div class="clear-float">
+
+                                            <div class="col-sm-4">
+                                                <div class="fn-div">
+                                                    <label class="fn-label">查询</label>
+                                                    <input type="text" class="fn-input" id="name" placeholder="姓名" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4">
+                                                <#button name="搜索" icon="fa-search"
+                                                        clickFun="TeamWorker.search()"/>
+                                                
+                                            </div>
+
+                                    </div>
+                                    </div> -->
+                                    <div class="ap-content" style="border-top:#EEE solid 1px; position: relative;">
+                                        <div id="TeamMemberTableToolbar" role="group">
+                                            <div class="row">
+                                                <#button name="添加" icon="fa-plus" clickFun="TeamMember.openWorkerDialog()"/>
+                                                <#button name="进场" icon="fa-edit" clickFun="TeamWorker.workerJoin()"/>
+                                                <#button name="退场" icon="fa-edit" clickFun="TeamWorker.workerOut()"/>
+                                                <#button name="删除" icon="fa-remove" clickFun="TeamWorker.delete()"/>
+                                                <#button name="设为组长" icon="fa-remove" clickFun="TeamWorker.setTeamLeader()"/>
+                                            </div>
+                                            <div class="row">
+                                                <#button name="绑定安全帽" icon="fa-remove" clickFun="TeamWorker.bindHelmet()"/>
+                                                <#button name="绑定门禁卡" icon="fa-edit" clickFun="TeamWorker.cardNumber()"/>
+                                            </div>
+                                        </div>
+                                        <#table id="TeamMemberTable"/>
+                                        <div class="ap-search-s201">
+                                            <div class="input-group">
+                                                <input type="text" id="name" placeholder="按姓名查找" class="form-control"
+                                                       style="border-right: none;">
+                                                <span class="input-group-addon fa fa-search" style="border-left: none;"
+                                                      onClick="TeamWorker.search()"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div id="deviceRecord" class="tab-pane">
+                <div class="ibox-content">
+                    <div class="row row-lg">
+                        <form class="col-sm-12" id="searchForm4">
+                            <div class="clear-float">
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <select class="fn-input search-chosen" id="team" name="班组">
+                                            <option value="">全部</option>
+                                            @for(item in team){
+                                            <option value="${item.teamSysNo}">${item.teamName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">工人姓名</label>
+                                        <input type="text" class="fn-input" id="workerName" placeholder="工人姓名"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <#button name="搜索" icon="fa-search" clickFun="DeviceRecord.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm4"/>
+                                </div>
+
+                            </div>
+                            <#table id="DeviceRecordTable"/>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ap-container .ap-title {
+        height: 40px;
+        line-height: 40px;
+        background-color: #f9f9f9;
+        border: #EEE solid 1px;
+        padding: 0 25px;
+    }
+
+    .ap-container .ap-content {
+        min-height: 400px;
+        border: #EEE solid 1px;
+        border-top: none;
+        padding: 25px;
+    }
+
+    .ap-container .ap-add {
+        width: 40px;
+        text-align: right;
+        float: right;
+        font-size: 24px;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .span-but {
+        padding: 0 5px;
+        cursor: pointer;
+    }
+    
+    .btn{
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+</style>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=fQ8PSIzV54091UMUlIwCzSMjXCeWfGTS"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/addMember.js"></script>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMember.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster_info.js"></script>
+<script src="${ctxPath}/static/modular/longxin/projectMaster/projectSubContractor.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/deviceRecord.js"></script>
+@}

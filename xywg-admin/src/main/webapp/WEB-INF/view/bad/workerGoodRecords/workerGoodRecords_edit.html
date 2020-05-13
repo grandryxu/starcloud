@@ -1,0 +1,72 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="workerGoodRecordsForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6">
+                          <#select_sjf id="workerId" name="姓名" underline="true" disabled="true" >
+	                             @for(i in workers){
+		                             @if(i.idCardNumber==item.idCardNumber){
+		                                 <option value="${i.id}" selected>${i.workerName}</option>
+		                             @}else{
+		                                 <option value="${i.id}">${i.workerName}</option>
+		                             @}
+	                             @}
+                            </#select_sjf>
+                                                    
+                              <#select_sjf id="idCardType" name="证件类型" underline="true" disabled="true">
+							    @for(i in dictIdCardType){
+							         @if(i.num==item.idCardType){
+							            <option value="${i.num}" selected>${i.name}</option>
+							         @}else{
+							            <option value="${i.num}">${i.name}</option>
+							         @}
+							    @}
+							</#select_sjf>
+                            <#input_sjf id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true" disabled="true"/>                           
+                            <#input_sjf id="projectCode" name="项目编号" value="${item.projectCode}" underline="true" disabled="true"/>
+                            <#input_sjf id="projectName" name="所属项目" value="${item.projectName}" underline="true" disabled="true"/> 
+                           <#input_sjf id="companyName" name="所属单位" value="${item.companyName}" underline="true" disabled="true"/>
+                </div>
+
+                <div class="col-sm-6">
+               				<#select_sjf id="goodRecordTypeCode" name="奖励类型" underline="true" requiredFlag="true" >
+                             @for(i in dictGoodRecordTypeCode){
+	                              @if(i.num==parseInt(item.goodRecordTypeCode)){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf>     
+                            
+                            <#select_sjf id="goodRecordLevelType" name="奖励级别" underline="true" requiredFlag="true" >
+                             @for(i in dictGoodRecordLevelType){
+	                              @if(i.num==item.goodRecordLevelType){
+	                              	<option value="${i.num}" selected>${i.name}</option>
+	                              @}else{
+	                              	<option value="${i.num}">${i.name}</option>
+	                              @}
+	                            @}
+                            </#select_sjf> 
+                            <#input_sjf id="occurrenceDate" name="奖励时间" value ="${item.occurrenceDate}" underline="true"  requiredFlag="true" 
+                             clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                            <#textarea_sjf id="details" name="奖项说明" value="${item.details}" underline="true" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="WorkerGoodRecordsInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="WorkerGoodRecordsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/workerGoodRecords/workerGoodRecords_info.js"></script>
+@}

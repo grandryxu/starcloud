@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.project.dao.ProjectTrainingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.project.model.ProjectTraining">
+        <id column="id" property="id" />
+        <result column="project_code" property="projectCode" />
+        <result column="training_time" property="trainingTime" />
+        <result column="training_duration" property="trainingDuration" />
+        <result column="training_name" property="trainingName" />
+        <result column="training_type_code" property="trainingTypeCode" />
+        <result column="trainer" property="trainer" />
+        <result column="description" property="description" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, training_time AS trainingTime, training_duration AS trainingDuration, training_name AS trainingName, training_type_code AS trainingTypeCode, trainer, description, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, is_del AS isDel
+    </sql>
+
+    <select id="list" resultType="Map">
+        select
+        pt.id as id,
+        pt.project_code AS projectCode,
+        pt.training_time AS trainingTime,
+        pt.training_duration AS trainingDuration,
+        pt.training_name AS trainingName,
+        pt.training_type_code AS trainingTypeCode,
+        pt.trainer,
+        pt.description,
+        pm.project_name as projectName
+        from buss_project_training pt
+        left join buss_project_master pm on pm.project_code=pt.project_code
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        JOIN (SELECT project_code FROM buss_project_sub_contractor WHERE 1=1
+        AND organization_code IN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        )
+        AND is_del = 0
+
+        group by project_code
+        ) A ON A.project_code = pm.project_code
+        </if>
+        where 1=1
+        and pt.is_del=0
+        <if test="map.condition!=null and map.condition!=''">
+            and  (pm.project_name like concat('%',#{map.condition},'%') or pt.training_name like concat('%',#{map.condition},'%')
+            or pt.trainer like concat('%',#{map.condition},'%'))
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and pt.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        order by pt.id desc
+    </select>
+
+    <insert id="insertProjectTrain" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        buss_project_training(
+        project_code,
+        training_time,
+        training_duration,
+        training_name,
+        training_type_code,
+        description,
+        trainer,
+        create_date
+        )VALUES (
+        #{projectCode},
+        #{trainingTime},
+        #{trainingDuration},
+        #{trainingName},
+        #{trainingTypeCode},
+        #{description},
+        #{trainer},
+        now()
+        )
+
+    </insert>
+
+    <resultMap id="map1" type="com.xywg.admin.modular.project.model.ProjectTrainingVo">
+        <id property="id" column="id" />
+        <result property="projectCode" column="projectCode" />
+        <result property="trainingTime" column="trainingTime" />
+        <result property="trainingName" column="trainingName" />
+        <result property="trainingDuration" column="trainingDuration" />
+        <result property="trainingTypeCode" column="trainingTypeCode" />
+        <result property="trainer" column="trainer" />
+        <result property="description" column="description" />
+        <collection property="workerList" ofType="com.xywg.admin.modular.worker.model.WorkerMaster">
+            <result property="idCardType" column="idCardType" />
+            <result property="idCardNumber" column="idCardNumber" />
+            <result property="workerName" column="workerName" />
+            <result property="workTypeCode" column="workTypeCode" />
+        </collection>
+        <collection property="fileList" ofType="com.xywg.admin.modular.system.model.FileInfo">
+            <result property="path" column="fPath" />
+            <result property="fileName" column="fileName" />
+        </collection>
+    </resultMap>
+    <select id="getOneById"  resultMap="map1">
+    SELECT
+    pt.id as id,
+    pt.project_code as projectCode,
+    pt.training_time as trainingTime,
+    pt.training_duration as trainingDuration,
+    pt.training_name as trainingName,
+    pt.training_type_code as trainingTypeCode,
+    pt.trainer as trainer,
+    pt.description as description,
+    wm.id_card_type as idCardType,
+    wm.id_card_number as idCardNumber,
+    wm.worker_name as workerName,
+    wm.work_type_code as workTypeCode,
+    fi.path as fPath,
+    fi.file_name as fileName
+    from buss_project_training pt
+    left join buss_project_train_record ptr on ptr.train_id=pt.id
+    left join buss_worker_master wm on ptr.id_card_type=wm.id_card_type and ptr.id_card_number=wm.id_card_number
+    left join buss_file_info fi on fi.relevance_id=pt.id and fi.type='buss_project_training'
+    where pt.id=#{id}
+</select>
+
+    <select id="getWorkerList" resultType="Map">
+        select
+        wm.worker_name as workerName,
+        wm.id_card_number as idCardNumber,
+        wm.id_card_type as idCardType,
+        wm.work_type_code as workTypeCode
+        from buss_worker_master wm
+        left join buss_project_train_record ptr on ptr.id_card_number=wm.id_card_number and ptr.id_card_type=wm.id_card_type
+        where ptr.train_id=#{id}
+
+    </select>
+
+    <!--发送培训数据到实名制-->
+    <select id="getProjectTrainFromLabor" resultType="com.xywg.admin.modular.smz.model.ProjectTrainMo">
+        SELECT
+        bpt.id as larlorId,
+        bpt.training_name as name,
+        bpt.description as trainContent,
+        bpm.id as projectId,
+        bpt.training_time as time,
+        bpt.training_duration as trainingDuration,
+        bpt.training_type_code as trainingType,
+        bpt.trainer as trainer,
+        "" as remark,
+        bpt.project_code as projectCode
+        from buss_project_training bpt
+        left join buss_project_master bpm on bpt.project_code=bpm.project_code
+        where bpt.is_del = 0 and bpm.is_synchro =1 and bpt.id IN
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+
+    <!--发送培训附件数据对接到实名制-->
+    <select id="getProjectTrainFileFromLabor" resultType="com.xywg.admin.modular.smz.model.ProjectTrainFileMo">
+              SELECT
+        bpt.id as trainRecordId,
+        bfi.file_name as attementName,
+        bfi.path as attement
+        from buss_file_info bfi
+        left join buss_project_training bpt on bpt.id=bfi.relevance_id  and bpt.is_del = 0
+        left join buss_project_master bpm on bpt.project_code=bpm.project_code
+        where  bfi.type='buss_project_training'
+         and bpm.is_synchro = 1
+         and bpt.id IN
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+    <!--发送培训工人数据对接到实名制-->
+    <select id="getProjectTrainWorkerFromLabor" resultType="com.xywg.admin.modular.smz.model.ProjectTrainWorkerMo">
+        SELECT
+        bpt.id as trainRecordId,
+        bwm.id as ngId,
+        bpm.id as projectId,
+        bptr.id_card_type as idCardType,
+        bptr.id_card_number as idCardNumber
+        from buss_project_train_record bptr
+        left join buss_project_training bpt on bpt.id=bptr.train_id
+        left join buss_project_master bpm on bpm.project_code=bpt.project_code
+        left join buss_worker_master bwm on bwm.id_card_type=bptr.id_card_type and bwm.id_card_number=bptr.id_card_number
+        where bpt.is_del = 0
+        	 and bpm.is_synchro =1
+         and bptr.train_id IN
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </select>
+
+    <!--批量删除-->
+    <update id="deleteByIds">
+        update buss_project_training set
+        is_del=1,
+        update_user=#{map.updateUser},
+        update_date=now()
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+    <select id="getProjectFileList" resultType="map">
+        select
+        fi.id as id,
+        fi.file_name as fileName,
+        fi.path as path
+        from buss_file_info fi
+        left join buss_project_training pt on pt.id=fi.relevance_id and fi.type='buss_project_training'
+        where pt.id=#{id}
+    </select>
+</mapper>

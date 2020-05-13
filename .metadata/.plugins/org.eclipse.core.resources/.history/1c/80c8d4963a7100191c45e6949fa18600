@@ -1,0 +1,44 @@
+package com.saier.erp.tpm.zrinterface;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import lombok.ToString;
+
+/**
+ * 黑名单信息
+ */
+@ToString
+@SuppressWarnings("serial")
+public class SmzZrRelationTpm implements Serializable{
+	private Long id;
+	private Long smzId;  // 1.有效，2.过期 
+    private String zrId;  //开始时间
+    private String tableName;
+	public Long getSmzId() {
+		return smzId;
+	}
+	public void setSmzId(Long smzId) {
+		this.smzId = smzId;
+	}
+	
+	public String getTableName() {
+		return tableName;
+	}
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getZrId() {
+		return zrId;
+	}
+	public void setZrId(String zrId) {
+		this.zrId = zrId;
+	}  
+    
+}

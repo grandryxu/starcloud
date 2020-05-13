@@ -1,0 +1,92 @@
+/**
+ * 结算单添加初始化
+ */
+var SettlementInfo = {
+    id: "settlementWorkerTable",	//表格id
+    seItem: null,		//选中的条目
+    table: null,
+    layerIndex: -1,
+    projectCodeValue:null
+};
+
+/**
+ * 初始化表格的列
+ */
+SettlementInfo.initColumn = function () {
+    return [
+            {field: 'selectItem', checkbox: true},
+            {title: '姓名', field: 'workerName', visible: true, align: 'center', valign: 'middle'},
+            {title: '性别', field: 'gender', visible: true, align: 'center', valign: 'middle'},
+            {title: '班组', field: 'teamName', visible: true, align: 'center', valign: 'middle'},
+            {title: '工种', field: 'workTypeName', visible: true, align: 'center', valign: 'middle'},
+            {title: '证件号', field: 'idCardNumber', visible: true, align: 'center', valign: 'middle'}
+    ];
+};
+
+/**
+ * 查询结算单列表
+ */
+SettlementInfo.search = function () {
+    SettlementInfo.projectCodeValue=$("#projectCode").val();
+    var queryData = {};
+    queryData['projectCode'] = $("#projectCode").val();
+    queryData['workerName'] = $("#workerName").val();
+    queryData['idCardNumber'] = $("#idCardNumber").val();
+    SettlementInfo.table.refresh({query: queryData});
+};
+
+/**
+ * 添加
+ * @returns {boolean}
+ */
+SettlementInfo.addSettlementDetail =function(){
+    var selected = $('#' + this.id).bootstrapTable('getSelections');
+    if (selected.length === 0) {
+        Feng.info("请先选中表格中的记录！");
+        return false;
+    }
+    var workerIdList="";
+    for(var i=0;i<selected.length;i++){
+        if(i>0){
+            workerIdList+=","+selected[i].id;
+        }else{
+            workerIdList+=selected[i].id;
+        }
+        // workerListIds.push(selected[i].id);
+        // console.info("id:"+selected[i].id);
+    }
+
+    console.info("info:"+JSON.stringify(workerIdList));
+    var projectCode = selected[0].projectCode;
+    //queryData.workerList = JSON.stringify(selected);
+    var index = layer.open({
+        type: 2,
+        title: '添加结算单详情',
+        area: ['80%', '80%'],
+        fix: false, //不固定
+        maxmin: true,
+        content: Feng.ctxPath + '/settlement/settlementAddDetail?projectCode='+projectCode+'&workerIdList='+workerIdList
+    });
+    /**
+    if(workerOperationTable.table==null) {
+        var defaultColunms = workerOperationTable.initColumn();
+        var table = new BSTable(workerOperationTable.id, "/settlement/getWorkerMoneyTable", defaultColunms);
+        table.setQueryParams(queryData);
+        table.onLoadSuccess = workerOperationTable.tableOnloadSuccess;
+        table.pagination = false;
+        table.showFooter = true;
+        table.setPaginationType("client");
+        workerOperationTable.table = table.init();
+    }else{
+        workerOperationTable.table.refresh({query:queryData});
+    }*/
+};
+
+$(function () {
+    var defaultColunms = SettlementInfo.initColumn();
+    var table = new BSTable(SettlementInfo.id, "/settlement/getWorkerMasterByProjectCode", defaultColunms);
+    table.setPaginationType("server");
+    table.setQueryParams({"projectCode": $("#projectCode").val()});
+    SettlementInfo.table = table.init();
+});
+

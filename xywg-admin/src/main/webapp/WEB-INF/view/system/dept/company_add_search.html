@@ -1,0 +1,35 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-inline">
+            <div class="row" style="padding:0 15px;">
+                    <div class="form-group add-XD85-FD">
+                        <input type="text" id="condition" class="form-control" name="condition" placeholder="公司名称/社会信用代码" onkeydown="enter(event);">
+                        <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary btn-dsf1" onclick="" id="searchButton">搜索</button>
+                        <button type="button" class="btn btn-primary btn-dsf2"  id="createNewButton"
+                                onclick="createCompany()">新建公司</button>
+                        </span>
+                    </div>
+            </div>
+            <table class="table-dfg-asdas" border="1" width="100%" id="tableContainer">
+                <tr>
+                    <th>企业名称</th>
+                    <th>社会信用代码</th>
+                    <th class="td-c">操作</th>
+                </tr>
+                <tbody class="tableContainer-tbody"></tbody>
+            </table>
+            <ul class="list-group" id="ulContainer" style="margin-top:20px;">
+            </ul>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/dept/company_add_search.js"></script>
+<style>
+    .list-group-item-checked {
+        background-color: #1ab394;
+        color:#FFF;
+    }
+</style>
+@}

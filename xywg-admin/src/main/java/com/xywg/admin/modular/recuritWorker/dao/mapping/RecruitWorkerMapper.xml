@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.recuritWorker.dao.RecruitWorkerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.recuritWorker.model.RecruitWorker">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="account" property="account"/>
+        <result column="recruit_type" property="recruitType"/>
+        <result column="recruit_station" property="recruitStation"/>
+        <result column="project_type" property="projectType"/>
+        <result column="work_id_sets" property="workIdSets"/>
+        <result column="recruit_number" property="recruitNumber"/>
+        <result column="weal_content" property="wealContent"/>
+        <result column="age_start" property="ageStart"/>
+        <result column="age_end" property="ageEnd"/>
+        <result column="claim" property="claim"/>
+        <result column="description" property="description"/>
+        <result column="salary_type" property="salaryType"/>
+        <result column="salary_content" property="salaryContent"/>
+        <result column="salary_text" property="salaryText"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="is_del" property="isDel"/>
+        <result column="remark" property="remark"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="provinces_id" property="provincesId"/>
+        <result column="cities_id" property="citiesId"/>
+        <result column="areas_id" property="areasId"/>
+        <result column="address" property="address"/>
+        <result column="browse_count" property="browseCount"/>
+        <result column="record_count" property="recordCount"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, organization_code AS organizationCode, account, recruit_type AS recruitType, recruit_station AS recruitStation, project_type AS projectType, work_id_sets AS workIdSets, recruit_number AS recruitNumber, weal_content AS wealContent, age_start AS ageStart, age_end AS ageEnd, claim, description, salary_type AS salaryType, salary_content AS salaryContent, salary_text AS salaryText, name, phone, email, is_del AS isDel, remark, create_date AS createDate, update_date AS updateDate, create_user AS createUser, update_user AS updateUser, provinces_id AS provincesId, cities_id AS citiesId, areas_id AS areasId, address, browse_count AS browseCount, record_count AS recordCount
+    </sql>
+
+    <!-- 查询我发布的职位信息 -->
+    <select id="getMyRecruitApp" resultType="com.xywg.admin.modular.recuritWorker.model.dto.RecuritWorkerDto">
+    SELECT
+        A.id,
+        A.recruitStation,
+        A.workerTypeNames,
+        A.salaryType,
+        A.salaryContent,
+        A.salaryText,
+        A.createDate,
+        A.isDel,
+        A.description,
+        A.recruitNumber ,
+        GROUP_CONCAT( sd2.NAME ) AS wealName
+    FROM
+        (
+        SELECT
+        rw.id,
+        recruit_station AS recruitStation,
+        GROUP_CONCAT( sd.NAME ) AS workerTypeNames,
+        salary_type AS salaryType,
+        salary_content AS salaryContent,
+        salary_text AS salaryText,
+        create_date AS createDate,
+        is_del AS isDel,
+        rw.description,
+        rw.weal_content,
+        rw.recruit_number AS recruitNumber
+        FROM
+        recruit_worker rw
+        LEFT JOIN sys_dict sd ON sd.pid = ( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' AND pid = 0 )
+        AND FIND_IN_SET( sd.num, rw.work_id_sets )
+        WHERE
+        account = #{account}
+        GROUP BY
+        rw.id
+        ) A
+    LEFT JOIN sys_dict sd2 ON sd2.pid = ( SELECT id FROM sys_dict WHERE NAME = '福利' AND pid = 0 )
+    AND FIND_IN_SET( sd2.num, A.weal_content )
+    GROUP BY
+        A.id
+    ORDER BY A.createDate DESC
+    LIMIT #{index},#{pageSize}
+    </select>
+
+    <!-- 刷新发布的时间 -->
+    <update id="refreshRecruitApp">
+        UPDATE recruit_worker
+        SET
+          create_date = #{createDate} ,
+          update_user = #{updateUser} ,
+          update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除之前发布的职位 -->
+    <update id="deleteRecruitApp">
+        UPDATE recruit_worker
+        SET
+        is_del = 1,
+        update_user = #{updateUser} ,
+        update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计招聘的浏览和申请数量 -->
+    <select id="getRecruitNumsApp" resultType="com.xywg.admin.modular.recuritWorker.model.dto.RecuritWorkerDto">
+        SELECT
+          recruit_station AS recruitStation ,
+          browse_count AS browseCount ,
+          record_count AS recordCount
+        FROM
+          recruit_worker
+        WHERE
+          id = #{id}
+    </select>
+
+    <!-- 查询浏览记录 -->
+    <select id="getBrowseHistoryApp"
+            resultType="com.xywg.admin.modular.recuritWorker.model.dto.GetBrowseHistoryAppResult">
+        SELECT
+          rb.id AS id,
+          bwm.worker_name AS workName ,
+          rb.create_date AS createDate,
+          if(rwe.id IS NULL ,0,1) AS isEnshrine,
+          bwm.cell_phone AS cellPhone ,
+          bwm.head_image AS headImage ,
+          rb.id_card_type AS idCardType ,
+          rb.id_card_number AS idCardNumber
+        FROM recruit_browse rb
+        LEFT JOIN buss_worker_master bwm ON bwm.id_card_type = rb.id_card_type AND bwm.id_card_number = rb.id_card_number
+        <!-- LEFT JOIN sys_user su ON su.id_card_type = rb.id_card_type AND su.id_card_number = rb.id_card_number-->
+        LEFT JOIN recruit_worker_enshrine rwe ON rwe.recruit_id = rb.recruit_id AND rwe.id_card_type = rb.id_card_type AND rwe.id_card_number = rb.id_card_number AND rwe.is_del = 0
+        WHERE
+          rb.recruit_id = #{id}
+          LIMIT #{index},#{pageSize}
+    </select>
+
+</mapper>

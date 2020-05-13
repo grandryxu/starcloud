@@ -1,0 +1,74 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>考勤记录管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                         <form class="row" id="searchForm">
+                             <div class="clear-float">
+
+                                 <div class="col-sm-4">
+                                     <div class="fn-div">
+                                         <label class="fn-label">班组</label>
+                                         <select class="fn-input search-chosen" id="team" name="班组" >
+                                             <option value="">全部</option>
+                                             @for(item in team){
+                                             <option value="${item.teamSysNo}">${item.teamName}</option>
+                                             @}
+                                         </select>
+                                     </div>
+                                 </div>
+
+                                 <div class="col-sm-4">
+                                     <div class="fn-div">
+                                         <label class="fn-label">工人姓名</label>
+                                         <input type="text" class="fn-input" id="workerName" placeholder="工人姓名" />
+                                     </div>
+                                 </div>
+                                 
+									<div class="col-sm-4">
+                                     <div class="fn-div">
+                                         <label class="fn-label">设备名称</label>
+                                         <input type="text" class="fn-input" id="deviceName" placeholder="设备名称" />
+                                     </div>
+                                 </div>
+                                 
+                                 <div class="col-sm-4">
+                                        <div class="fn-div">
+	                                        <label class="fn-label">考勤时间</label>
+	                                        <div class="fn-datepicker" id="datepicker1">
+	                                            <input class="fn-datepicker-input" id="startDate" type="datetime" name="recordTime"></input>
+	                                            <span class="">-</span>
+	                                             <input class="fn-datepicker-input" id="endDate" type="datetime" name="recordTime" ></input>
+	                                        </div>
+                                    	</div>
+                                    </div>
+                                 
+                                 <div class="col-sm-4" style="width:20%;float:right">
+                                     <#button name="搜索" icon="fa-search" clickFun="DeviceRecord.search()"/>
+                                     <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                 </div>
+                                 
+                                 
+
+                             </div>
+                         </form>
+         <!--               <div class="hidden-xs" id="DeviceRecordTableToolbar" role="group">
+                                <#button name="补考勤" icon="fa-plus" clickFun="DeviceRecord.openAddDeviceRecord()"/>
+                        </div>-->
+                        <div class="hidden-xs" id="DeviceRecordTableToolbar" role="group">
+                                <#button name="导出" icon="fa-upload" clickFun="DeviceRecord.download()"/>
+                        </div>
+                        <#table id="DeviceRecordTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/toggleProjectDevice/toggle_device_record.js"></script>
+@}

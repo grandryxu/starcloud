@@ -1,0 +1,71 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="subConCerForm">
+
+            <input type="hidden" id="id" value="item.id">
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#select_sjf id="organizationCode" name="公司名称" underline="true" requiredFlag="true" disabled="disabled">
+                    <option value="">请选择</option>
+                    @for(i in companys){
+                    @if(i.socialCreditNumber==item.organizationCode){
+                    <option value="${i.socialCreditNumber}" selected>${i.companyName}</option>
+                    @}else{
+                    <option value="${i.socialCreditNumber}">${i.companyName}</option>
+                    @}
+                    @}
+                </#select_sjf>
+
+                <#input_sjf id="certificationName" name="证书名称"  value="${item.certificationName}" underline="true" requiredFlag="true" disabled="disabled"/>
+                <#input_sjf id="certificationCode" name="证书编号" underline="true" requiredFlag="true"  value="${item.certificationCode}" disabled="disabled"/>
+
+                <#input_sjf id="validBeginDate" name="证书有效时间(起)" underline="true" requiredFlag="true"  value="${item.validBeginDate}" disabled="disabled"/>
+                <#input_sjf id="validEndDate" name="证书有效时间(止)" underline="true" requiredFlag="true"  value="${item.validEndDate}" disabled="disabled"/>
+
+            </div>
+
+        <div class="col-sm-6">
+            <#select_sjf id="certificationType" name="证书类型" underline="true" requiredFlag="true" disabled="disabled">
+            <option value="">请选择</option>
+            @for(i in certificationType){
+            @if(i.num+''==item.certificationType){
+            <option value="${i.num}" selected>${i.name}</option>
+            @}else{
+            <option value="${i.num}">${i.name}</option>
+            @}
+            @}
+        </#select_sjf>
+            <#select_sjf id="qualificationStatus" name="资质状态" underline="true" requiredFlag="true" disabled="disabled">
+            <option value="">请选择</option>
+            @for(i in qualificationStatus){
+            @if(i.num==item.qualificationStatus){
+            <option value="${i.num}" selected>${i.name}</option>
+            @}else{
+            <option value="${i.num}">${i.name}</option>
+            @}
+            @}
+        </#select_sjf>
+         <#select_sjf id="certificationStatus" name="资质证书状态" underline="true" requiredFlag="true" disabled="disabled">
+        <option value="">请选择</option>
+        @for(i in certificationStatus){
+        @if(i.num==item.certificationStatus){
+        <option value="${i.num}" selected>${i.name}</option>
+        @}else{
+        <option value="${i.num}">${i.name}</option>
+        @}
+        @}
+    </#select_sjf>
+    <#input_sjf id="grantOrg" name="发证机关" requiredFlag="true" requiredFlag="true"  value="${item.grantOrg}" disabled="disabled"/>
+
+    <#input id="recentValidDate" name="最近发放日期" underline="true"  value="${item.recentValidDate}" disabled="disabled"/>
+
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+<script src="${ctxPath}/static/modular/company/subContractorCertifications/subContractorCertifications_info.js"></script>
+@}

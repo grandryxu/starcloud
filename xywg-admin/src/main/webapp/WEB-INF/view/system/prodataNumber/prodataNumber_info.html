@@ -1,0 +1,15 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="form-horizontal">
+        <input type="hidden" id="id" value="${item.id}">
+        <div class="row">
+            <div class="col-sm-12 b-r">
+                <#input id="projectName" name="项目名称" underline="true" value="${item.projectName}" disabled="disabled"/>
+                <#input id="dataNumber" name="数据指纹" underline="true" disabled="disabled" value="${item.dataNumber}"/>
+                <#input id="areaName" name="区域" requiredFlag="true" value="${item.areaName}" disabled="disabled"/>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/prodataNumber/prodataNumber_info.js"></script>
+@}

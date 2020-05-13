@@ -1,0 +1,54 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-sm-10">
+                        <div class="inline-search-s">
+                            <label class="label-search-s">项目</label>
+                            <select class="input-search-s" id="projectCode"   underline="true" name="项目" >
+                                <!--<option value="">请选择</option>-->
+                                @for(item in project){
+                                <option value="${item.projectCode}">${item.projectName}</option>
+                                @}
+                            </select>
+                        </div>
+                        <div class="inline-search-s">
+                            <label class="label-search-s">姓名</label>
+                            <input id="workerName" name="姓名" underline="true" maxlength="45"  class="input-search-s"/>
+                        </div>
+                        <div class="inline-search-s">
+                            <label class="label-search-s">证件编号</label>
+                            <input id="idCardNumber" name="证件编号" underline="true" maxlength="30"   class="input-search-s"/>
+                        </div>
+                    </div>
+                    <div class="col-sm-1">
+                        <#button name="搜索" icon="fa-search" clickFun="SettlementInfo.search()"/>
+                    </div>
+                    <div class="col-sm-1">
+                        <#button name="添加" icon="fa-search" clickFun="SettlementInfo.addSettlementDetail()"/>
+                    </div>
+                </div>
+            <#table id="settlementWorkerTable" />
+        </div>
+        <!--<div class="form-horizontal">
+            <div class="hidden-xs" id="workerOperationTableToolbar" role="group">
+                @if(shiro.hasPermission("/account/add")){
+                <#button name="批量奖励" icon="fa-edit" clickFun="workerOperationTable.batchRewardAmount()"/>
+                @}
+                @if(shiro.hasPermission("/account/update")){
+                <#button name="批量写惩罚" icon="fa-edit" clickFun="workerOperationTable.batchPunishAmount()" space="true"/>
+                @}
+                @if(shiro.hasPermission("/account/delete")){
+                <#button name="批量写结算" icon="fa-edit" clickFun="workerOperationTable.batchSettleActualAmount()" space="true"/>
+                @}
+                @if(shiro.hasPermission("/account/delete")){
+                <#button name="保存" icon="fa-save" clickFun="workerOperationTable.saveSettlement()" space="true"/>
+                @}
+            </div>
+            <#table id="workerOperationTable" />
+        </div>-->
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/settlement/settlement_add.js"></script>
+@}

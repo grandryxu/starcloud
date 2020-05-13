@@ -1,0 +1,38 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <input  id="settlementCode"  type="hidden"  value="${settlementCode}"/>
+            <div class="tabs-container">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a data-toggle="tab" href="#projectInfo" aria-expanded="true">结算单编号:${settlementCode} </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div  id="settlementEditTableToolbar" role="group">
+                        @if(shiro.hasPermission("/settlementPayroll/reward")){
+                        <#button name="批量奖励" icon="fa-edit" clickFun="SettlementEdit.batchWrite('rewardAmount')"/>
+                        @}
+                        @if(shiro.hasPermission("/settlementPayroll/punish")){
+                        <#button name="批量惩罚" icon="fa-edit" clickFun="SettlementEdit.batchWrite('punishAmount')" space="true"/>
+                        @}
+                        @if(shiro.hasPermission("/settlementPayroll/actual")){
+                        <#button name="批量结算" icon="fa-edit" clickFun="SettlementEdit.batchWrite('settleActualAmount')" space="true"/>
+                        @}
+
+                    </div>
+                    <#table id="settlementEditTable" />
+                    <div class="row btn-group-m-t">
+                        <div class="col-sm-12 button-ta-r">
+                            @if(shiro.hasPermission("/settlementPayroll/save")){
+                            <#button name="保存" icon="fa-save" clickFun="SettlementEdit.save()" space="true"/>
+                            @}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+</div>
+<script src="${ctxPath}/static/modular/wages/settlement/settlement_edit.js"></script>
+@}

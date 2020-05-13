@@ -1,0 +1,69 @@
+@layout("/common/_container.html"){
+<div class="container-fluid container-fluid-sss">
+    <div class="top-s1 clear-float">
+        <div class="col-sm-12 padding0 col-sm-12-left">
+            <div class="left-s bdwhite">
+                <div class="tac-sss clear-float">
+                   <div class="col-sm-4 box-t-b box-t-b-1">
+                       <div class="bdwhite" style="padding:20px 0;">
+                            <p class="pt1">项目班组</p>
+                            <p class="pt2">${teamCount.teamCount}</p>
+                       </div>
+                   </div> 
+                   <div class="col-sm-4 box-t-b box-t-b-2">
+                       <div class="bdwhite" style="padding:20px 0;">
+                            <p class="pt1">项目进场人数</p>
+                            <p class="pt2">${personCount.entryCount}</p>
+                       </div>
+                   </div> 
+                   <div class="col-sm-4 box-t-b box-t-b-3">
+                       <div class="bdwhite" style="padding:20px 0;">
+                            <p class="pt1">今日考勤人数</p>
+                            <p class="pt2">${todayPersons}</p>
+                       </div>
+                   </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-s3 clear-float">
+        <div class="col-sm-6 col-sm-6-left">
+            <div class="box-s left-s bdwhite">
+                <div id="workerAge" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-sm-6-right">
+            <div class="box-s right-s bdwhite">
+                <div id="workerNativePlace" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+
+  <!--  <div class="top-s3 clear-float">
+        <div class="col-sm-6 col-sm-6-left">
+            <div class="box-s left-s bdwhite">
+                <div id="workerAge" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-sm-6-right">
+            <div class="box-s right-s bdwhite">
+                <div id="workerNativePlace" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>-->
+
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts-en.common.js"></script>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.js"></script>
+<script src="http://gallery.echartsjs.com/dep/echarts/map/js/china.js"></script>
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-projectWorker.js"></script> -->
+<!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerType.js"></script> -->
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerNativePlace.js"></script>
+<script src="${ctxPath}/static/modular/blackboard/echarts-workerAge.js"></script>
+ <!-- <script src="${ctxPath}/static/modular/blackboard/echarts-workerAttendance.js"></script> -->
+
+
+
+
+@}

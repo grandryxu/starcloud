@@ -1,0 +1,72 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="teamGoodRecordsForm" novalidate="novalidate">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="projectCode" name="所属项目" underline="true" requiredFlag="true" onchange="TeamGoodRecordsInfoDlg.projectChange(this)">
+                        <option value=''>请选择</option>
+                        @for(item in project){
+                        <option value="${item.projectCode}">${item.projectName}</option>
+                        @}
+                    </#select_sjf>
+
+                    <div class="form-group form-group-sss">
+                        <label class="col-sm-3 control-label control-label-sss" style="margin-top:-5px;">
+                            班组名称:</label>
+                        <div class="col-sm-9">
+                            <p class="select-disabled-p">
+                                <select class="input-search-s search-chosen" id="teamId" name="班组名称"  onchange="TeamGoodRecordsInfoDlg.teamChange(this)"
+                                        requiredFlag="true">
+                                    <option value=''>请选择</option>
+                                    @for(item in teams){
+                                    <option value="${item.id}">${item.teamName}</option>
+                                    @}
+                                </select>
+                                <span class="select-disabled-block"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <#input_sjf id="teamSysNo" name="班组编号" underline="true" disabled="true"/>
+                    <#input_sjf id="teamLeader" name="班组长" underline="true"  disabled="true"/>
+                    <input type="hidden" id="organizationCode" >
+                    <#input_sjf id="companyName" name="所属单位" underline="true" disabled="true"/>
+                    <input type="hidden" id="type" value="2">
+                            
+                </div>
+
+                <div class="col-sm-6">
+                			<#select_sjf id="goodRecordTypeCode" name="奖励类型" underline="true" requiredFlag="true" >
+                             <option value=''>请选择</option>
+                             @for(item in dictGoodRecordTypeCode){
+                             <option value="${item.num}">${item.name}</option>
+                             @}
+                            </#select_sjf>    
+                			<#select_sjf id="goodRecordLevelType" name="奖励级别" underline="true" requiredFlag="true" >
+                             <option value=''>请选择</option>
+                             @for(item in dictGoodRecordLevelType){
+                             <option value="${item.num}">${item.name}</option>
+                             @}
+                            </#select_sjf>  
+                			<#input_sjf id="occurrenceDate" name="奖励时间" underline="true"  requiredFlag="true"
+                             clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                            <#textarea_sjf id="details" name="奖项说明" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="TeamGoodRecordsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="TeamGoodRecordsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/bad/teamGoodRecords/teamGoodRecords_info.js"></script>
+@}

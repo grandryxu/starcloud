@@ -1,0 +1,57 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-12 banner-order-ss">
+                            <#select_sjf id="type" name="终端" underline="true" onchange="changeOrder()" >
+                            <option value="">请选择</option>
+                            <option value="1">企业端</option>
+                            <option value="2">工人端</option>
+                            <option value="3">pc端</option>
+                            </#select_sjf>
+                </div>
+
+                <div class="wrap-ssd">
+                        <ul class="clear-float" id="warp-content">
+                            <!--<li>-->
+                                <!--<img src="http://img07.tooopen.com/images/20170316/tooopen_sy_201956178977.jpg">-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<img src="http://img.taopic.com/uploads/allimg/121019/234917-121019231h258.jpg">-->
+                            <!--</li>-->
+                            <!--<li>-->
+                                <!--<img src="https://www.baidu.com/img/bd_logo1.png">-->
+                            <!--</li>-->
+                        </ul>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t" style="text-align: center;">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="BannerOrderDlg.updateSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="BannerOrderDlg.close()"/>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/js/plugins/ddsort/ddsort.min.js"></script>
+<script src="${ctxPath}/static/modular/system/banner/banner_order.js"></script>
+<script>
+        $('.wrap-ssd').DDSort({
+            target: 'li',		// 示例而用，默认即 li，
+            delay: 100,         // 延时处理，默认为 50 ms，防止手抖点击 A 链接无效
+            floatStyle: {
+                'border': '1px solid #ccc',
+                'background-color': '#fff'
+            }
+        });
+</script>
+@}

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.flow.mapper.ProcessMapper">
+    <insert id="insert">
+        INSERT INTO
+        biz_wf_process
+        (
+            id,
+            create_time,
+            create_user,
+            dept_id,
+            is_del,
+            process_name,
+            display_name,
+            user_ids,
+            role_ids,
+            dept_ids,
+            vars,
+            version,type,projectId
+        )VALUES(
+            #{id },
+            #{createTime},
+            #{createUser},
+            #{deptId},
+            #{isDel},
+            #{processName},
+            #{displayName},
+            #{userIds},
+            #{roleIds},
+            #{deptIds},
+            #{vars},
+            #{version},#{type},#{projectId}
+        )
+    </insert>
+
+    <select id="findCountByProcessName" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM
+        biz_wf_process
+        WHERE
+        is_del = 0
+        AND process_name = #{processName}
+    </select>
+
+    <update id="delete" parameterType="java.lang.String">
+
+        update biz_wf_process
+        set is_del = 1
+        where process_name = #{processName}
+
+    </update>
+
+    <select id="isMaxVersionByProcessId" resultType="java.lang.Boolean">
+        SELECT
+            p.version = max(p2.version)
+        FROM
+            `biz_wf_process` p
+        LEFT JOIN biz_wf_process p2 ON p2.process_name = p.process_name
+        WHERE
+            p.id = #{processId}
+        GROUP BY
+            p.id
+    </select>
+
+
+
+    <select id="selectList" resultType="com.xywg.admin.flow.entity.Process">
+        select
+        t.id AS id,
+        t.create_time AS createTime,
+        t.create_user AS createUser,
+        t.process_name AS processName,
+        t.display_name AS displayName,
+        t.vars AS vars,
+        t.version AS version
+        from biz_wf_process t where 1=1  and  is_del = 0
+          and  type= 0
+        and t.version=(select max(version) from biz_wf_process where is_del = 0 and process_name = t.process_name group by process_name) order by t.create_Time desc
+    </select>
+
+
+    <select id="getOne" resultType="com.xywg.admin.flow.entity.Process">
+        SELECT
+            id AS id,
+            create_time AS createTime,
+            create_user AS createUser,
+            process_name AS processName,
+            display_name AS displayName,
+            vars AS vars,
+            type as type,
+          max(version) AS version
+            FROM biz_wf_process
+            WHERE 1=1
+            <if test="processName!=null"> and process_name = #{processName}</if>
+            <if test="id!=null"> and id = #{id}</if>
+    </select>
+
+
+
+    <select id="selectById" resultType="com.xywg.admin.flow.entity.Process">
+        SELECT
+            id AS id,
+            create_time AS createTime,
+            create_user AS createUser,
+            process_name AS processName,
+            display_name AS displayName,
+            vars AS vars,
+            version AS version
+        FROM biz_wf_process
+        WHERE is_del = 0
+        AND id = #{processId }
+    </select>
+
+
+
+    <select id="getAll" resultType="com.xywg.admin.flow.entity.Process">
+        select
+        t.id AS id,
+        t.create_time AS createTime,
+        t.create_user AS createUser,
+        t.process_name AS processName,
+        t.display_name AS displayName,
+        t.vars AS vars,
+        t.version AS version
+
+        from biz_wf_process t where 1=1  and  is_del = 0
+        <if test="type!=null"> and  type= #{type}</if>
+        and t.version=(select max(version) from biz_wf_process where is_del = #{isDel} and process_name = t.process_name group by process_name) order by t.create_Time desc;
+    </select>
+</mapper>

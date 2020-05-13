@@ -1,0 +1,26 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" value="${workerIdList}" id="workerIdList" />
+            <input type="hidden" value="${projectCode}" id="projectCode" />
+            <div class="hidden-xs" id="settlementAddDetailTableToolbar" role="group">
+                @if(shiro.hasPermission("/account/add")){
+                <#button name="批量奖励" icon="fa-edit" clickFun="settlementAddDetailTable.batchRewardAmount()"/>
+                @}
+                @if(shiro.hasPermission("/account/update")){
+                <#button name="批量写惩罚" icon="fa-edit" clickFun="settlementAddDetailTable.batchPunishAmount()" space="true"/>
+                @}
+                @if(shiro.hasPermission("/account/delete")){
+                <#button name="批量写结算" icon="fa-edit" clickFun="settlementAddDetailTable.batchSettleActualAmount()" space="true"/>
+                @}
+                @if(shiro.hasPermission("/account/delete")){
+                <#button name="保存" icon="fa-save" clickFun="settlementAddDetailTable.saveSettlement()" space="true"/>
+                @}
+            </div>
+            <#table id="settlementAddDetailTable" />
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/settlement/settlement_add_detail.js"></script>
+@}

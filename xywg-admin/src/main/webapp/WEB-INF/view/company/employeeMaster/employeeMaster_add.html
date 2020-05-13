@@ -1,0 +1,105 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="employeeMasterForm">
+
+            <input type="hidden" id="id" value="">
+            <div class="row">
+                <div class="col-sm-6">
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" requiredFlag="true">
+                        @for(item in dictIdCardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="idCardNumber" name="证件编号" underline="true" requiredFlag="true" />
+                    <div style="text-align: right;">
+                        <button type="button" id="search" class="btn btn-white dropdown-toggle" data-toggle="">
+                            <span>搜索</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <#avatar_sjf id="headImagePath" name="头像" requiredFlag="true" disabled="disabled"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <#input_sjf id="employeeName" name="姓名" underline="true" disabled="disabled" requiredFlag="true"/>
+                    <#select_sjf id="organizationCode" name="公司" underline="true" requiredFlag="true" >
+                        <option value="">请选择</option>
+                        @for(item in companys){
+                        <option value="${item.socialCreditNumber}">${item.companyName}</option>
+                        @}
+                    </#select_sjf>
+                        <#select_sjf id="jobType" name="聘用方式" requiredFlag="true" >
+                        <option value="">请输入</option>
+                        <option value="0">全职</option>
+                        <option value="1">其他</option>
+                    </#select_sjf>
+                    <#select_sjf id="professionalLevel" name="职称等级" disabled="disabled" underline="true" requiredFlag="true" onchange="professionalLevelChange()">
+                        <option value="">请选择</option>
+                        @for(item in dictProfessionalLevel){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="professionalType" name="职称" underline="true" requiredFlag="true" disabled="disabled">
+                        <option value="">请选择</option>
+                    </#select_sjf>
+                    <#radioSex name="gender" id="gender" label="性别" disabled="true" requiredFlag="true" value="0"/>
+
+                    <#select_sjf id="cultureLevelType" name="文化程度" underline="true" disabled="disabled">
+                        <option value="">请选择</option>
+                        @for(item in dictCultureLevelType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#select_sjf id="nation" name="民族" underline="true" requiredFlag="true" disabled="disabled">
+                        @for(item in dictNation){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+
+
+
+
+                    <!--<#select_sjf id="jobStatus" name="状态"  requiredFlag="true" onchange="jobStatusChange()">-->
+                    <!--<option value="">请输入</option>-->
+                    <!--<option value="0">离职</option>-->
+                    <!--<option value="1">在职</option>-->
+                    <!--<option value="2">退休</option>-->
+                    <!--</#select_sjf>-->
+                </div>
+                <div class="col-sm-6">
+                    <#input_sjf id="cellPhone" name="手机号码" underline="true" disabled="disabled"/>
+                    <#input_sjf id="job" name="岗位职务"  underline="true"/>
+                    <#input_sjf id="workDate" name="开始工作日期" underline="true"   disabled="disabled"/>
+
+                    <#input_sjf id="birthday" name="出生日期" underline="true"  requiredFlag="true" disabled="disabled"/>
+                    <#input_sjf id="address" name="住址" underline="true" disabled="disabled" requiredFlag="true"/>
+
+
+                    <!--<#input_sjf id="hireDate" name="入职日期" underline="true"  requiredFlag="true" disabled="disabled"/>-->
+                    <!--<#input_sjf id="terminationDate" name="离职日期" underline="true"   disabled="disabled"/>-->
+                    <!--<#input_sjf id="retireDate" name="退休日期" underline="true"  disabled="disabled"/>-->
+                    <#textarea_sjf id="remark" name="备注信息" underline="true" />
+                </div>
+            </div>
+            <div class="progress progress-striped" id="progressTipArea" style="margin-top: 20px; background: none;">
+                <div id="progressBar" style="width: 0%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0"
+                     role="progressbar" class="progress-bar progress-bar-info">
+                </div>
+            </div>
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 tac-sss button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check"
+                            clickFun="EmployeeMasterInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser"
+                            clickFun="EmployeeMasterInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/employeeMaster/employeeMaster_info.js"></script>
+@}

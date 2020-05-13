@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceQrMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.DeviceQr">
+        <id column="id" property="id"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="name" property="name"/>
+        <result column="sn" property="sn"/>
+        <result column="state" property="state"/>
+        <result column="version" property="version"/>
+        <result column="talk_time" property="talkTime"/>
+        <result column="remark" property="remark"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="status" property="status"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, name, sn, state, version, talk_time AS talkTime, remark, create_date AS createDate,
+         create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, is_del AS isDel,soft_version as softVersion,soft_status as softStatus
+    </sql>
+
+    <select id="list" resultType="Map" parameterType="Map">
+        select
+        bdq.id, bdq.project_code AS projectCode, bdq.name, bdq.sn, bdq.state, bdq.version, bdq.talk_time AS talkTime, bdq.remark, bdq.create_date AS createDate,
+        bdq.create_user AS createUser, bdq.update_date AS updateDate, bdq.update_user AS updateUser, bdq.status, bdq.is_del AS isDel ,bpm.project_name AS projectName,
+        soft_version as softVersion,soft_status as softStatus
+        from buss_device_qr bdq
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = bdq.project_code
+        JOIN (SELECT project_code,organization_code FROM buss_project_sub_contractor WHERE organization_code IN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        )
+        AND is_del = 0
+        group by  project_code
+        ) A ON A.project_code = bdq.project_code
+        where bdq.is_del=0
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and bdq.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.projectCode!=null and map.projectCode!=''">
+            and bdq.project_code=#{map.projectCode}
+        </if>
+        <if test="map.condition!=null and map.condition!=''">
+            and (bdq.name like concat('%',#{map.condition},'%') OR bdq.sn like concat('%',#{map.condition},'%'))
+        </if>
+        ORDER BY bdq.id DESC
+    </select>
+
+    <!--设备号去重-->
+    <select id="checkDeviceSn" resultType="Map">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device_qr
+        where sn=#{sn} and is_del=0
+    </select>
+
+    <!--查询单条-->
+    <select id="getOneById" resultType="com.xywg.admin.modular.device.model.DeviceQr">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device_qr
+        where id=#{id}
+    </select>
+
+    <!--添加-->
+    <insert id="saveDeviceQr">
+        INSERT INTO buss_device_qr
+        (
+        project_code,
+        name,
+        sn,
+        version,
+        remark,
+        create_date
+        )VALUES (
+        #{projectCode},
+        #{name},
+        #{sn},
+        #{version},
+        #{remark},
+        now()
+        )
+    </insert>
+
+    <!--判重-->
+    <select id="checkBySn" parameterType="com.xywg.admin.modular.device.model.DeviceQr" resultType="com.xywg.admin.modular.device.model.DeviceQr">
+        select
+        id
+        from buss_device_qr
+        where sn=#{d.sn}
+        <if test="d.id!=null and d.id!=''">
+            and id!=#{d.id}
+        </if>
+        and is_del=0
+    </select>
+    <!--修改-->
+    <update id="updateDeviceQr" parameterType="com.xywg.admin.modular.device.model.DeviceQr">
+        update buss_device_qr
+        SET
+        project_code=#{projectCode},
+        name=#{name},
+        sn=#{sn},
+        version=#{version},
+        remark=#{remark}
+        where id=#{id}
+    </update>
+    <!--批量删除-->
+    <update id="deleteByIds">
+        update buss_device_qr set
+        is_del=1,
+        update_user=#{map.updateUser},
+        update_date=now()
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+    <!--添加-->
+    <insert id="upload">
+        INSERT INTO sys_soft_version
+        (
+        name,
+        path,
+        status
+        )VALUES (
+        #{map.name},
+        #{map.path},
+        1
+        )
+    </insert>
+    <select id="selectVersions" resultType="Map" parameterType="Map">
+        select
+        name from sys_soft_version where status =1
+        ORDER BY id DESC
+    </select>
+
+	<select id="getUpStatus" resultType="java.lang.Integer">
+        select
+        soft_status
+        from buss_device_qr
+        where sn = #{sn}
+        and is_del = 0
+    </select>
+    
+    <select id="getVersionPath" resultType="java.lang.String">
+        select
+        path
+        from sys_soft_version
+        where name = #{name}
+        and status = 1
+    </select>
+
+    <select id="selectByName" resultType="java.lang.String">
+        select
+        name
+        from sys_soft_version
+        where name = #{name}
+        and status =1
+    </select>
+    <select id="selectIdByProjectCodeAndSn" resultType="java.util.Map">
+        select id,count(id) AS num from buss_device_qr where project_code=#{projectCode} and sn=#{sn}
+    </select>
+
+    <update id="deleteByName">
+        delete from sys_soft_version where name=#{name} and status=1
+    </update>
+</mapper>

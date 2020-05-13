@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceTypeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.DeviceType">
+        <id column="id" property="id" />
+        <result column="type" property="type" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, type, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, remark
+    </sql>
+
+	<!-- 获取设备型号 -->
+	<select id="getDeviceTypeId" resultType="long">
+		<!--SELECT id FROM buss_device_type WHERE sz_type=#{type,jdbcType=VARCHAR} -->
+		<!-- 由于汉王采用T400型号，固定写死 -->
+		SELECT id FROM buss_device_type WHERE type= 'T400'
+	</select>
+	
+	<!-- 插入 -->
+	<insert id="addDeviceType">
+		insert into buss_device_type
+		(
+		type,
+		remark,
+		create_date,
+		create_user
+		)VALUES (
+		#{d.type},
+		#{d.remark},
+		NOW(),
+		#{d.createUser}
+		)
+	</insert>
+</mapper>

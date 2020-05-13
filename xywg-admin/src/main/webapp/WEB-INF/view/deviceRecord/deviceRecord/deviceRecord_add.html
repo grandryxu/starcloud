@@ -1,0 +1,70 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id = "deviceRecordForm" novalidate="novalidate">
+            <input type="hidden" id="id" value="">
+            <div class="row">
+                <div class="col-sm-6">
+                         <div class="inline-search-s">
+                             <label class="label-search-s">项目</label>
+                             <select data-placeholder="选择项目"  class="input-search-s search-chosen
+                             " id="projectCode"   underline="true" name="projectCode">
+                                 <option value="">请选择</option>
+                                 @for(item in project){
+                                 <option value="${item.projectCode}">${item.projectName}</option>
+                                 @}
+                             </select>
+                         </div>
+
+                         <div class="inline-search-s">
+                            <label class="label-search-s">班组</label>
+                            <select class="input-search-s" id="teamSysNo" name="teamSysNo" onchange="DeviceRecordInfoDlg.teamOnChange()"></select>
+                        </div>
+
+                         <div class="inline-search-s">
+                            <label class="label-search-s">班组工人</label>
+                            <select class="input-search-s" name = "teamWorker" id="teamWorker" data-placeholder="选择班组工人">
+                            </select>
+                        </div>
+
+                    
+
+                </div>
+                <div class="col-sm-6">
+                         <div class="inline-search-s">
+                            <label class="label-search-s">考勤时间</label>
+                            <input class="input-search-s" id="recordTime" type="datetime" name="recordTime" onchange="DeviceRecordInfoDlg.teamOnChange()"></input>
+                        </div>
+                         <div class="inline-search-s">
+                            <label class="label-search-s">考勤类型</label>
+                            <select class="input-search-s" id="deviceType" name="deviceType">
+                                <option value="">请选择</option>
+                                <option value="3">上班</option>
+                                <option value="4">下班</option>
+                            </select>
+                        </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                         <div class="inline-search-s inline-textarea-sss">
+                            <label class="label-search-s">备注</label>
+                            <textarea class="textarea-sss textarea-sss2" id="remark" name="remark" cols="4" data-bv-field="remark"></textarea>
+                        </div>
+                    
+                    
+                </div>
+            </div>
+            <div class="row btn-group-m-t" style="text-align: center;">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceRecordInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceRecordInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/deviceRecord/deviceRecord/deviceRecord_info.js"></script>
+@}

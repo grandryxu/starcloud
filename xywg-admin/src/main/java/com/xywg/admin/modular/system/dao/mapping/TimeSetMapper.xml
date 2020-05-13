@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.TimeSetMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.TimeSet">
+        <id column="id" property="id"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="type" property="type"/>
+        <result column="start" property="start"/>
+        <result column="end" property="end"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_code AS projectCode, type, start, end, create_date AS createDate, create_user AS createUser, update_user AS updateUser, update_date AS updateDate, status, remark
+    </sql>
+
+    <select id="selectTimeSetList" resultType="map">
+        SELECT
+        t1.id, t1.type, left(t1.start,8) AS start, left(t1.end,8) AS end, left(t1.create_date,10) AS createDate,
+        t1.status, t1.remark,
+        t2.project_name AS projectName, t3.name,t1.create_user as createUser
+        ,t4.contractor_type,if(t4.contractor_type!=16 ,0,1) AS isGeneralContractorOperation
+        FROM buss_time_set t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN sys_user t3 ON t3.id = t1.create_user AND t3.status != 3
+        LEFT JOIN buss_project_sub_contractor t4 ON t4.project_code = t1.project_code AND t4.is_del = 0
+        WHERE 1=1
+        AND t4.organization_code IN
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="map.projectName != null and map.projectName != ''">
+            AND t1.project_code=#{map.projectName}
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and t2.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY t1.id
+        ORDER BY t1.project_code desc,t1.type asc,t1.create_date desc
+    </select>
+    <!-- 获取项目下拉框 -->
+    <select id="getProjects" resultType="map">
+        SELECT
+        t1.id, t1.project_code AS projectCode, t1.project_name AS projectName
+        FROM buss_project_master t1
+        LEFT JOIN buss_project_sub_contractor t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        WHERE t1.is_del = 0
+        AND t2.organization_code IN
+        <foreach collection="list" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getTime" resultType="com.xywg.admin.modular.system.model.TimeSetVO">
+       SELECT 
+       left(start,8) AS start, left(end,8) AS end
+       FROM buss_time_set
+       WHERE id != #{obj.id}
+       AND project_code = #{obj.projectCode}
+       AND type like CONCAT('%',#{obj.type},'%')
+    </select>
+
+    <select id="selectTimeSetById" resultType="com.xywg.admin.modular.system.model.TimeSetVO">
+        SELECT
+        t1.id, t1.type, t1.project_code AS projectCode, left(t1.start,8) AS start, left(t1.end,8) AS end,
+        left(t1.create_date,10) AS createDate, t1.status, t1.remark,
+        t2.project_name AS projectName, t3.name
+        FROM buss_time_set t1
+        LEFT JOIN buss_project_master t2 ON t2.project_code = t1.project_code AND t2.is_del = 0
+        LEFT JOIN sys_user t3 ON t3.id = t1.create_user AND t3.status != 3
+        WHERE 1=1
+        <if test="timeSetId != null and timeSetId != ''">
+            AND t1.id = #{timeSetId}
+        </if>
+    </select>
+    <!-- 获取打卡信息 -->
+    <select id="getTimeSet" resultType="com.xywg.admin.modular.system.model.TimeSet">
+		SELECT type, start, end FROM buss_time_set GROUP BY type
+	</select>
+    <!-- 插入时间设置 -->
+    <insert id="addTimeSet">
+		insert
+		into buss_time_set(project_code, type, start, end,create_date, create_user)
+		values
+		(#{projectCode},'worker_am','04:00:00','12:00:00',now(),#{createUser}),
+		(#{projectCode},'worker_pm','12:30:00','22:00:00',now(),#{createUser}),
+		(#{projectCode},'manager_am','04:00:00','12:00:00',now(),#{createUser}),
+		(#{projectCode},'manager_pm','12:30:00','22:00:00',now(),#{createUser})
+	</insert>
+    <!-- 禁用 -->
+    <update id="disable">
+	  UPDATE buss_time_set
+	  SET status = #{map.status}
+	  WHERE FIND_IN_SET(id,#{map.ids})
+	</update>
+
+    <!--更新操作-->
+    <update id="updateTimeSet">
+		update buss_time_set
+		SET
+		start=#{start},
+		end=#{end},
+		update_date=now(),
+		update_user=#{updateUser},
+		remark=#{remark}
+		where id=#{id}
+	</update>
+
+    <select id="getTimeByProject" resultType="com.xywg.admin.modular.system.model.TimeSet">
+        SELECT
+        <include refid="Base_Column_List"/>
+        from buss_time_set
+        where project_code=#{projectCode}
+    </select>
+
+</mapper>

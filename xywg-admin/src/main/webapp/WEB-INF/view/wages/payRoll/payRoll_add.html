@@ -1,0 +1,51 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <!--<#input id="id" name="" underline="true" />-->
+                    <!--<#input id="payRollCode" name="工资单编号" underline="true"/>-->
+                    <#input id="projectCode" name="项目编号" underline="true"/>
+                    <#input id="organizationCode" name="信用代码" underline="true"/>
+                    <#input id="teamSysNo" name="班组编号" underline="true"/>
+                    <#input id="payMonth" name="发放月份" underline="true"/>
+                    <#input id="type" name="发放类型" underline="true"/>
+                </div>
+
+                <div class="col-sm-6">
+                    <!--<#input id="status" name="状态" underline="true"/>
+                    <#input id="saveStatus" name="保存状态" underline="true"/>
+                    <#input id="payStatus" name="发放状态" underline="true"/>-->
+                    <#input id="contractorProjectCode" name="总包编码" underline="true"/>
+                    <#input id="subContractorProjectCode" name="分包编码"/>
+                    <#input id="attachFiles" name="附件" underline="true"/>
+                    <#input id="totalAmount" name="应发总额" underline="true"/>
+                    <!--<#input id="constructValid" name="分包审核人" underline="true"/>
+                    <#input id="constructDate" name="分包审核时间" underline="true"/>
+                    <#input id="contractValid" name="总包审核人" underline="true"/>
+                    <#input id="contractDate" name="总包审核时间" underline="true"/>-->
+                    <!--<#input id="createDate" name="添加人" underline="true"/>
+                    <#input id="createUser" name="添加时间" underline="true"/>
+                    <#input id="updateDate" name="修改时间" underline="true"/>
+                    <#input id="updateUser" name="修改人" underline="true"/>
+                    <#input id="salaryPerson" name="创建人id" underline="true"/>
+                    <#input id="isDel" name="是否删除 1：是 0:否" underline="true"/>-->
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="PayRollInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="PayRollInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/payRoll/payRoll_info.js"></script>
+@}

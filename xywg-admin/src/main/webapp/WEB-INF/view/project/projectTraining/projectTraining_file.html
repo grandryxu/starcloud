@@ -1,0 +1,32 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>培训记录管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg" id="container-5zxcADS">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <input id="id" hidden="true" value="${id}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <#table id="ProjectTrainingFileTable"/>
+                            </div>
+                            <div  id="ProjectTrainingFileTableToolbar" role="group">
+                                <#button name="批量删除" icon="fa-remove" clickFun="ProjectTrainingFile.deleteFiles()" space="true"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectTraining/projectTraining_file.js"></script>
+@}

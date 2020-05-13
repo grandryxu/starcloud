@@ -1,0 +1,37 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="proDataNumberInfoForm">
+            <input type="hidden" id="id" value="${item.id}">
+            <input type="hidden" id="areaId" value="${item.area}">
+            <div class="row">
+                <div class="col-sm-12">
+                    <#input id="projectName" name="项目名称" underline="true" requiredFlag="true" value="${item.projectName}" disabled="disabled"/>
+                    <#input id="dataNumber" name="数据指纹" underline="true" value="${item.dataNumber}"/>
+                    <div class="form-group form-group-sss">
+                        <label class="col-sm-3 control-label control-label-sss"><span style="color: red">*</span>区域:</label>
+                        <div class="col-sm-9">
+                            <div id="distpicker" name="areaCode" >
+                                <select class="form-control form-control-sss"  id="provinceCode" style="width:32.7%; padding-right:5px; display: inline-block;"></select>
+                                <select class="form-control form-control-sss" id="cityCode" style="width:32.7%; padding-right:5px; display: inline-block;"></select>
+                                <!--
+                                <select class="form-control form-control-sss" id="areaCode" style="width:33%; padding-right:5px; display: inline-block;">
+                                </select>
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProDataNumberDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProDataNumberDlg.close()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/system/prodataNumber/prodataNumber_info.js"></script>
+@}

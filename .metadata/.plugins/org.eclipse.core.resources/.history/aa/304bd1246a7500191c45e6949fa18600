@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.project.dao.InjuryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.project.model.Injury">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="type" property="type"/>
+        <result column="time" property="time"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="is_del" property="isDel"/>
+        <result column="workerId" property="teamWorker"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, 
+        organization_code AS organizationCode, 
+        project_code AS projectCode,
+        id_card_type AS idCardType, id_card_number AS idCardNumber, type, time, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, remark, is_del AS isDel
+    </sql>
+
+    <select id="list" parameterType="com.baomidou.mybatisplus.plugins.Page" resultType="Map">
+        select i.id,
+        s.company_name as companyName,
+        m.project_name as projectName,
+        t.team_name as teamName,
+        w.worker_name as workerName,
+        i.id_card_type as idCardType,
+        insert(i.id_card_number,11,6,'******') AS idCardNumber,
+        i.`type` ,
+        i.time,
+        i.create_date as createDate,
+        i.create_user as createUser,
+        i.remark ,
+        if(M.social_credit_number is null,0,1) AS isGeneralContractorOperation
+        from buss_injury i
+        left join buss_project_master m on i.project_code = m.project_code
+        left join buss_sub_contractor s on i.organization_code = s.organization_code
+        left join buss_worker_master w on i.id_card_type = w.id_card_type and i.id_card_number = w.id_card_number
+        left join buss_team_master t on i.team_sys_no = t.team_sys_no
+        LEFT JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        ) M ON M.social_credit_number = i.organization_code
+        where i.is_del = 0
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+            and i.organization_code in (
+            SELECT social_credit_number
+            FROM sys_dept
+            WHERE social_credit_number IS NOT NULL AND (
+            id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+            )
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != '' ">
+            and i.project_code = #{map.projectCode}
+        </if>
+        <if test="map.teamSysNo !=null and map.teamSysNo != '' ">
+            and i.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.condition !=null and map.condition != '' ">
+            and (
+            locate(#{map.condition},i.id_card_number)
+            or locate(#{map.condition}, w.worker_name)
+            )
+        </if>
+        <if test="map.type !=null and map.type != '' ">
+            and i.`type`= #{map.type}
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="map.projectCodes!=null and map.projectCodes.size()>0 ">
+            and m.project_code in
+            <foreach collection="map.projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        order by i.id desc
+    </select>
+
+    <!-- 新增工伤 author duanfen -->
+    <insert id="saveInjury" keyProperty="t.id" useGeneratedKeys="true">
+			insert into buss_injury (
+    	  		organization_code,
+		        project_code,
+		        team_sys_no,
+		        id_card_type,
+		        id_card_number,
+		        `type`,
+		        time,
+		        create_date,
+		        create_user,
+		        remark)
+		     select 
+					t.organization_code,
+				    t.project_code,
+				    t.team_sys_no,
+				    t.id_card_type,
+				    t.id_card_number, 
+				    #{t.type},
+				    #{t.occureTime},
+				    now(),
+				    #{t.createUser},
+				    #{t.remark}
+			from buss_project_worker t
+			where (t.id_card_type,t.id_card_number)=(select w.id_card_type,w.id_card_number from buss_worker_master w where w.id = #{t.teamWorker}) 
+			and t.project_code = #{t.projectCode} and t.is_del = 0
+    </insert>
+
+    <select id="findById" resultType="Map">
+    	    	select  i.id,
+    		    c.name as type,
+    		    i.type as type1,
+    			i.time as occureTime,
+    			i.remark,
+    			i.id_card_type as idCardType,
+    		    i.id_card_number as idCardNumber,
+    		    m.project_name as projectName,
+    		    s.company_name as companyName,
+    		    w.worker_name as workerName,
+    		    t.team_name as teamName
+		from buss_injury i
+		left join buss_project_master m on i.project_code = m.project_code
+		left join buss_sub_contractor s on i.organization_code = s.organization_code
+		left join buss_worker_master w on i.id_card_type = w.id_card_type and i.id_card_number = w.id_card_number
+		left join buss_team_master t on i.team_sys_no = t.team_sys_no
+		left join (select t.num,t.name from sys_dict t where t.pid = (select d.id from sys_dict d where d.name = '工伤类型')) c on i.`type` = c.num 
+		where i.id = #{id}
+    </select>
+
+    <update id="updateInjury">
+    	update buss_injury set `type` = #{t.type},time=#{t.occureTime},remark=#{t.remark},update_date=now(),update_user=#{t.updateUser} 
+    	where id = #{t.id}
+    </update>
+
+    <!--批量删除-->
+    <update id="deleteByIds">
+		update buss_injury set
+		is_del=1,
+		update_user=#{map.updateUser},
+		update_date=now()
+		where
+		FIND_IN_SET(id,#{map.ids})
+	</update>
+	<select id="getZrInjuryInfo" resultType="Map">
+	select i.*,w.id as workerId from buss_injury i
+	left join buss_worker_master w on i.id_card_number = w.id_card_number
+	where i.organization_code = '9132068113885448XE'
+	and is_del = 0
+	and i.id not in (
+	select lwt_id from r_lwt_zr
+	where table_name = 'injury'
+	)
+	</select>
+</mapper>

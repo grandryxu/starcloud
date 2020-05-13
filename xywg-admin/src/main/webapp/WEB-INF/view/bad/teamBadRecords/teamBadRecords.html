@@ -1,0 +1,99 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>不良记录管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组名称</label>
+                                        <input type="text" class="fn-input" id="teamName" placeholder="班组名称" />
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">所属项目</label>
+                                        <input type="text" class="fn-input" id="projectName" placeholder="所属项目" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-condition">
+                                    <#button name="搜索" icon="fa-search" clickFun="TeamBadRecords.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                    <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                    <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">事件级别</label>
+                                        <select class="fn-input" id="badRecordLevelType" name="事件级别" >
+                                            <option value="">全部</option>
+                                            @for(item in dictBadRecordLevelType){
+                                            <option value="${item.num}">${item.name}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">审核状态</label>
+                                        <select class="fn-input" id="isAudit" name="审核状态">
+                                            <option value="">全部</option>
+                                            <option value="1">待审核</option>
+                                            <option value="2">审核通过</option>
+                                            <option value="3">审核不通过</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 fn-need-hide">
+                                    <div class="fn-div">
+                                        <label class="fn-label">发生时间</label>
+                                        <div class="fn-datepicker" id="datepicker">
+                                            <input class="fn-datepicker-input" id="startDate" name="establishDate" readonly="readonly">
+                                            <span class="">-</span>
+                                            <input class="fn-datepicker-input" id="endDate" name="establishDate" readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fn-buttons clear-float fn-need-hide">
+                                <div class="col-sm-4">
+
+                                </div>
+                            </div>
+                        </form>
+                           
+
+                        <div  id="TeamBadRecordsTableToolbar" role="group">
+                            @if(shiro.hasPermission("/teamBadRecords/add")){
+                                <#button name="添加" icon="fa-plus" clickFun="TeamBadRecords.openAddTeamBadRecords()"/>
+                            @}
+                            @if(shiro.hasPermission("/teamBadRecords/update")){
+                                <#button name="修改" icon="fa-edit" clickFun="TeamBadRecords.openTeamBadRecordsDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/teamBadRecords/delete")){
+                                <#button name="删除" icon="fa-remove" clickFun="TeamBadRecords.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="TeamBadRecordsTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/bad/teamBadRecords/teamBadRecords.js"></script>
+@}

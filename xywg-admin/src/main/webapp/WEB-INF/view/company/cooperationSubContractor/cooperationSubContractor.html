@@ -1,0 +1,95 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>企业信息管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <input type="hidden" id="projectCode" value="${projectCode}">
+                        <input type="hidden" id="projectName" value="${projectName}">
+                        <input type="hidden" id="pageType" value="${pageType}">
+                        <div class="row">
+                            <div class="col-sm-9">
+                                <#NameCon id="condition" name="查询"
+                                        placeholder="企业名称/社会信用代码/组织机构编号/法人/联系人姓名/企业联系邮箱"/>
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">单位性质：</label>
+                                            <div class="col-sm-8">
+                                                <select class="form-control" id="organizationType" name="单位性质" underline="true">
+                                                    <option value="">请选择</option>
+                                                    @for(item in organizationType){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">经营状态：</label>
+                                            <div class="col-sm-8">
+                                                <select class="form-control" id="businessStatus" name="经营状态" underline="true">
+                                                    <option value="">请选择</option>
+                                                    @for(item in businessStatus){
+                                                    <option value="${item.num}">${item.name}</option>
+                                                    @}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+                                        <label class="col-sm-3 control-label">起止时间：</label>
+                                        <div class="input-daterange input-group" id="datepicker">
+                                            <input class="form-control" id="startDate" name="establishDate"
+                                                   type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                            <span class="input-group-addon">-</span>
+                                            <input class="form-control" id="endDate" name="establishDate"
+                                                   type="date" onclick="laydate({istime: false, format: 'YYYY-MM-DD'})">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <#button name="搜索" icon="fa-search" clickFun="SubContractor.search()"/>
+                            </div>
+                        </div>
+                        <div class="hidden-xs" id="SubContractorTableToolbar" role="group">
+                            @if(shiro.hasPermission("/subContractor/add")){
+                            <#button name="添加" icon="fa-plus" clickFun="SubContractor.openAddSubContractor()"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractor/update")){
+                            <#button name="修改" icon="fa-edit" clickFun="SubContractor.openSubContractorDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractor/delete")){
+                            <#button name="删除" icon="fa-remove" clickFun="SubContractor.delete()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractor/changeState")){
+                            <#button name="启用" icon="fa-check-circle" clickFun="SubContractor.changeState(1)" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/subContractor/changeState")){
+                            <#button name="禁用" icon="fa-remove" clickFun="SubContractor.changeState(2)" space="true"/>
+                            @}
+                            <#button name="进场" icon="fa-remove" clickFun="SubContractor.changeJoinStatus(0)" space="true"/>
+                            <#button name="退场" icon="fa-remove" clickFun="SubContractor.changeJoinStatus(1)" space="true"/>
+
+                            <#button name="新增参建单位" icon="fa-remove" clickFun="ProjectSubContractor.openAddProjectSubContractor() " space="true"/>
+                            <#button name="删除参建单位" icon="fa-remove" clickFun="ProjectSubContractor.deleteByProjectCodeAndOrganizationCodes() " space="true"/>
+                        </div>
+                        <#table id="SubContractorTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/cooperationSubContractor/cooperationSubContractor.js"></script>
+<script src="${ctxPath}/static/modular/project/projectSubContractor/projectSubContractor/projectSubContractor.js"></script>
+@}

@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.EmployeeMasterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.EmployeeMaster">
+        <id column="id" property="id"/>
+        <result column="employee_name" property="employeeName"/>
+        <result column="icon_image" property="iconImage"/>
+        <result column="id_image" property="idImage"/>
+        <result column="is_auth" property="isAuth"/>
+        <result column="is_face" property="isFace"/>
+        <result column="is_audit" property="isAudit"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="gender" property="gender"/>
+        <result column="culture_level_type" property="cultureLevelType"/>
+        <result column="nation" property="nation"/>
+        <result column="birthday" property="birthday"/>
+        <result column="head_image_path" property="headImagePath"/>
+        <result column="address" property="address"/>
+        <result column="cell_phone" property="cellPhone"/>
+        <result column="work_date" property="workDate"/>
+        <result column="professional_type" property="professionalType"/>
+        <result column="professional_level" property="professionalLevel"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        employee_name AS employeeName,
+        icon_image AS iconImage,
+        id_image AS idImage,
+        is_auth AS isAuth,
+        is_face AS isFace,
+        is_audit AS isAudit,
+        id_card_type AS idCardType,
+        id_card_number AS idCardNumber,
+        gender,
+        culture_level_type AS cultureLevelType,
+        nation, birthday,
+         CONCAT('src="http://192.168.1.124:8080/labor/',head_image_path) AS headImagePath,
+        address, cell_phone AS cellPhone,
+        work_date AS workDate,
+        professional_type AS professionalType,
+        professional_level AS professionalLevel,
+        create_date AS createDate,
+        create_user AS createUser,
+        update_date AS updateDate,
+        update_user AS updateUser,
+        is_del AS isDel
+    </sql>
+    <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO buss_employee_master(
+        id_card_type,
+        id_card_number,
+        employee_name,
+        professional_type,
+        professional_level,
+        gender,
+        nation,
+        birthday,
+        address,
+        culture_level_type,
+        work_date,
+        cell_phone,
+        head_image_path,
+        create_date,
+         is_auth)
+        VALUE (
+        #{idCardType},
+        #{idCardNumber},
+        #{employeeName},
+        #{professionalType},
+        #{professionalLevel},
+        #{gender},
+        #{nation},
+        #{birthday},
+        #{address},
+        #{cultureLevelType},
+        now(),
+        #{cellPhone},
+        #{headImagePath},
+        now(),
+        #{isAuth})
+    </insert>
+
+    <!-- 列表查询 分页 -->
+    <select id="selectEmployees" resultType="map">
+        select
+        em.id as id,
+        em.employee_name AS employeeName,
+        em.id_card_type AS idCardType,
+        em.id_card_number AS idCardNumber,
+        em.gender,
+        em.nation,
+        DATE_FORMAT(em.birthday,'%Y-%m-%d') as birthday,
+        em.address,
+        em.professional_type AS professionalType,
+        em.professional_level AS professionalLevel,
+        em.culture_level_type as cultureLevelType,
+        em.is_face as isFace,
+        em.is_auth as isAuth,
+        IFNULL(em.cell_phone,' ') as cellPhone,
+        DATE_FORMAT(em.work_date,'%Y-%m-%d') as workDate,
+        ce.organization_code as organizationCode,
+        ce.job as job,
+        ce.job_type as jobType,
+        ce.job_status as jobStatus,
+        DATE_FORMAT(ce.hire_date,'%Y-%m-%d') as hireDate,
+        DATE_FORMAT(ce.termination_date,'%Y-%m-%d') as terminationDate,
+        DATE_FORMAT(ce.retire_date,'%Y-%m-%d') as retireDate,
+        ce.worker_role as workerRole,
+        ce.remark as remark,
+        sc.company_name as companyName
+        from buss_employee_master em left join buss_company_employe ce on ce.employe_sys_no = em.id and ce.is_del=0
+        left join buss_sub_contractor sc on sc.organization_code=ce.organization_code and sc.status=1 and sc.is_del=0
+        where 1=1
+        and
+        ce.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and em.is_del=0
+        <if test="map.key != null and map.key != ''">
+            and (em.employee_name like CONCAT('%',#{map.key},'%')
+            OR em.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.gender != null and map.gender != ''">
+            and em.gender =#{map.gender}
+        </if>
+        <if test="map.cultureLevelType != null and map.cultureLevelType != ''">
+            and em.culture_level_type=#{map.cultureLevelType}
+        </if>
+        <choose>
+            <when test="map.age==1">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (
+                DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+                ) &lt; 18
+            </when>
+            <when test="map.age==2">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 18
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 31
+            </when>
+            <when test="map.age==3">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 31
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 41
+            </when>
+            <when test="map.age==4">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 41
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 51
+            </when>
+            <when test="map.age==5">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 51
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 60
+            </when>
+            <when test="map.age==6">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 60
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by em.id DESC
+            </otherwise>
+        </choose>
+    </select>
+    <!-- 根据id查询从业人员详细信息 yuanyang -->
+    <select id="getById" resultType="com.xywg.admin.modular.company.model.EmployeeMasterVo">
+            select
+        em.id as id,
+        em.employee_name AS employeeName,
+        em.id_card_type AS idCardType,
+        em.id_card_number AS idCardNumber,
+        em.gender,
+        em.nation,
+        DATE_FORMAT(em.birthday,'%Y-%m-%d') as birthday,
+        em.address,
+        em.professional_type AS professionalType,
+        em.professional_level AS professionalLevel,
+        em.culture_level_type as cultureLevelType,
+        em.head_image_path as headImagePath,
+        em.is_face as isFace,
+        em.is_auth as isAuth,
+        IFNULL(em.cell_phone,' ') as cellPhone,
+        DATE_FORMAT(em.work_date,'%Y-%m-%d')  as workDate,
+        ce.organization_code as organizationCode,
+        ce.job as job,
+        ce.job_type as jobType,
+        ce.job_status as jobStatus,
+        DATE_FORMAT(ce.hire_date,'%Y-%m-%d')  as hireDate,
+        DATE_FORMAT(ce.termination_date,'%Y-%m-%d')  as terminationDate,
+        DATE_FORMAT(ce.retire_date,'%Y-%m-%d')  as retireDate,
+        ce.worker_role as workerRole,
+        ce.remark as remark
+        from buss_employee_master em left join buss_company_employe ce on ce.employe_sys_no = em.id and ce.is_del=0
+        and ce.organization_code=#{organizationCode}
+        where 1=1
+        and em.is_del=0 and em.id=#{companyEmployeId}
+    </select>
+    <!-- 列表查询 导出 -->
+    <select id="selectEmployeesList" resultType="map">
+        select
+        em.id,
+        em.employee_name AS employeeName,
+        em.id_card_type AS idCardType,
+        em.id_card_number AS idCardNumber,
+        em.gender,
+        em.nation,
+        DATE_FORMAT(em.birthday,'%Y-%m-%d') as birthday,
+        em.address,
+        em.professional_type AS professionalType,
+        em.professional_level AS professionalLevel,
+        em.culture_level_type as cultureLevelType,
+        em.is_face as isFace,
+        em.is_auth as isAuth,
+        IFNULL(em.cell_phone,' ') as cellPhone,
+        ifnull( DATE_FORMAT(em.work_date,'%Y-%m-%d') ,'') as workDate,
+        sc.company_name as companyName,
+        DATE_FORMAT(bce.hire_date,'%Y-%m-%d')  as hireDate,
+        DATE_FORMAT(bce.termination_date,'%Y-%m-%d')  as terminationDate,
+        DATE_FORMAT(bce.retire_date,'%Y-%m-%d')  as retireDate,
+        bce.job_status as jobStatus
+        from buss_employee_master em left join buss_company_employe ce on ce.employe_sys_no = em.id and ce.is_del=0
+        left join buss_company_employe bce on bce.employe_sys_no=em.id and bce.is_del=0
+        left join buss_sub_contractor sc on sc.organization_code=ce.organization_code and sc.status=1 and sc.is_del=0
+        where 1=1
+        and
+        bce.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="map.key != null and map.key != ''">
+            and (em.employee_name like CONCAT('%',#{map.key},'%')
+            OR em.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            OR em.cell_phone LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.gender != null and map.gender != ''">
+            and em.gender =#{map.gender}
+        </if>
+        <if test="map.cultureLevelType != null and map.cultureLevelType != ''">
+            and em.culture_level_type=#{map.cultureLevelType}
+        </if>
+        and em.is_del=0
+        <choose>
+            <when test="map.age==1">
+                and (YEAR (now()) - YEAR (birthday) - 1) + (
+                DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+                ) &lt; 18
+            </when>
+            <when test="map.age==2">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 18
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 31
+            </when>
+            <when test="map.age==3">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 31
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 41
+            </when>
+            <when test="map.age==4">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 41
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 51
+            </when>
+            <when test="map.age==5">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 51
+                AND (
+                YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) &lt; 60
+            </when>
+            <when test="map.age==6">
+                and (YEAR (now()) - YEAR (em.birthday) - 1) + (DATE_FORMAT(em.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(),
+                '%m%d')) >= 60
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by em.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getListBySubContractor" resultType="map">
+        select
+        em.id as id,
+        em.employee_name AS employeeName,
+        em.id_card_type AS idCardType,
+        em.id_card_number AS idCardNumber,
+        em.gender,
+        em.nation,
+        DATE_FORMAT(em.birthday,'%Y-%m-%d') as birthday,
+        em.address,
+        em.professional_type AS professionalType,
+        em.professional_level AS professionalLevel,
+        em.culture_level_type as cultureLevelType,
+        em.is_face as isFace,
+        em.is_auth as isAuth,
+        IFNULL(em.cell_phone,' ') as cellPhone,
+        DATE_FORMAT(em.work_date,'%Y-%m-%d') as workDate,
+        ce.organization_code as organizationCode,
+        ce.job as job,
+        ce.job_type as jobType,
+        ce.job_status as jobStatus,
+        DATE_FORMAT(ce.hire_date,'%Y-%m-%d') as hireDate,
+        DATE_FORMAT(ce.termination_date,'%Y-%m-%d') as terminationDate,
+        DATE_FORMAT(ce.retire_date,'%Y-%m-%d') as retireDate,
+        ce.worker_role as workerRole,
+        ce.remark as remark,
+        sc.company_name as companyName
+        from buss_employee_master em left join buss_company_employe ce on ce.employe_sys_no = em.id and ce.is_del=0
+        left join buss_sub_contractor sc on sc.organization_code=ce.organization_code and sc.status=1 and sc.is_del=0
+        where 1=1
+        and ce.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and em.is_del=0
+        order by em.id DESC
+    </select>
+
+    <!-- 根据证件类型和证件号查询从业人员信息 yuanyang -->
+    <select id="getEmployeeByIdCard" resultType="com.xywg.admin.modular.company.model.EmployeeMaster">
+        select
+        id,
+        employee_name AS employeeName,
+        is_auth AS isAuth,
+        is_face AS isFace,
+        is_audit AS isAudit,
+        id_card_type AS idCardType,
+        id_card_number AS idCardNumber,
+        gender,
+        culture_level_type AS cultureLevelType,
+        nation,
+        DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+        address,
+        cell_phone AS cellPhone,
+        DATE_FORMAT(work_date,'%Y-%m-%d') as workDate,
+        professional_type AS professionalType,
+        professional_level AS professionalLevel,
+        is_del AS isDel
+        from  buss_employee_master
+        where 1=1 AND id_card_type=#{idCardType}
+        and id_card_number=#{idCardNumber}
+        and is_del=0
+    </select>
+
+    <!-- 根据证件类型和证件号查询从业人员信息 yuanyang -->
+    <select id="searchEmployee" resultType="map">
+        select
+        id,
+        employee_name AS employeeName,
+        is_auth AS isAuth,
+        is_face AS isFace,
+        is_audit AS isAudit,
+        id_card_type AS idCardType,
+        id_card_number AS idCardNumber,
+        gender,
+        culture_level_type AS cultureLevelType,
+        nation,
+        DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+        address,
+        cell_phone AS cellPhone,
+        DATE_FORMAT(work_date,'%Y-%m-%d') as workDate,
+        professional_type AS professionalType,
+        professional_level AS professionalLevel,
+        is_del AS isDel,
+        head_image_path as headImagePath
+        from  buss_employee_master
+        where 1=1 AND id_card_type=#{idCardType}
+        and id_card_number=#{idCardNumber}
+        and is_del=0
+    </select>
+
+
+    <!-- 从业人员姓名下拉框 yuanyang -->
+    <select id="getEmployees" resultType="map">
+        select
+        id,
+        employee_name AS employeeName,
+        id_card_number AS idCardNumber
+        from  buss_employee_master
+        where 1=1
+        and is_del=0
+    </select>
+
+    <!-- 根据手机号查询基本信息 yuanyang -->
+    <select id="getByCellPhone" resultType="com.xywg.admin.modular.company.model.EmployeeMaster">
+        select
+        id,
+        employee_name AS employeeName,
+        is_auth AS isAuth,
+        is_face AS isFace,
+        is_audit AS isAudit,
+        id_card_type AS idCardType,
+        id_card_number AS idCardNumber,
+        gender,
+        culture_level_type AS cultureLevelType,
+        nation,
+        DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+        address,
+        cell_phone AS cellPhone,
+        DATE_FORMAT(work_date,'%Y-%m-%d') as workDate,
+        professional_type AS professionalType,
+        professional_level AS professionalLevel,
+        is_del AS isDel
+        from  buss_employee_master
+        where 1=1 AND
+        cell_phone=#{cellPhone}
+        and is_del=0
+    </select>
+
+    <!--<update id="updateEmployee">-->
+    <!--UPDATE buss_employee_master SET-->
+    <!--cell_phone=#{cellPhone},-->
+    <!--nation=#{nation},-->
+    <!--gender=#{gender},-->
+    <!--birthday=#{birthday},-->
+    <!--address=#{address},-->
+    <!--professional_type=#{professionalType},-->
+    <!--professional_level=#{professionalLevel},-->
+    <!--work_date=#{workDate},-->
+    <!--culture_level_type=#{cultureLevelType},-->
+    <!--head_image_path=#{headImagePath} WHERE id=#{id} AND is_del=0-->
+
+    <!--</update>-->
+
+
+    <update id="hire">
+        update buss_company_employe set hire_date = now(),termination_date=null,
+        job_status=1
+        where employe_sys_no=#{id}
+    </update>
+
+    <update id="termination">
+        update buss_company_employe set termination_date = now(),
+         job_status=0
+        where employe_sys_no=#{id}
+    </update>
+
+    <update id="retire">
+        update buss_company_employe set retire_date = now(),
+         job_status=2
+        where employe_sys_no=#{id}
+    </update>
+
+    <!-- 查询在职的从业人员(设置项目经理页面) yuanyang -->
+    <select id="selectInJobEmployees" resultType="map">
+        select
+        em.id as id,
+        em.employee_name AS employeeName,
+        em.id_card_type AS idCardType,
+        em.id_card_number AS idCardNumber,
+        em.gender,
+        em.nation,
+        DATE_FORMAT(em.birthday,'%Y-%m-%d') as birthday,
+        em.address,
+        em.professional_type AS professionalType,
+        em.professional_level AS professionalLevel,
+        em.culture_level_type as cultureLevelType,
+        em.is_face as isFace,
+        em.is_auth as isAuth,
+        IFNULL(em.cell_phone,' ') as cellPhone,
+        DATE_FORMAT(em.work_date,'%Y-%m-%d') as workDate,
+        ce.organization_code as organizationCode,
+        ce.job as job,
+        ce.job_type as jobType,
+        ce.job_status as jobStatus,
+        DATE_FORMAT(ce.hire_date,'%Y-%m-%d') as hireDate,
+        DATE_FORMAT(ce.termination_date,'%Y-%m-%d') as terminationDate,
+        DATE_FORMAT(ce.retire_date,'%Y-%m-%d') as retireDate,
+        ce.worker_role as workerRole,
+        ce.remark as remark,
+        sc.company_name as companyName
+        from buss_employee_master em left join buss_company_employe ce on ce.employe_sys_no = em.id and ce.is_del=0
+        left join buss_sub_contractor sc on sc.organization_code=ce.organization_code and sc.status=1 and sc.is_del=0
+        where 1=1
+        and
+        ce.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="map.key != null and map.key != ''">
+            and (em.employee_name like CONCAT('%',#{map.key},'%')
+            OR em.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        and em.is_del=0
+        and ce.job_status=1
+
+
+    </select>
+    <select id="selectEmployeeByIdCard" resultType="java.util.Map">
+        select  id, count(id) num from buss_employee_master where id_card_number=#{idCardNumber}
+    </select>
+</mapper>

@@ -1,0 +1,39 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" value="${item.id}" underline="true"/>
+                            <#input id="organizationCode" name="参建公司组织机构编码" value="${item.organizationCode}" underline="true"/>
+                            <#input id="idCardType" name="证件类型 参见人员证件类型字典表" value="${item.idCardType}" underline="true"/>
+                            <#input id="idCardNumber" name="证件编号" value="${item.idCardNumber}" underline="true"/>
+                            <#input id="massReview" name="质量评价星级" value="${item.massReview}" underline="true"/>
+                            <#input id="paceReview" name="进度评价星级" value="${item.paceReview}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="safeReview" name="安全评价星级" value="${item.safeReview}" underline="true"/>
+                            <#input id="note" name="评价说明" value="${item.note}" underline="true"/>
+                            <#input id="createDate" name="添加时间" value="${item.createDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="createUser" name="添加人" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ConstructionEvaluateInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ConstructionEvaluateInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/constructionEvaluate/constructionEvaluate_info.js"></script>
+@}

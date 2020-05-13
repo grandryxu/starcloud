@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.recruitModular.dao.RecruitModularMapper">
+
+	<select id="getRecruitList" resultType="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+        SELECT
+        r.id,
+        r.recruit_station as recruitStation,
+        r.salary_type as salaryType,
+        r.salary_content as salaryContent,
+        r.salary_text as salaryText,
+        r.work_id_sets as workIdSets,
+        sc.company_name as companyName,
+        r.description as description,
+        r.update_date as updateDate<!-- ,
+        case when rr.id is not null then 1 else 0 end as isResume -->
+        FROM
+        recruit_worker r
+        left join buss_sub_contractor sc on r.organization_code = sc.organization_code
+        <!-- left join recruit_resume rr on rr.id_card_type = #{p.idCardType} and rr.id_card_number = #{p.idCardNumber} and r.id = rr.recruit_id and rr.is_del = 0 -->
+        WHERE r.is_del = 0
+        <if test="p.provincesId != null and p.provincesId != '' and p.provincesId != 0">
+            and r.provinces_id = #{p.provincesId}
+            <if test="p.citiesId != null and p.citiesId != '' and p.citiesId != 0">
+	            and r.cities_id = #{p.citiesId}
+	            <if test="p.areasId != null and p.areasId != '' and p.areasId != 0">
+		            and r.areas_id = #{p.areasId}
+		        </if>
+	        </if>
+        </if>
+        <if test="p.recruitType != null and p.recruitType != ''">
+            and r.recruit_type = #{p.recruitType}
+        </if>
+        <if test="p.projectType != null and p.projectType != '' and p.projectType != 0">
+            and r.project_type = #{p.projectType}
+        </if>
+        <if test="p.keyword != null and p.keyword != ''">
+            and (
+            	r.recruit_station like CONCAT('%', #{p.keyword},'%')
+            	or sc.company_name like CONCAT('%', #{p.keyword},'%')
+            	or r.claim like CONCAT('%', #{p.keyword},'%')
+            	or r.description like CONCAT('%', #{p.keyword},'%')
+            )
+        </if>
+        <if test="p.workId != null and p.workId != ''">
+            and ( 1 = 2
+            <foreach collection="p.workIdList" open="" close="" separator="" index="index" item="item">
+	            or CONCAT(',', r.work_id_sets,',') like CONCAT('%,', #{item},',%') 
+	        </foreach>
+	        )
+        </if>
+        order by r.create_date desc
+        limit #{p.pageNo} , #{p.pageSize}
+    </select>
+    
+    <select id="getRecruitDetail" resultType="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+    	SELECT
+        r.id,
+        r.recruit_station as recruitStation,
+        r.phone,
+        r.work_id_sets as workIdSets,
+        r.update_date as updateDate,
+        r.browse_count as browseCount,
+        r.record_count as recordCount,
+        r.recruit_number as recruitNumber,
+        r.recruit_type as recruitType,
+        r.salary_type as salaryType,
+        r.salary_content as salaryContent,
+        r.salary_text as salaryText,
+        r.age_start as ageStart,
+        r.age_end as ageEnd,
+        r.weal_content as wealContent,
+        r.claim as claim,
+        r.description as description,
+        r.address as address,
+        sc.company_name as companyName,
+        case when rr.id is not null then 1 else 0 end as isResume,
+        case when rwe.id is not null then 1 else 0 end as isEnshrine
+        FROM recruit_worker r
+        left join buss_sub_contractor sc on r.organization_code = sc.organization_code and sc.is_del = 0
+        left join recruit_resume rr on rr.id_card_type = #{p.idCardType} and rr.id_card_number = #{p.idCardNumber} and r.id = rr.recruit_id and rr.is_del = 0
+        left join recruit_worker_enshrine rwe on rwe.id_card_type = #{p.idCardType} and rwe.id_card_number = #{p.idCardNumber} and r.id = rwe.recruit_id and rwe.is_del = 0
+        WHERE r.id = #{p.id}
+    </select>
+    
+    <select id="getCompanyBaseData" resultType="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+    	SELECT
+    	sc.company_name as companyName,
+    	sc.address as address,
+    	sc.memo as memo,
+    	sd.name as organizationTypeName
+        FROM recruit_worker r
+        LEFT JOIN buss_sub_contractor sc on r.organization_code = sc.organization_code
+        LEFT JOIN sys_dict sd on sd.num = sc.organization_type and sd.pid = (select id from sys_dict s where s.name = '单位性质')
+        WHERE r.id = #{id}
+    </select>
+    
+    <select id="getRecruitEvaluateList" resultType="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+    	SELECT
+    	bwm.head_image as headImage,
+    	bwm.worker_name as workerName,
+    	re.mobile as mobile,
+    	re.score as score,
+    	re.evaluate as evaluate,
+    	re.create_date as createDate
+        FROM recruit_evaluate re
+        LEFT JOIN buss_worker_master bwm on bwm.cell_phone = re.mobile and bwm.is_del = 0
+        WHERE re.recruit_id = #{p.id} and re.is_del = 0
+        order by re.create_date desc
+        limit #{p.pageNo} , #{p.pageSize}
+    </select>
+    
+    <insert id="saveRecruitEvaluate">
+		insert into recruit_evaluate(recruit_id,mobile,score,evaluate,create_date,create_user)
+		values(#{p.id},#{p.mobile},#{p.score},#{p.evaluate},now(),#{p.mobile})
+	</insert>
+	
+	<update id="updateIsEvaluate">
+		update recruit_resume set is_evaluate = 1 where recruit_id = #{p.id} and id_card_type = #{p.idCardType} and id_card_number = #{p.idCardNumber} and is_del = 0
+	</update>
+	
+	<resultMap id="RecruitResumeDtoResultMap" type="com.xywg.admin.modular.recruitModular.model.dto.RecruitResumeDto">
+		<id column="id" property="id"/>
+        <result column="headImage" property="headImage"/>
+        <result column="gender" property="gender"/>
+        <result column="workId" property="workId"/> 
+        <result column="workerName" property="workerName"/> 
+        <result column="idCardType" property="idCardType"/>
+        <result column="idCardNumber" property="idCardNumber"/>
+        <result column="birthday" property="birthday"/>
+        <result column="cellPhone" property="cellPhone"/>
+        <result column="workName" property="workName"/>
+        <result column="educationBackgroundName" property="educationBackgroundName"/>
+        <result column="educationBackground" property="educationBackground"/>
+        <result column="workYears" property="workYears"/>
+        <result column="experience" property="experience"/>
+        <collection property="certifications" ofType="com.xywg.admin.modular.recruitModular.model.dto.CertificationDto">
+            <result column="path" property="path"/>
+        </collection>
+    </resultMap>
+    
+	<select id="getPersonRecruitResume" resultMap="RecruitResumeDtoResultMap">
+    	SELECT
+    	rrw.id as id,
+    	bwm.head_image as headImage,
+    	bwm.worker_name as workerName,
+    	bwm.id_card_type as idCardType,
+    	bwm.id_card_number as idCardNumber,
+    	bwm.gender as gender,
+    	bwm.birthday as birthday,
+    	bwm.cell_phone as cellPhone,
+    	sd.num as workId,
+    	sd.name as workName,
+    	s.num as educationBackground,
+    	s.name as educationBackgroundName,
+    	rrw.work_years as workYears,
+    	rrw.experience as experience,
+    	bpc.path
+        FROM buss_worker_master bwm
+        LEFT JOIN recruit_resume_worker rrw on rrw.id_card_type = bwm.id_card_type and rrw.id_card_number = bwm.id_card_number and rrw.is_del = 0
+        LEFT JOIN sys_dict sd on sd.num = rrw.work_id and sd.pid = (select id from sys_dict s where s.name = '工种字典数据')
+        LEFT JOIN sys_dict s on s.num = rrw.education_background and s.pid = (select id from sys_dict s where s.name = '文化程度')
+        LEFT JOIN buss_personal_certifications bpc on rrw.id_card_type = bpc.id_card_type and rrw.id_card_number = bpc.id_card_number and bpc.is_del = 0
+        WHERE bwm.is_del = 0 and bwm.id_card_type = #{p.idCardType} and bwm.id_card_number = #{p.idCardNumber}
+    </select>
+    
+    <insert id="saveRecruitResumeWorker" useGeneratedKeys="true" keyProperty="p.id" parameterType="com.xywg.admin.modular.recruitModular.model.RecruitModularParams">
+		insert into recruit_resume_worker(id_card_type,id_card_number,work_id,education_background,work_years,experience)
+		values(#{p.idCardType},#{p.idCardNumber},#{p.workId},#{p.educationBackground},#{p.workYears},#{p.experience})
+	</insert>
+	
+	<update id="updateRecruitResumeWorker">
+		update recruit_resume_worker 
+		set work_id = #{p.workId},education_background = #{p.educationBackground},work_years = #{p.workYears},experience = #{p.experience}
+		where id = #{p.id}
+	</update>
+	
+	<insert id="saveRecruitAppeal">
+		insert into recruit_appeal(evaluate_id,type,appeal_reason,create_date,create_user)
+		values(#{p.evaluateId},#{p.type},#{p.appealReason},now(),#{p.createUser})
+	</insert>
+	
+	<update id="updateIsAppeal">
+		update recruit_evaluate set is_appeal = 1 where id = #{p.evaluateId}
+	</update>
+	
+	<resultMap id="RecruitTelegramDtoResultMap" type="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+        <result column="recruitStation" property="recruitStation"/>
+        <collection property="recruitTelegramDtoList" ofType="com.xywg.admin.modular.recruitModular.model.dto.RecruitTelegramDto">
+        	<id column="id" property="id"/>
+            <result column="mobile" property="mobile"/>
+            <result column="telegramTime" property="telegramTime"/>
+        </collection>
+    </resultMap>
+	
+	<select id="getRecruitTelegram" resultType="com.xywg.admin.modular.recruitModular.model.dto.RecruitWorkerDto">
+    	SELECT 
+    	insert(rt.mobile, 4, 4, '****') as mobile,
+    	rt.telegram_time as telegramTime
+        FROM recruit_telegram rt
+        WHERE rt.recruit_id = #{p.id}
+        order by rt.telegram_time desc
+        limit #{p.pageNo} , #{p.pageSize}
+    </select>
+    
+    <insert id="saveRecruitBrowse">
+		insert into recruit_browse(recruit_id,id_card_type,id_card_number,create_date)
+		values(#{p.id},#{p.idCardType},#{p.idCardNumber},now())
+	</insert>
+	
+	<update id="updateBrowseCount">
+		update recruit_worker set browse_count = browse_count + 1 where id = #{p.id}
+	</update>
+</mapper>

@@ -1,0 +1,71 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="DeviceInfoForm">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="name" name="设备名称" underline="true" value="${item.name}" requiredFlag="true"/>,
+                    <#input id="sn" name="设备序列号" underline="true" value="${item.sn}" requiredFlag="true"/>
+                    <!--<#input id="projectName" name="所属项目" underline="true" value="${projectName}" disabled="disabled"/>-->
+                    <div class="form-group has-feedback">
+                        <label class="col-sm-3 control-label">
+                            <text style="color: red">*</text>
+                            项目名称</label>
+                        <div class="col-sm-9">
+                            <p class="select-disabled-p">
+                                <select class="input-search-s search-chosen" id="projectCode" name="项目名称" requiredFlag="true" >
+                                    <option value="">请选择</option>
+                                    @for(i in project){
+                                    @if(i.projectCode==item.projectCode){
+                                    <option value="${i.projectCode}" selected>${i.projectName}</option>
+                                    @}else{
+                                    <option value="${i.projectCode}">${i.projectName}</option>
+                                    @}
+                                    @}
+                                </select>
+                                <span class="select-disabled-block"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <#select id="typeId" name="设备类型" underline="true" >
+                        <option value="">请选择</option>
+                        @for(i in typeId){
+                        @if(i.num==item.typeId){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select>
+                    <#select id="type" name="出入类型" underline="true" >
+                        <option value="">请选择</option>
+                        @for(i in type){
+                        @if(i.num==item.type){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select>
+                    <#input id="remark" name="备注" underline="true" value="${item.remark}"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="DeviceInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="DeviceInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/device/device/device_info.js"></script>
+@}

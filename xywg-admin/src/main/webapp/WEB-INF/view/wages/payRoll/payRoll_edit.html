@@ -1,0 +1,51 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" value="${item.id}" underline="true"/>
+                            <#input id="payRollCode" name="工资单编号 工资单编号18位：GZD+6位分包商系统编号+YYYYMM+3位序号；" value="${item.payRollCode}" underline="true"/>
+                            <#input id="projectCode" name="项目编号" value="${item.projectCode}" underline="true"/>
+                            <#input id="organizationCode" name="所属企业组织机构代码" value="${item.organizationCode}" underline="true"/>
+                            <#input id="teamSysNo" name="班组编号" value="${item.teamSysNo}" underline="true"/>
+                            <#input id="payMonth" name="发放月份" value="${item.payMonth}" underline="true"/>
+                            <#input id="type" name="发放类型   1 按工时发放  2按计工单发放" value="${item.type}" underline="true"/>
+                            <#input id="status" name="状态   2=分包已审核,3=总包已复核，50=已发放，初始为空" value="${item.status}" underline="true"/>
+                            <#input id="saveStatus" name="保存状态  1：暂存  2 提交" value="${item.saveStatus}" underline="true"/>
+                            <#input id="payStatus" name="发放状态 1:待发放  2：部分发放  3：已发放" value="${item.payStatus}" underline="true"/>
+                            <#input id="contractorProjectCode" name="建筑活动工程编码（总包）来源JZHD0101" value="${item.contractorProjectCode}" underline="true"/>
+                            <#input id="subContractorProjectCode" name="建筑活动工程编码（分包） 来源JZHD0101" value="${item.subContractorProjectCode}" />
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="attachFiles" name="附件 存放工资单附件路径(上传附件时有对应的附件上传接口)" value="${item.attachFiles}" underline="true"/>
+                            <#input id="totalAmount" name="应发总额" value="${item.totalAmount}" underline="true"/>
+                            <#input id="constructValid" name="分包审核人" value="${item.constructValid}" underline="true"/>
+                            <#input id="constructDate" name="分包审核时间" value="${item.constructDate}" underline="true"/>
+                            <#input id="contractValid" name="总包审核人" value="${item.contractValid}" underline="true"/>
+                            <#input id="contractDate" name="总包审核时间" value="${item.contractDate}" underline="true"/>
+                            <#input id="createDate" name="添加人" value="${item.createDate}" underline="true"/>
+                            <#input id="createUser" name="添加时间" value="${item.createUser}" underline="true"/>
+                            <#input id="updateDate" name="修改时间" value="${item.updateDate}" underline="true"/>
+                            <#input id="updateUser" name="修改人" value="${item.updateUser}" underline="true"/>
+                            <#input id="salaryPerson" name="创建人id" value="${item.salaryPerson}" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" value="${item.isDel}" />
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="PayRollInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="PayRollInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/payRoll/payRoll_info.js"></script>
+@}

@@ -1,0 +1,69 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="ProjectSubContractorInfoForm">
+
+            <input type="hidden" id="id" value="">
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input_sjf id="projectName" name="项目名称" underline="true" requiredFlag="true" disabled="disabled" value="${projectName}" />
+                    <#input_sjf id="projectCode" name="项目编号" underline="true" requiredFlag="true" disabled="disabled" value="${projectCode}" />
+                    <#input_sjf id="subContractor" name="参建公司" underline="true" requiredFlag="true" disabled="disabled" value="${companyName}" />
+                    <#input_sjf id="organizationCode" name="企业组织机构代码" underline="true" requiredFlag="true" value="${orgCode}"  disabled="disabled" />
+                    @if(pageType=="1"){
+                    <#select_sjf id="contractorType" name="参建类型" underline="true" requiredFlag="true"  disabled="disabled">
+                        <option value="13" selected="selected">劳务分包</option>
+                    </#select_sjf>
+                    @}
+                    @else{
+                    <#select_sjf id="contractorType" name="参建类型" requiredFlag="true"  underline="true">
+                        <option value="">请选择</option>
+                        @for(item in contractorType){
+                        @if(page=="ZBXM"){
+                        @if(item.num != 16){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                        @}
+                        @if(page!="ZBXM"){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    @}
+                    <#input_sjf id="entryTime" name="进场时间" underline="true" />
+                    <#input_sjf id="exitTime" name="退场时间" underline="true" />
+                </div>
+                <div class="col-sm-6">
+                    <#input_sjf id="pmName" name="项目经理名称" underline="true"/>
+                    <#select_sjf id="pmIdcardType" name="证件类型" underline="false">
+                        <option value="">请选择</option>
+                        @for(item in idcardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select_sjf>
+                    <#input_sjf id="pmIdcardNumber" name="证件号码" underline="true"/>
+                    <#input_sjf id="pmPhone" name="项目经理电话" underline="true"/>
+                    <#input_sjf id="bankName" name="银行名称" underline="true"/>
+                    <#input_sjf id="bankLinkNumber" name="银行联号" underline="true"/>
+                    <#input_sjf id="bankNumber" name="共管银行账户" placeholder="发放工资的共管银行账户"/>
+                </div>
+
+            </div>
+            <div class="row btn-group-m-t operation">
+                <div class="col-sm-12 tac-sss">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectSubContractorInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectSubContractorInfoDlg.close1()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+
+</div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectSubContractor/projectSubContractor_info.js"></script>
+@}

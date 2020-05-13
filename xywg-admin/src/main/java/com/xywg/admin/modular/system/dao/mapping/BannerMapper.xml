@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.BannerMapper">
+
+    <select id="getBanner" resultType="com.xywg.admin.modular.system.model.Banner">
+        SELECT
+            <include refid="fieldsName"/>
+        from
+            buss_banner
+        where
+            choose_type=#{chooseType} and  `status`=1  and  is_del=0
+            <if test="type!=null and  type!='' ">
+               and type=#{type}
+            </if>
+    </select>
+
+    <select id="selectBanners" resultType="map">
+        SELECT
+        b.id as id,
+        b.organization_code,
+        b.name,
+        b.file_name as fileName,
+        b.url,
+        b.link,
+        b.create_date as createDate,
+        b.create_user as createUser,
+        b.note,
+        b.type,
+        b.order,
+        b.choose_type as chooseType,
+        b.motto
+        from  buss_banner b
+        where
+        b.`status`=1  and  b.is_del=0
+        <if test="map.type!=null and  map.type!='' ">
+            and b.type=#{map.type}
+        </if>
+
+        <if test="map.key != null and map.key != ''">
+            and (b.name like CONCAT('%',#{map.key},'%')
+            OR b.url LIKE CONCAT('%',#{map.key},'%')
+            OR b.note LIKE CONCAT('%',#{map.note},'%')
+            )
+        </if>
+        <if test="map.link != null and map.link != ''">
+            and b.link =#{map.link}
+        </if>
+        order by b.type DESC
+
+
+    </select>
+
+    <sql id="fieldsName">
+        `id`,
+        organization_code  as  organizationCode,
+        `name`,
+        file_name  as   fileName,
+        url,
+        link,
+        `status`,
+        note,
+        type,
+        `order`,
+        choose_type  as chooseType,
+        motto
+    </sql>
+
+    <!-- 批量删除 yuanyang -->
+    <update id="deleteByIds">
+        update buss_banner set
+        is_del=1,
+         update_user=#{map.updateUser},
+        update_date=now()
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+    <!-- 修改轮播图排序 yuanyang -->
+    <update id="updateOrder" >
+        update buss_banner
+        set    update_user=#{updateUser},
+        update_date=now(),`order`=
+        <foreach collection="list" item="t" index="index" open="case ID" close="end" separator=" ">
+            when #{t.id} then #{t.order}
+        </foreach>
+
+        where id in
+        <foreach collection="list" item="t" open="(" close=")" separator=",">
+         #{t.id}
+        </foreach>
+    </update>
+
+    <select id="getBannersByType" resultType="map">
+        SELECT
+        b.id as id,
+        b.organization_code,
+        b.name,
+        b.file_name as fileName,
+        b.url,
+        b.link,
+        b.create_date as createDate,
+        b.create_user as createUser,
+        b.note,
+        b.type,
+        b.order,
+        b.choose_type as chooseType,
+        b.motto
+        from  buss_banner b
+        where
+        b.`status`=1  and  b.is_del=0
+        and b.type=#{map.type}
+        order by b.order ASC
+    </select>
+    <select id="selectIdByName" resultType="java.util.Map">
+        SELECT id , count(id) AS num from buss_banner where name=#{name}
+
+    </select>
+</mapper>

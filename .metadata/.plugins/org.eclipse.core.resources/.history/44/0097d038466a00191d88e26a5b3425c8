@@ -1,0 +1,66 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="personalCertificationsForm">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <#input_sjf id="employeeName" name="姓名"   requiredFlag="true" value="${item.employeeName}" underline="true" disabled="disabled"/>
+                    <#select_sjf id="idCardType" name="证件类型" underline="true" requiredFlag="true" disabled="disabled">
+                    @for(i in dictIdCardType){
+                        @if(i.num==item.idCardType){
+                            <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                            <option value="${i.num}">${i.name}</option>
+                        @}
+                    @}
+                    </#select_sjf>
+                    <#input_sjf id="certificationName" name="证书名称" underline="true" requiredFlag="true"/>
+                    <#input_sjf id="professionCode" name="专业编码" underline="true" disabled="disabled" />
+                    <#select_sjf id="certificationLevelType" name="证书等级" underline="true">
+                        <option value="">请选择</option>
+                    @for(item in dictCertificationLevelType){
+                        <option value="${item.num}">${item.name}</option>
+                    @}
+                    </#select_sjf>
+                    <!-- <#input_sjf id="validBeginDate" name="证书有效起始日期" underline="true" type="date"/>
+                    <#input_sjf id="validEndDate" name="证书有效截止日期" underline="true" type="date"/> -->
+
+                </div>
+
+                <div class="col-sm-6">
+                    <#input_sjf id="idCardNumber" name="证件编号"   value="${item.idCardNumber}" underline="true" requiredFlag="true" disabled="disabled"/>
+                    <#select_sjf id="certificationTypeCode" name="证书类型" underline="true" requiredFlag="true" onchange="certificationTypeCodeChange()">
+                    <option value="">请选择</option>
+                    @for(item in dictCertificationTypeCode){
+                    <option value="${item.num}">${item.name}</option>
+                    @}
+                    </#select_sjf>
+                    <#select_sjf id="jobType" name="类别/工种" underline="true" >
+                    <option value="">请选择</option>
+                    </#select_sjf>
+                    <#input_sjf id="issueBy" name="发证机关" underline="true"/>
+                    <#select_sjf id="status" name="资格状态" requiredFlag="true" underline="true">
+                        <option value="1">有效</option>
+                        <option value="2">注销</option>
+                        <option value="3">过期</option>
+                    </#select_sjf>
+                    <#input_sjf id="issueDate" name="发证日期" underline="true" type="date"
+                    clickFun="laydate({istime: false, format: 'YYYY-MM-DD'})"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="PersonalCertificationsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="PersonalCertificationsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/personalCertifications/personalCertifications_info.js"></script>
+@}

@@ -1,0 +1,61 @@
+package com.xywg.admin.modular.zr.service;
+
+import com.baomidou.mybatisplus.plugins.Page;
+import com.xywg.admin.modular.company.model.SubContractor;
+import com.xywg.admin.modular.smz.dao.IfaLaborMapper;
+import com.xywg.admin.modular.smz.model.IfaLabor;
+import com.xywg.admin.modular.smz.service.IfaLaborService;
+import com.xywg.admin.modular.zr.model.ZrCompanyTpm;
+import com.xywg.admin.modular.zr.utils.HttpClientUtils;
+
+import net.sf.json.JSONObject;
+
+import org.aspectj.internal.lang.annotation.ajcDeclareAnnotation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @Description:
+ * @Author jln
+ */
+@Service
+public class ZrInterfaceServiceImpl implements IZrInterfaceService{
+
+	@Autowired
+	private SubContractorMapper subContractorMapper;
+	@Override
+	public boolean SendCompanyInfo(String stoken) {
+		//获取企业信息
+		SubContractor company = this.subContractorMapper.getCompanyInfo();
+		
+		ZrCompanyTpm zrCompany = new ZrCompanyTpm();
+		zrCompany.setFullName(company.getCompanyName());
+		zrCompany.setSimpleName(company.getCompanyName());
+		zrCompany.setRegistration(company.getAreaCode());
+		zrCompany.setType(1);
+		zrCompany.setCode(company.getOrganizationCode());
+		zrCompany.setUserId("1");
+		zrCompany.setLevel(1);
+		zrCompany.setContact(company.getContactPeopleName());
+		zrCompany.setContactPhone(company.getContactPeopleCellPhone());
+		zrCompany.setDescription(company.getCompanyName());
+		zrCompany.setRegisterCapital(Long.valueOf(50000));
+		
+		String json = JSONObject.fromObject(zrCompany).toString();
+		String url = "/company/save";
+		String jsonResult = HttpClientUtils.sendPost("http://ceshi.smzapi.zhuren360.com" + url, json, stoken);
+		
+		JSONObject obj = new JSONObject().fromObject(jsonResult);//将json字符串转换为json对象
+		if("10000".equals(obj.getString("code"))){
+			System.out.println(obj.getString("id"));
+			return true;
+		}else{
+			return false;
+		}
+	}
+   
+}

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.recruit.dao.ResumeClassMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.recruit.model.ResumeClass">
+        <id column="id" property="id" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="com_username" property="comUsername" />
+        <result column="com_phone" property="comPhone" />
+        <result column="work_id_sets" property="workIdSets" />
+        <result column="project_type" property="projectType" />
+        <result column="work_years" property="workYears" />
+        <result column="worker_total" property="workerTotal" />
+        <result column="team_brief" property="teamBrief" />
+        <result column="remark" property="remark" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="provinces_id" property="provincesId" />
+        <result column="cities_id" property="citiesId" />
+        <result column="areas_id" property="areasId" />
+        <result column="is_default" property="isDefault" />
+        <result column="salary_type" property="salaryType" />
+        <result column="salary_content" property="salaryContent" />
+        <result column="salary_text" property="salaryText" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, id_card_type AS idCardType, id_card_number AS idCardNumber, com_username AS comUsername, com_phone AS comPhone, work_id_sets AS workIdSets, project_type AS projectType, work_years AS workYears, worker_total AS workerTotal, team_brief AS teamBrief, remark, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, provinces_id AS provincesId, cities_id AS citiesId, areas_id AS areasId, is_default AS isDefault, salary_type AS salaryType, salary_content AS salaryContent, salary_text AS salaryText, is_del AS isDel
+    </sql>
+
+    <delete id="delExperience">
+DELETE
+FROM
+	recruit_experience
+WHERE
+	recruit_experience.resume_id = #{resumeId}
+    </delete>
+
+    <select id="getWorkName" resultType="java.lang.String">
+        SELECT
+	sys_dict.`name`
+FROM
+	sys_dict
+WHERE
+	sys_dict.pid = ( SELECT sys_dict.id FROM sys_dict WHERE sys_dict.pid = 0 AND sys_dict.`name` = '工种字典数据' )
+	AND sys_dict.num = #{workNum}
+    </select>
+
+    <select id="getResumeClassList" resultType="com.xywg.admin.modular.recruit.model.ResumeClassListVo">
+SELECT
+	rrc.id,
+	rrc.create_date AS createDate,
+	rrc.work_id_sets AS workSetString
+FROM
+	recruit_resume_class AS rrc
+WHERE
+	rrc.is_del = 0
+	AND rrc.id_card_type = #{idCardType}
+	AND rrc.id_card_number = #{idCardNumber}
+ORDER BY
+	createDate DESC
+	LIMIT #{pageNo},#{pageSize}
+    </select>
+
+    <select id="getResumeClass" resultType="com.xywg.admin.modular.recruit.model.RecruitResumeClassVo">
+      SELECT
+rrw.id,
+rrw.com_username AS comUsername,
+rrw.com_phone AS comPhone,
+rrw.work_id_sets AS workIdSetString,
+rrw.work_years AS workYears,
+rrw.worker_total AS workerTotal,
+rrw.team_brief AS teamBrief,
+rrw.salary_type AS salaryType,
+rrw.salary_content AS salaryContent,
+rrw.salary_text AS salaryText,
+t1.`name` AS projectTypeName,
+t2.areaname AS provinces,
+t3.areaname AS cities,
+t4.areaname AS areas,
+t5.areaname AS wishProvinces,
+t6.areaname AS wishCities,
+t7.areaname AS wishAreas,
+rrw.provinces_id AS provincesId,
+rrw.cities_id AS citiesId,
+rrw.areas_id AS areasId,
+rrw.wish_provinces_id AS wishProvincesId,
+rrw.wish_cities_id AS wishCitiesId,
+rrw.wish_areas_id AS wishAreasId
+FROM
+recruit_resume_class AS rrw
+LEFT JOIN
+(SELECT
+sys_dict.num,
+	sys_dict.`name`
+FROM
+	sys_dict
+WHERE
+	sys_dict.pid = ( SELECT sys_dict.id FROM sys_dict WHERE sys_dict.pid = 0 AND sys_dict.`name` = '项目分类' ) ) AS t1 ON rrw.project_type = t1.num
+LEFT JOIN
+ref_area t2 ON rrw.provinces_id = t2.id
+LEFT JOIN
+ref_area t3 ON rrw.cities_id = t3.id
+LEFT JOIN
+ref_area t4 ON rrw.areas_id = t4.id
+LEFT JOIN
+ref_area t5 ON rrw.wish_provinces_id = t5.id
+LEFT JOIN
+ref_area t6 ON rrw.wish_cities_id = t6.id
+LEFT JOIN
+ref_area t7 ON rrw.wish_areas_id = t7.id
+WHERE
+rrw.id = #{id}
+    </select>
+
+    <select id="getExperienceByResumeId" resultType="com.xywg.admin.modular.recruit.dto.ExperienceDto">
+ SELECT
+	re.theme,
+	re.project_name AS projectName,
+	re.start_date AS startDate,
+	re.end_date AS endDate,
+	re.content
+FROM
+	recruit_experience AS re
+WHERE
+	re.resume_id = #{id}
+    </select>
+</mapper>

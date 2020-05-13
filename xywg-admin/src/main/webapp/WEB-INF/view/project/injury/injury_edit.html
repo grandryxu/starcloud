@@ -1,0 +1,43 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="injuryForm" novalidate="novalidate">
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 porject-sss-898">
+                    <#input_sjf id="projectName" name="项目" value="${item.projectName}" underline="false"  requiredFlag="true"/>
+                    <#input_sjf id="teamName" name="班组" value="${item.teamName}" underline="false"  requiredFlag="true"/>
+                    <#input_sjf id="workerName" name="名称" value="${item.workerName}" underline="false"  requiredFlag="true"/>
+                </div>
+                <div class="col-sm-6">
+                    <#input_sjf id="idCardNumber" name="证件号" value="${item.idCardNumber}" underline="false"  requiredFlag="true"/>
+                    <#input_sjf id="occureTime" name="发生时间" underline="false"  requiredFlag="true"/>
+                    <#select_sjf id="type" name="类型" underline="false"  requiredFlag="true">
+                        @for(i in types){
+                        @if(i.num==item.type1){
+                        <option value="${i.num}" selected>${i.name}</option>
+                        @}else{
+                        <option value="${i.num}">${i.name}</option>
+                        @}
+                        @}
+                    </#select_sjf>
+                    <input id="occureTimeHidden"  hidden value="${item.occureTime}" />
+                </div>
+                            
+            </div>
+            <div class="row input-textarea remark1">
+                <#textarea_sjf id="remark" value="${item.remark}" name="备注" underline="false"/>
+            </div>
+            <div class="row" style="padding-top:20px;">
+                <div class="col-sm-12" style="text-align: center;">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="InjuryInfoDlg.editSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="InjuryInfoDlg.close()"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/injury/injury_info.js"></script>
+@}

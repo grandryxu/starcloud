@@ -1,0 +1,57 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-inline">
+        <input type="hidden" id="projectCode" value="${projectCode}">
+        <input type="hidden" id="type" value="${type}">
+        <input type="hidden" id=deviceSns value="${deviceSns}">
+            <div class="row"  style="padding:0 15px;">
+				<div class="clear-float">
+                     <div class="col-sm-4">
+                         <div class="fn-div">
+                             <label class="fn-label">查询</label>
+                             <input type="text" class="fn-input" id="keys" placeholder="姓名/身份证号码" />
+                         </div>
+                     </div>
+                     <div class="col-sm-4" style="width:270.33px">
+                         <div class="fn-div">
+                             <label class="fn-label">班组</label>
+                             <select class="fn-input" id="team" name="班组">
+                                 <option value="">全部</option>
+                                  @for(item in team){
+                                   		<option value="${item.teamSysNo}">${item.teamName}</option>
+                                   @}
+                             </select>
+                         </div>
+                     </div>
+                     <div class="col-sm-4" style="width:270.33px">
+                         <div class="fn-div">
+                             <label class="fn-label">工种</label>
+                             <select class="fn-input" id="workKind" name="工种">
+                                 <option value="">全部</option>
+                                  @for(item in workKind){
+                                    <option value="${item.num}">${item.name}</option>
+                                  @}
+                             </select>
+                         </div>
+                     </div>
+
+                     <div class="col-sm-4">
+                         <#button name="搜索" icon="fa-search" clickFun="ProjectWorkerDevice.search()"/>
+                         <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                     </div>
+                 </div>
+                  	<!--   <div class="form-group add-XD85-FD">
+                        <input type="text" class="form-control" id="keys" placeholder="姓名/身份证号码">
+                        <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary btn-dsf1" onclick="ProjectWorkerDevice.search()" id="searchButton">搜索</button>
+                        </span>
+                    </div> -->
+            </div>
+            <#table id="ProjectWorkerDeviceTable"/>
+        </div>
+		<button type="button" class="btn btn-primary btn-dsf1" onclick="ProjectWorkerDevice.commandFun()" id="searchButton">确定</button>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectWorker/projectWorker_table_dialog.js"></script>
+@}

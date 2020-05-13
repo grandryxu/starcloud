@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.CompanyEmployeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.CompanyEmploye">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="employe_sys_no" property="employeSysNo"/>
+        <result column="job" property="job"/>
+        <result column="job_type" property="jobType"/>
+        <result column="job_status" property="jobStatus"/>
+        <result column="hire_date" property="hireDate"/>
+        <result column="termination_date" property="terminationDate"/>
+        <result column="worker_role" property="workerRole"/>
+        <result column="remark" property="remark"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, organization_code AS organizationCode, employe_sys_no AS employeSysNo, job, job_type AS jobType, job_status AS jobStatus, hire_date AS hireDate, termination_date AS terminationDate, worker_role AS workerRole, remark, is_del AS isDel
+    </sql>
+
+    <!-- 根据员工id修改 yuanyang-->
+    <update id="edit">
+        update buss_company_employe set
+        job=#{t.job},
+         job_type=#{t.jobType},
+        job_status=#{t.jobStatus},
+        hire_date=#{t.hireDate},
+        termination_date=#{t.terminationDate},
+        retire_date=#{t.retireDate},
+        remark=#{t.remark},
+        organization_code=#{t.organizationCode}
+        where
+        employe_sys_no=#{t.employeSysNo}
+    </update>
+
+    <!-- 根据员工id删除 yuanyang -->
+    <update id="deleteByEmployeeId">
+        update buss_company_employe set
+        where
+        employe_sys_no=#{id}
+    </update>
+
+    <!-- 根据员工id删除 yuanyang -->
+    <update id="deleteByEmployeeIds">
+        update buss_company_employe set
+        is_del=1,
+        update_user=#{map.updateUser},
+        update_date=now()
+        where
+        FIND_IN_SET(employe_sys_no,#{map.employeeMasterIds})
+        AND
+         FIND_IN_SET(organization_code,#{map.organizationCode})
+    </update>
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="getByIdCard" resultType="com.xywg.admin.modular.company.model.CompanyEmploye">
+        select e.id ,e.is_del as isDel from
+        buss_company_employe e
+        left join buss_employee_master m  on  e.employe_sys_no=m.id
+        where m.id_card_number=#{idCardNumber} and  m.id_card_type= #{idCardType}
+        and e.organization_code = #{organizationCode}
+    </select>
+
+    <update id="updateIsDel">
+        update buss_company_employe set
+        is_del=0
+        where
+        employe_sys_no = #{id}
+    </update>
+
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="getJobStatusBySysNo" resultType="com.xywg.admin.modular.company.model.CompanyEmploye">
+        select employe_sys_no as employeSysNo,
+        	   job_status as jobStatus
+        from  buss_company_employe
+        where employe_sys_no=#{employeSysNo} 
+        <if test="organizationCode != null and organizationCode != ''">
+        	and organization_code = #{organizationCode}
+        </if>
+    </select>
+    <select id="selectIdByOrgCodeAndEmploySysNo" resultType="java.util.Map">
+        select id,count(id) AS num from buss_company_employe where organization_code=#{organizationCode} and employe_sys_no=#{employeSysNo}
+
+    </select>
+
+
+</mapper>

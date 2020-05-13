@@ -1,0 +1,59 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="${item.id}">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                    <#input id="companyName" name="企业名称" value="${item.companyName}" underline="true" disabled="disabled"/>
+                    <#input id="organizationCode" name="组织机构编号" value="${item.organizationCode}" underline="true" disabled="disabled"/>
+                    <#input id="socialCreditNumber" name="社会统一信用代码" value="${item.socialCreditNumber}" underline="true" disabled="disabled"/>
+                    <#input id="areaCode" name=" 注册地区" value="${item.areaCode}" underline="true" disabled="disabled"/>
+                    <#input id="representativeName" name="法定代表人" value="${item.representativeName}" underline="true" disabled="disabled"/>
+                    <#select id="representativeIdcardType" name="证件类型" underline="true" disabled="disabled">
+                        @for(item in representativeIdcardType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#input id="zipCode" name="邮政编码" value="${item.zipCode}" underline="true" disabled="disabled"/>
+                    <#input id="registrationCapital" name="注册资本（万元）" value="${item.registrationCapital}" underline="true" disabled="disabled"/>
+                    <#input id="phoneNumber" name="办公电话" value="${item.phoneNumber}"  disabled="disabled"/>
+                    <#input id="contactPeopleName" name="联系人姓名" value="${item.contactPeopleName}" underline="true" disabled="disabled"/>
+                    <#input id="contactPeopleCellPhone" name="联系人手机号码" value="${item.contactPeopleCellPhone}" underline="true" disabled="disabled"/>
+                    <#input id="email" name="企业联系邮箱" value="${item.email}" underline="true" disabled="disabled"/>
+                </div>
+
+                <div class="col-sm-6">
+                    <#select id="organizationType" name="单位性质" underline="true" value="${item.organizationType}" disabled="disabled">
+                        @for(item in organizationType){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#select id="businessStatus" name="经营状态" value="${item.businessStatus}" underline="true" disabled="disabled">
+                        @for(item in businessStatus){
+                        <option value="${item.num}">${item.name}</option>
+                        @}
+                    </#select>
+                    <#input id="bizRegisterCode" name="工商营业执照号" value="${item.bizRegisterCode}" underline="true" disabled="disabled"/>
+                    <#input id="address" name="营业地址" value="${item.address}" underline="true" disabled="disabled"/>
+                    <label>法人联系电话</label>
+                    <#input id="representativeIdcardNumber" name="证件号码" value="${item.representativeIdcardNumber}" underline="true" disabled="disabled"/>
+                    <#input id="establishDate" name="成立日期" value="${item.establishDate}" underline="true" disabled="disabled"/>
+                    <#input id="capitalCurrency" name="币种" value="${item.capitalCurrency}" underline="true" disabled="disabled"/>
+                    <#input id="faxNumber" name="传真号码" value="${item.faxNumber}" underline="true" disabled="disabled"/>
+                    <#input id="contactPeoplePhone" name="联系人办公电话" value="${item.contactPeoplePhone}" underline="true" disabled="disabled"/>
+                    <#input id="homeWebsiteUrl" name="企业网址" value="${item.homeWebsiteUrl}" underline="true" disabled="disabled"/>
+                </div>
+            </div>
+
+            <div>
+                <#input id="memo" name="企业备注" value="${item.memo}" underline="true" disabled="disabled"/>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/cooperationSubContractor/cooperationSubContractor_info.js"></script>
+@}

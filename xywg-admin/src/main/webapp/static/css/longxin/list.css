@@ -1,0 +1,56 @@
+html {
+    background: #f2f2f2;
+}
+.list__card {
+    background: #fff;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 20px;
+    box-shadow: #ddd 0 1px 10px;
+}
+.list__top {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    color: #666;
+}
+.list__top a {
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 10px;
+    display: inline-block;
+    width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #666;
+    
+}
+.list__desc {
+    color: #888;
+    height: 72px;
+    overflow: hidden;
+    line-height: 24px;
+}
+.list__ul {
+    padding: 20px 0;
+}
+.list__ul > li {
+    border-bottom: #ddd 1px solid;
+    margin-bottom: 20px;
+}
+.list__page {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+}
+.list__page > li {
+    cursor: pointer;
+    border: 1px solid #e2e2e2;
+    padding: 10px 20px;
+    margin-left: 20px;
+    color: #666;
+    border-radius: 4px;
+}

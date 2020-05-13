@@ -1,0 +1,1521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.worker.dao.WorkerMasterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap"
+               type="com.xywg.admin.modular.worker.model.WorkerMaster">
+        <id column="id" property="id"/>
+        <result column="worker_name" property="workerName"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="gender" property="gender"/>
+        <result column="nation" property="nation"/>
+        <result column="birthday" property="birthday"/>
+        <result column="birth_place_code" property="birthPlaceCode"/>
+        <result column="address" property="address"/>
+        <result column="head_image" property="headImage"/>
+        <result column="politics_type" property="politicsType"/>
+        <result column="is_joined" property="isJoined"/>
+        <result column="joined_time" property="joinedTime"/>
+        <result column="cell_phone" property="cellPhone"/>
+        <result column="culture_level_type" property="cultureLevelType"/>
+        <result column="has_bad_medical_history" property="hasBadMedicalHistory"/>
+        <result column="urgent_contract_name" property="urgentContractName"/>
+        <result column="urgent_contract_cellphone" property="urgentContractCellphone"/>
+        <result column="work_type_code" property="workTypeCode"/>
+        <result column="work_date" property="workDate"/>
+        <result column="icon_image" property="iconImage"/>
+        <result column="id_image" property="idImage"/>
+        <result column="is_face" property="isFace"/>
+        <result column="face" property="face"/>
+        <result column="is_auth" property="isAuth"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="note" property="note"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+		id,
+		worker_name AS workerName,
+		id_card_type AS idCardType,
+		id_card_number AS idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%YYYY-%mm-%dd') as birthday,
+		birth_place_code AS
+		birthPlaceCode,
+		address, head_image AS headImage,
+		politics_type AS
+		politicsType,
+		is_joined AS isJoined,
+		joined_time AS joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type AS cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name
+		AS urgentContractName,
+		urgent_contract_cellphone AS
+		urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date AS
+		workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser,
+		note,
+		is_del AS isDel
+	</sql>
+
+
+    <!-- 列表查询 分页 -->
+    <select id="selectWorkers" resultType="map">
+        select
+        m.id,m.worker_name AS workerName,
+        m.id_card_type AS idCardType,
+        m.id_card_number AS idCardNumber,m.gender,m.nation,
+        DATE_FORMAT(m.birthday,'%Y-%m-%d') as birthday,
+        m.birth_place_code AS
+        birthPlaceCode,
+        m.address,m.head_image AS headImage,
+        m.politics_type AS
+        politicsType,m.is_joined AS isJoined,m.joined_time AS joinedTime,
+        m.cell_phone AS cellPhone,m.culture_level_type AS cultureLevelType,
+        m.has_bad_medical_history AS hasBadMedicalHistory,
+        m.urgent_contract_name AS urgentContractName,
+        m.urgent_contract_cellphone AS urgentContractCellphone,
+        m.work_type_code AS workTypeCode,m.work_date AS workDate,m.icon_image
+        AS iconImage,
+        m.id_image AS idImage,m.is_face AS
+        isFace,m.face,m.is_auth AS isAuth,
+        m.create_date AS
+        createDate,m.create_user AS createUser,m.update_date AS updateDate,
+        m.update_user AS updateUser,m.note,
+        c.company_name as companyName,
+        w.is_del as isDel,
+        w.organization_code as organizationCode ,
+        bpw.id AS pwId
+        from
+        buss_worker_master m
+        left join
+        buss_contractor_worker w on
+        m.id_card_type=w.id_card_type and
+        m.id_card_number=w.id_card_number
+        left join buss_sub_contractor c on
+        c.organization_code=w.organization_code and c.is_del=0 and c.status=1
+        LEFT JOIN buss_project_worker bpw ON bpw.id_card_type = m.id_card_type AND bpw.id_card_number =
+        m.id_card_number AND bpw.organization_code = c.organization_code AND bpw.is_del = 0
+        where m.is_del=0 and
+        w.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="map.projectCode != null and map.projectCode != ''">
+            and bpw.project_code =#{map.projectCode} AND bpw.is_del = 0
+        </if>
+        <if test="map.key != null and map.key != ''">
+            and (m.worker_name like CONCAT('%',#{map.key},'%')
+            OR
+            m.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.isEnterprise == 0 and map.projectCodes.size() > 0">
+            and bpw.project_code in
+            <foreach collection="map.projectCodes" item="item" index="index"
+             open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        </if>
+        <if test="map.projectCodes.size() == 0">
+            and 1=2
+        </if>
+
+        <if test="map.workTypeCode != null and map.workTypeCode != ''">
+            and m.work_type_code =#{map.workTypeCode}
+        </if>
+        <if test="map.birthPlaceCode != null and map.birthPlaceCode != ''">
+            and m.birth_place_code =#{map.birthPlaceCode}
+        </if>
+        <if test="map.gender != null and map.gender != ''">
+            and m.gender =#{map.gender}
+        </if>
+        <if test="map.isDel != null and map.isDel != ''">
+            and w.is_del =#{map.isDel}
+        </if>
+        <if test="map.cultureLevelType != null and map.cultureLevelType != ''">
+            and m.culture_level_type=#{map.cultureLevelType}
+        </if>
+        <choose>
+            <when test="map.age==1">
+                and (YEAR (now()) - YEAR (birthday) - 1) + (
+                DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+                )
+                &lt; 18
+            </when>
+            <when test="map.age==2">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 18
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 31
+            </when>
+            <when test="map.age==3">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 31
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 41
+            </when>
+            <when test="map.age==4">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 41
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 51
+            </when>
+            <when test="map.age==5">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 51
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 60
+            </when>
+            <when test="map.age==6">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 60
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+         GROUP BY m.id
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+
+    </select>
+
+
+    <!-- 列表查询 分页 项目下的工人列表 -->
+    <select id="getAll" resultType="map">
+        SELECT
+        c.company_name as companyName ,
+        tm.team_name as teamName,
+        m.id,
+        m.worker_name AS workerName,
+        m.id_card_type AS idCardType,
+        m.id_card_number AS idCardNumber,
+        m.gender,
+        m.nation,
+        DATE_FORMAT( m.birthday, '%Y-%m-%d' ) AS birthday,
+        m.birth_place_code AS birthPlaceCode,
+        m.address,
+        m.head_image AS headImage,
+        m.politics_type AS politicsType,
+        m.is_joined AS isJoined,
+        m.joined_time AS joinedTime,
+        m.cell_phone AS cellPhone,
+        m.culture_level_type AS cultureLevelType,
+        m.has_bad_medical_history AS hasBadMedicalHistory,
+        m.urgent_contract_name AS urgentContractName,
+        m.urgent_contract_cellphone AS urgentContractCellphone,
+        worker.work_type_code AS workTypeCode,
+        m.work_date AS workDate,
+        m.icon_image AS iconImage,
+        m.id_image AS idImage,
+        m.is_face AS isFace,
+        m.face,
+        m.is_auth AS isAuth,
+        m.create_date AS createDate,
+        m.create_user AS createUser,
+        m.update_date AS updateDate,
+        m.update_user AS updateUser,
+        m.note,
+        member.is_del as isDel ,
+        worker.sh_imei AS shImei
+        FROM
+        buss_worker_master m
+        JOIN (
+        SELECT
+        bpw.id_card_type,
+        bpw.id_card_number,
+        bpw.organization_code ,
+        bpw.project_code ,
+        bpw.team_sys_no ,
+        bpw.work_type_code ,
+        bpw.sh_imei
+        FROM
+        buss_project_worker bpw
+        WHERE
+        bpw.organization_code IN (
+        SELECT
+        d.social_credit_number
+        FROM
+        sys_dept d
+        JOIN buss_project_sub_contractor bpsc ON bpsc.organization_code = d.social_credit_number
+        AND bpsc.project_code = #{map.projectCode}
+        WHERE
+        1=1
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+            AND d.social_credit_number IS NOT NULL
+            AND ( d.id = #{map.deptId} OR d.pids LIKE CONCAT( '%[',#{map.deptId} , ']%' ) )
+        </if>
+        )
+        and bpw.project_code = #{map.projectCode} and bpw.id in (select max(id) from buss_project_worker group by
+        id_card_type,id_card_number ,project_code )
+        GROUP BY
+        bpw.id_card_type,
+        bpw.id_card_number,
+        bpw.organization_code ,
+        bpw.project_code
+        ORDER BY id_card_number
+        ) worker ON worker.id_card_type = m.id_card_type
+        AND worker.id_card_number = m.id_card_number
+        JOIN (select id_card_type,id_card_number,is_del,team_sys_no from buss_team_member where id in(select max(id)
+        from buss_team_member group by id_card_type,id_card_number,team_sys_no)) member on member.id_card_type =
+        worker.id_card_type and member.id_card_number = worker.id_card_number and member.team_sys_no =
+        worker.team_sys_no
+        LEFT JOIN buss_sub_contractor c ON c.organization_code = worker.organization_code
+        LEFT JOIN buss_team_master tm on tm.team_sys_no = member.team_sys_no
+        WHERE
+        m.is_del = 0
+        <if test="map.key != null and map.key != ''">
+            and (m.worker_name like CONCAT('%',#{map.key},'%')
+            OR
+            m.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.workTypeCode != null and map.workTypeCode != ''">
+            and m.work_type_code =#{map.workTypeCode}
+        </if>
+        <if test="map.birthPlaceCode != null and map.birthPlaceCode != ''">
+            and m.birth_place_code =#{map.birthPlaceCode}
+        </if>
+        <if test="map.gender != null and map.gender != ''">
+            and m.gender =#{map.gender}
+        </if>
+        <if test="map.isDel != null and map.isDel != ''">
+            and member.is_del =#{map.isDel}
+        </if>
+        <if test="map.cultureLevelType != null and map.cultureLevelType != ''">
+            and m.culture_level_type=#{map.cultureLevelType}
+        </if>
+        <choose>
+            <when test="map.age==1">
+                and (YEAR (now()) - YEAR (birthday) - 1) + (
+                DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+                )
+                &lt; 18
+            </when>
+            <when test="map.age==2">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 18
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 31
+            </when>
+            <when test="map.age==3">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 31
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 41
+            </when>
+            <when test="map.age==4">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 41
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 51
+            </when>
+            <when test="map.age==5">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 51
+                AND (
+                YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 60
+            </when>
+            <when test="map.age==6">
+                and (YEAR (now()) - YEAR (m.birthday) - 1) +
+                (DATE_FORMAT(m.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >= 60
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 列表查询 不分页 -->
+    <select id="selectWorkersList" resultType="map">
+        select
+        w.id,
+        w.worker_name AS workerName,
+        w.id_card_type AS idCardType,
+        w.id_card_number AS idCardNumber,
+        w.gender,
+        w.nation,
+        w.birth_place_code
+        AS birthPlaceCode,
+        w.address, head_image AS headImage,
+        w.cell_phone AS
+        cellPhone,
+        w.has_bad_medical_history AS hasBadMedicalHistory,
+        DATE_FORMAT(w.birthday,'%Y-%m-%d') as birthday,
+        w.work_type_code AS
+        workTypeCode,
+        w.politics_type as politicsType,
+        w.culture_level_type as
+        cultureLevelType,
+        w.is_joined as isJoined,
+        w.is_face as isFace,
+        w.is_auth as
+        isAuth,
+        IFNULL(w.urgent_contract_name,' ') as
+        urgentContractName,
+        ifnull(DATE_FORMAT(w.joined_time,'%Y-%m-%d') ,'')
+        as joinedTime,
+        IFNULL(w.urgent_contract_cellphone,' ') as
+        urgentContractCellphone,
+        ifnull( DATE_FORMAT(w.work_date,'%Y-%m-%d')
+        ,'') as workDate,
+        IFNULL(w.note,' ') as note,
+        m.is_del as isDel
+        from
+        buss_worker_master w
+        left join
+        buss_contractor_worker m on
+        m.id_card_type=w.id_card_type and
+        m.id_card_number=w.id_card_number
+        where w.is_del=0 and
+        m.organization_code in
+        <foreach collection="depts" item="item" index="index" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+
+        <if test="key != null and key != ''">
+            and (w.worker_name like CONCAT('%',#{key},'%')
+            OR
+            w.id_card_number LIKE CONCAT('%',#{key},'%')
+            )
+        </if>
+
+        <if test="workTypeCode != null and workTypeCode != ''">
+            and w.work_type_code =#{workTypeCode}
+        </if>
+        <if test="birthPlaceCode != null and birthPlaceCode !=''">
+            and w.birth_place_code =#{birthPlaceCode}
+        </if>
+        <if test="gender != null and gender != ''">
+            and w.gender =#{ender}
+        </if>
+        <if test="cultureLevelType != null and cultureLevelType != ''">
+            and w.culture_level_type=#{cultureLevelType}
+        </if>
+        <choose>
+            <when test="age==1">
+                and (YEAR (now()) - YEAR (w.birthday) - 1) + (
+                DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+                )
+                &lt;
+                18
+            </when>
+            <when test="age==2">
+                and (YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >=
+                18
+                AND (
+                YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday,
+                '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 31
+            </when>
+            <when test="age==3">
+                and (YEAR (now()) - YEAR (birthday) - 1) +
+                (DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >=
+                31
+                AND (
+                YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday,
+                '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 41
+            </when>
+            <when test="age==4">
+                and (YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >=
+                41
+                AND (
+                YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday,
+                '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 51
+            </when>
+            <when test="age==5">
+                and (YEAR (now()) - YEAR (birthday) - 1) +
+                (DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >=
+                51
+                AND (
+                YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday,
+                '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                &lt; 60
+            </when>
+            <when test="age==6">
+                and (YEAR (now()) - YEAR (w.birthday) - 1) +
+                (DATE_FORMAT(w.birthday, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d'))
+                >=
+                60
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="orderByField != null and orderByField !=''">
+                <choose>
+                    <when test="isAsc == true">
+                        order by ${orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by w.id DESC
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="getWorkerByIdCard" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		select
+		id,
+		worker_name
+		AS workerName,
+		id_card_type AS idCardType,
+		id_card_number AS
+		idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%Y-%m-%d') as
+		birthday,
+		birth_place_code AS birthPlaceCode,
+		address, head_image AS
+		headImage,
+		politics_type AS politicsType,
+		is_joined AS isJoined,
+		joined_time AS joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type
+		AS cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name AS urgentContractName,
+		urgent_contract_cellphone
+		AS urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date
+		AS workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser
+		from
+		buss_worker_master
+		where 1=1 AND id_card_type=#{idCardType}
+		and
+		id_card_number=#{idCardNumber}
+		and is_del=0
+	</select>
+
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="getById"
+            resultType="com.xywg.admin.modular.worker.model.AppWorkerMasterDto">
+		select
+		m.worker_name AS workerName,
+		m.head_image AS
+		headImage,
+		m.is_auth AS isAuth,
+		m.is_face AS isFace,
+		m.gender as gender,
+		m.id_card_type AS idCardType,
+		m.id_card_number AS idCardNumber,
+		m.address as address,
+		m.cell_phone AS cellPhone,
+		d.name AS workKind
+		from
+		buss_worker_master m
+		left join sys_dict d on d.pid=121 and
+		d.num=m.work_type_code
+		where 1=1 AND
+		m.id_card_type=#{idCardType}
+		and
+		m.id_card_number=#{idCardNumber}
+		and m.is_del=0
+	</select>
+
+    <!-- 根据证件类型和证件号查询工人 cw -->
+    <select id="v1111GetById"
+            resultType="com.xywg.admin.modular.worker.model.AppWorkerMasterDto">
+        select
+        m.worker_name AS workerName,
+        m.head_image AS
+        headImage,
+        m.is_auth AS isAuth,
+        m.is_face AS isFace,
+        m.gender as gender,
+        m.id_card_type AS idCardType,
+        m.id_card_number AS idCardNumber,
+        m.address as address,
+        m.cell_phone AS cellPhone,
+        d.name AS workKind
+        from
+        buss_worker_master m
+        left join buss_project_worker bpw on bpw.project_code = #{projectCode} and bpw.id_card_type = m.id_card_type and bpw.id_card_number = m.id_card_number and bpw.is_del = 0
+        left join sys_dict d on d.pid=( SELECT id FROM sys_dict WHERE NAME = '工种字典数据' AND num = 0) and
+        d.num=bpw.work_type_code
+        where 1=1 AND
+        m.id_card_type=#{idCardType}
+        and
+        m.id_card_number=#{idCardNumber}
+        and m.is_del=0
+    </select>
+
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="searchWorker" resultType="map">
+		select
+		id,
+		worker_name AS
+		workerName,
+		id_card_type AS idCardType,
+		id_card_number AS idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+		birth_place_code AS birthPlaceCode,
+		address, head_image AS headImage,
+		politics_type AS politicsType,
+		is_joined AS isJoined,
+		DATE_FORMAT(joined_time,'%Y-%m-%d') as joinedTime,
+		cell_phone AS
+		cellPhone,
+		culture_level_type AS
+		cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name
+		AS urgentContractName,
+		urgent_contract_cellphone AS
+		urgentContractCellphone,
+		work_type_code AS workTypeCode,
+		DATE_FORMAT(work_date,'%Y-%m-%d') as workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS
+		updateDate,
+		update_user AS updateUser,
+		note,
+		head_image as headImage
+		from
+		buss_worker_master
+		where 1=1 AND id_card_type=#{idCardType}
+		and
+		id_card_number=#{idCardNumber}
+		and is_del=0
+	</select>
+
+    <select id="searchWorkerByIdCardTypeAndIdCardNumber" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		select
+		id,
+		worker_name AS workerName,
+		id_card_type AS idCardType,
+		id_card_number AS idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%Y-%m-%d') as birthday,
+		birth_place_code AS
+		birthPlaceCode,
+		address, head_image AS headImage,
+		politics_type AS
+		politicsType,
+		is_joined AS isJoined,
+		joined_time AS joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type AS cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name
+		AS urgentContractName,
+		urgent_contract_cellphone AS
+		urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date AS
+		workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser
+		from
+		buss_worker_master
+		where 1=1 AND id_card_type=#{idCardType}
+		and
+		id_card_number=#{idCardNumber}
+		and is_del=0
+	</select>
+
+    <!-- 查询工人是否申请过加入班组 -->
+    <select id="searchAddClass" parameterType="com.xywg.admin.modular.message.model.Message"
+            resultType="map">
+		SELECT
+m.id,
+m.project_code AS projectCode,
+m.team_sys_no AS teamSysNo,
+m.send_id AS sendId,
+m.id_card_type AS idCardType,
+m.id_card_number AS idCardNumber,
+m.receive_id AS receiveId,
+m.type,
+m.equipment,
+m.content,
+m.send_time AS sendTime,
+m.is_read AS isRead,
+m.read_time AS readTime,
+m.kind
+		FROM
+		buss_message AS m
+		WHERE
+		m.is_read = 0 AND
+		m.team_sys_no =
+		#{teamSysNo} AND
+		m.id_card_type =#{idCardType} AND
+		m.id_card_number=#{idCardNumber} AND
+		m.type = 0
+	</select>
+
+    <!-- 工人申请加入班组（王施博） -->
+    <insert id="addClass" parameterType="com.xywg.admin.modular.message.model.Message">
+		INSERT INTO `buss_message` (
+		`project_code`,
+		`team_sys_no`,
+		id_card_type,
+		id_card_number,
+		`type`,
+		`content`,
+		`send_time`,
+		`is_read`,
+		`send_id`,
+		`receive_id`,
+		`kind`,
+		`equipment`
+		)
+		VALUES
+		(
+
+		#{projectCode},
+		#{teamSysNo},
+		#{idCardType},
+		#{idCardNumber},
+		0,
+		#{content},
+		NOW(),
+		0,
+		#{sendId},
+		#{receiveId},
+		2,
+		#{equipment}
+		);
+	</insert>
+
+    <select id="getWorkTypeById" parameterType="map" resultType="string">
+		SELECT
+		work_type_code
+		from buss_worker_master
+		where
+		id_card_type=#{map.idCardType}
+		and id_card_number=#{map.idCardNumber}
+	</select>
+
+
+    <update id="updateByIdCardTypeAndIdCardNumber" parameterType="com.xywg.admin.modular.worker.model.WorkerMaster">
+        UPDATE buss_worker_master
+        <set>
+            <if test="headImage !=null ">head_image = #{headImage} ,</if>
+            <if test="cellPhone !=null ">cell_phone = #{cellPhone},</if>
+        </set>
+        where id_card_type=#{idCardType} and id_card_number=#{idCardNumber}
+        and is_del=0
+    </update>
+
+    <update id="updateEquipmentById">
+		UPDATE sys_user
+		set equipment =#{aliId}
+		where id=#{id}
+	</update>
+
+    <!-- 查询班组长是否邀请过工人 -->
+    <select id="searchInvitation" parameterType="com.xywg.admin.modular.message.model.Message"
+            resultType="map">
+		SELECT
+m.id,
+m.project_code AS projectCode,
+m.team_sys_no AS teamSysNo,
+m.send_id AS sendId,
+m.id_card_type AS idCardType,
+m.id_card_number AS idCardNumber,
+m.receive_id AS receiveId,
+m.type,
+m.equipment,
+m.content,
+m.send_time AS sendTime,
+m.is_read AS isRead,
+m.read_time AS readTime,
+m.kind
+		FROM
+		buss_message AS m
+		WHERE
+		m.is_read = 0 AND
+		m.team_sys_no =
+		#{teamSysNo} AND
+		m.id_card_type =#{idCardType} AND
+		m.id_card_number=#{idCardNumber} AND
+		m.type = 2
+
+	</select>
+
+    <!-- 班组长邀请工人加入班组wangshibo -->
+    <insert id="invitationAddTeam" parameterType="com.xywg.admin.modular.message.model.Message">
+		INSERT INTO
+		`buss_message` (
+		`project_code`,
+		`team_sys_no`,
+		`id_card_type`,
+		`id_card_number`,
+		`send_id`,
+		`receive_id`,
+		`type`,
+		`content`,
+		`send_time`,
+		`is_read`,
+
+		`kind`,
+		`equipment`
+		)
+		VALUES
+		(
+		#{projectCode},
+		#{teamSysNo},
+		#{idCardType},
+		#{idCardNumber},
+		#{sendId},
+		#{receiveId},
+		2,
+		#{content},
+		NOW(),
+		0,
+		2,
+		#{equipment}
+		)
+	</insert>
+
+    <!-- 无分页 根据项目id班组编号查询出人员列表 蔡伟-->
+    <select id="getPersonListByTeamCodeNoPage" resultType="Map"
+            parameterType="Map">
+        SELECT
+        C.id as id,
+        C.workerName,
+        C.idCardType,
+        C.idCardNumber,
+        count(C.recordDay) AS
+        recordDay,
+        0 AS type,
+        0 AS unit,
+        0 AS number,
+        0 AS totalAmount,
+        0 AS
+        rewardAmount,
+        0 AS punishAmount,
+        0 AS payAmuont,
+        C.workTypeCode AS
+        workType,
+        0 AS price,
+        bwk. NAME AS workerType
+        FROM
+        (
+        SELECT
+        A.id as id,
+        A.workerName,
+        A.idCardType,
+        A.idCardNumber,
+        LEFT (B.time, 10) AS recordDay,
+        A.workTypeCode
+        FROM
+        (
+        SELECT
+        wm.id as id,
+        wm.worker_name AS workerName,
+        wm.id_card_type
+        AS idCardType,
+        wm.id_card_number AS idCardNumber,
+        ba.closing_time AS
+        lastTime,
+        bpw.work_type_code AS workTypeCode
+        FROM
+        buss_worker_master wm
+        LEFT JOIN buss_account_detail bad ON bad.id = (
+        SELECT
+        max(bad.id)
+        FROM
+        buss_account_detail bad
+        LEFT JOIN buss_account ba ON ba.id =
+        bad.account_id
+        WHERE
+        bad.id_card_type = wm.id_card_type
+        AND
+        bad.id_card_number = wm.id_card_number
+        AND ba.project_code =
+        #{map.projectCode}
+        AND ba.team_sys_no = #{map.team}
+        )
+        LEFT JOIN
+        buss_account ba ON ba.id = bad.account_id
+        left join buss_project_worker bpw on bpw.id_card_number=wm.id_card_number and bpw.id_card_type=wm.id_card_type and bpw.team_sys_no=#{map.team} and bpw.project_code=#{map.projectCode}
+        WHERE
+        1 = 1
+        AND
+        FIND_IN_SET(wm.id, #{map.ids})
+        ) A
+        LEFT JOIN buss_device_record B ON
+        B.id_card_type = A.idCardType
+        AND B.id_card_number = A.idCardNumber
+        AND
+        B.project_code = #{map.projectCode}
+        AND B.team_sys_no = #{map.team}
+        AND
+        B.time <![CDATA[>]]>
+        ifnull(A.lastTime, 0)
+        AND B.time <![CDATA[<=]]>
+        #{map.closingTime}
+        GROUP BY
+        LEFT (B.time, 10),A.idCardType,A.idCardNumber
+        ) C
+        LEFT JOIN buss_work_kind
+        bwk ON bwk.organization_code = (
+        SELECT
+        organization_code
+        FROM
+        buss_team_master btm
+        WHERE
+        btm.team_sys_no = #{map.team}
+        )
+        AND bwk.num =
+        C.workTypeCode
+        GROUP BY
+        C.idCardType,
+        C.idCardNumber
+    </select>
+
+    <select id="getPersonListByTeamCode" resultType="Map"
+            parameterType="Map">
+		SELECT
+		C.id as id,
+		C.workerName,
+		C.idCardType,
+		C.idCardNumber,
+		count(C.recordDay) AS
+		recordDay,
+		0 AS type,
+		0 AS unit,
+		0 AS number,
+		0 AS totalAmount,
+		0 AS
+		rewardAmount,
+		0 AS punishAmount,
+		0 AS payAmuont,
+		C.workTypeCode AS
+		workType,
+		0 AS price,
+		bwk. NAME AS workerType
+		FROM
+		(
+		SELECT
+		A.id as id,
+		A.workerName,
+		A.idCardType,
+		A.idCardNumber,
+		LEFT (B.time, 10) AS recordDay,
+		A.workTypeCode
+		FROM
+		(
+		SELECT
+		wm.id as id,
+		wm.worker_name AS workerName,
+		wm.id_card_type
+		AS idCardType,
+		wm.id_card_number AS idCardNumber,
+		ba.closing_time AS
+		lastTime,
+		bpw.work_type_code AS workTypeCode
+		FROM
+		buss_worker_master wm
+		LEFT JOIN buss_account_detail bad ON bad.id = (
+		SELECT
+		max(bad.id)
+		FROM
+		buss_account_detail bad
+		LEFT JOIN buss_account ba ON ba.id =
+		bad.account_id
+		WHERE
+		bad.id_card_type = wm.id_card_type
+		AND
+		bad.id_card_number = wm.id_card_number
+		AND ba.project_code =
+		#{map.projectCode}
+		AND ba.team_sys_no = #{map.team}
+		)
+		LEFT JOIN
+		buss_account ba ON ba.id = bad.account_id
+		left join buss_project_worker bpw on bpw.id_card_number=wm.id_card_number and bpw.id_card_type=wm.id_card_type and bpw.team_sys_no=#{map.team} and bpw.project_code=#{map.projectCode}
+		WHERE
+		1 = 1
+		AND
+		FIND_IN_SET(wm.id, #{map.ids})
+		) A
+		LEFT JOIN buss_device_record B ON
+		B.id_card_type = A.idCardType
+		AND B.id_card_number = A.idCardNumber
+		AND
+		B.project_code = #{map.projectCode}
+		AND B.team_sys_no = #{map.team}
+		AND
+		B.time <![CDATA[>]]>
+		ifnull(A.lastTime, 0)
+		AND B.time <![CDATA[<=]]>
+		#{map.closingTime}
+		GROUP BY
+		LEFT (B.time, 10),A.idCardType,A.idCardNumber
+		) C
+		LEFT JOIN buss_work_kind
+		bwk ON bwk.organization_code = (
+		SELECT
+		organization_code
+		FROM
+		buss_team_master btm
+		WHERE
+		btm.team_sys_no = #{map.team}
+		)
+		AND bwk.num =
+		C.workTypeCode
+		GROUP BY
+		C.idCardType,
+		C.idCardNumber
+	</select>
+
+    <select id="getWorkerMasterByProjectCode" resultType="map">
+        select wm.id,
+        case when wm.gender =1 then '女' when wm.gender =0 then '男' else '' end as gender,
+        w.team_sys_no as teamSysNo,
+        w.id_card_number as idCardNumber,
+        w.id_card_type as idCardType,
+        m.team_name as teamName,
+        wm.worker_name as workerName,
+        w.work_type_code as workTypeCode,
+        w.project_code as projectCode,
+        d.name as workTypeName
+        from buss_project_worker w
+        left join buss_worker_master wm on w.id_card_type=wm.id_card_type and w.id_card_number=wm.id_card_number
+        LEFT JOIN sys_dict d on d.num = wm.work_type_code and pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据"
+        and d2.pid=0)
+        LEFT join buss_team_master m on m.team_sys_no=w.team_sys_no
+        where w.is_del=0 and m.is_del=0 and wm.is_del=0
+        and w.organization_code IN
+        <foreach collection="map.organizationCodeList" close=")" open="(" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        <if test="map.projectCode !=null  and  map.projectCode !=''  ">
+            AND w.project_code = #{map.projectCode}
+        </if>
+        <if test="map.idCardNumber !=null  and  map.idCardNumber !=''  ">
+            AND w.id_card_number like
+            CONCAT('%',#{map.idCardNumber},'%')
+        </if>
+        <if test="map.workerName !=null  and  map.workerName !=''  ">
+            AND wm.worker_name like CONCAT('%',#{map.workerName},'%')
+        </if>
+        <if test="map.teamSysNo !=null  and  map.teamSysNo !=''  ">
+            AND w.team_sys_no like CONCAT('%',#{map.teamSysNo},'%')
+        </if>
+        order by m.id DESC
+    </select>
+
+
+    <select id="getAppWorkerMasterByProjectCode" resultType="map">
+		select
+		wm.id,
+		ifnull(wm.gender,0) as gender,
+		ifnull(w.team_sys_no,'') as
+		teamSysNo,
+		ifnull(w.id_card_number,'') as idCardNumber,
+		ifnull(w.id_card_type,'') as idCardType,
+		ifnull(m.team_name,'') as
+		teamName,
+		ifnull(wm.worker_name,'') as workerName,
+		ifnull(w.work_type_code,'') as workTypeCode,
+		ifnull(w.project_code,'')
+		as projectCode,
+		ifnull(d.name ,'')as workTypeName
+		from
+		buss_worker_master wm
+		LEFT JOIN sys_dict d on d.num = wm.work_type_code
+		and pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据" and d2.pid=0)
+		left join buss_project_worker w on
+		w.id_card_type=wm.id_card_type and w.id_card_number=wm.id_card_number
+		LEFT join buss_team_master m on m.team_sys_no=w.team_sys_no
+		where
+		w.is_del=0 and m.is_del=0 and wm.is_del=0 AND w.project_code =
+		#{projectCode}
+		order by m.id DESC
+	</select>
+
+    <select id="v116GetAppWorkerMasterByProjectCode" resultType="map">
+        select
+        wm.id,
+        ifnull(wm.gender,0) as gender,
+        ifnull(w.team_sys_no,'') as
+        teamSysNo,
+        ifnull(w.id_card_number,'') as idCardNumber,
+        ifnull(w.id_card_type,'') as idCardType,
+        ifnull(m.team_name,'') as
+        teamName,
+        ifnull(wm.worker_name,'') as workerName,
+        ifnull(w.work_type_code,'') as workTypeCode,
+        ifnull(w.project_code,'')
+        as projectCode,
+        ifnull(d.name ,'')as workTypeName
+        from
+        buss_worker_master wm
+        LEFT JOIN sys_dict d on d.num = wm.work_type_code
+        and pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据" and d2.pid=0)
+        left join buss_project_worker w on
+        w.id_card_type=wm.id_card_type and w.id_card_number=wm.id_card_number
+        LEFT join buss_team_master m on m.team_sys_no=w.team_sys_no
+        where
+        w.is_del=0 and m.is_del=0 and wm.is_del=0 AND w.project_code =
+        #{projectCode}
+        order by m.id DESC
+        limit #{index},#{pageSize}
+    </select>
+
+    <select id="getWorkerMoneyTable" resultType="map">
+        select
+        m.id as workerId,
+        m.id_card_type as idCardType,
+        s2.name as idCardTypeVal,
+        m.id_card_number as idCardNumber,
+        m.work_type_code as workerType,
+        ifnull(sum(d.pay_amount),0) as addPayAmount,
+        ifnull(sum(d.actual_amount),0) as addActualAmount,
+        ifnull(sum(d.balance_amount),0) as addBalanceAmount,
+        ifnull(group_concat(d.id),'') as payRollDetailConcatIds,
+        s.name as workerTypeName,
+        0 as punishAmount,
+        0 as rewardAmount,
+        ifnull(sum(d.balance_amount),0) as settlePayAmount,
+        0 as settleActualAmount,
+        m.worker_name as workerName
+        from buss_worker_master m
+        left join buss_project_worker w on w.id_card_type=m.id_card_type and m.id_card_number=w.id_card_number and
+        w.is_del=0
+        left join buss_pay_roll r on r.project_code=w.project_code and r.status=50 and r.is_del=0
+        left join buss_pay_roll_detail d on d.pay_roll_code=r.pay_roll_code and m.id_card_type=d.id_card_type and
+        m.id_card_number=d.id_card_number and d.pay_status=0 and d.is_del=0
+        left join sys_dict s on s.num=m.work_type_code and s.pid=(select d2.id from sys_dict d2 where d2.name="工种字典数据"
+        and d2.pid=0)
+        left join sys_dict s2 on s2.num=m.id_card_type and s2.pid=(select d2.id from sys_dict d2 where d2.name="人员证件类型"
+        and d2.pid=0)
+        where m.is_del=0 and w.project_code=#{projectCode}
+        and m.id in
+        <foreach collection="workerIdList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY m.id_card_type,m.id_card_number
+    </select>
+    <select id="getByCellPhone" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+		select
+		id,
+		worker_name AS
+		workerName,
+		head_image AS headImage,
+		is_auth AS isAuth,
+		is_face AS
+		isFace,
+		gender,
+		id_card_type AS idCardType,
+		id_card_number AS
+		idCardNumber,
+		address,
+		cell_phone AS cellPhone,
+		work_type_code AS
+		workTypeCode
+		from buss_worker_master
+		where 1=1 AND
+		cell_phone=#{cellPhone}
+		and
+		is_del=0
+		LIMIT 1
+	</select>
+
+
+    <select id="getValidUser" parameterType="list"
+            resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+        SELECT
+        s.id,
+        s.worker_name AS workerName,
+        s.id_card_number AS
+        idCardNumber,
+        p.team_sys_no as teamSysNo,
+        p.project_code as projectCode,
+        p.organization_code as organizationCode
+        FROM buss_worker_master s
+        left join buss_project_worker p on s.id_card_type = p.id_card_type and s.id_card_number = p.id_card_number and
+        p.is_del = 0
+        WHERE s.is_del = 0 and s.id_card_type = 1
+        and s.id_card_number in
+        <foreach collection="list" item="l" open="(" close=")"
+                 separator=",">
+            #{l.person.idCardNumber}
+        </foreach>
+        and p.project_code in
+        <foreach collection="list" item="l" open="(" close=")"
+                 separator=",">
+            #{l.device.projectCode}
+        </foreach>
+    </select>
+
+    <update id="delWorker">
+
+		update buss_contractor_worker set
+		is_del=1
+		where
+		FIND_IN_SET(id_card_number,#{map.idCardNumber})
+		and
+		FIND_IN_SET(id_card_type,#{map.idCardType})
+		and
+		FIND_IN_SET(organization_code,#{map.organizationCode})
+
+	</update>
+
+    <!-- 修改工种 -->
+    <update id="updateWorkKind">
+		UPDATE buss_worker_master
+		SET work_type_code = #{num}
+		WHERE id_card_type = #{idCardType}
+		AND id_card_number = #{idCardNumber}
+	</update>
+
+    <!-- 查询工人是否在黑名单 -->
+    <select id="searchWorkerBlack" resultType="map">
+		SELECT
+		b.id
+		FROM
+		buss_worker_black_list AS b
+		WHERE
+		b.is_valid = 1 AND
+		b.type = 1 AND
+		b.is_del = 0 and
+		b.id_card_type = #{idCardType} AND
+		b.id_card_number =
+		#{idCardNumber}
+	</select>
+
+
+    <!-- 新增工人资格证书yuanyang -->
+    <insert id="addCertifications">
+		INSERT INTO
+		buss_personal_certifications (
+		id_card_number,
+		id_card_type,
+		path,
+		type
+		)
+		VALUES
+		(
+		#{idCardNumber},
+		#{idCardType},
+		#{path},
+		1
+		)
+	</insert>
+
+    <!-- 根据userid获取设备号 -->
+    <select id="getEquipmentByUserId" resultType="string">
+		SELECT
+		IFNULL(u.equipment,'') AS equipment
+		FROM
+		sys_user AS u
+		WHERE
+		u.id = #{id}
+	</select>
+
+    <!--发送劳务通工人数据到实名制-->
+    <select id="getPersonFromLabor" resultType="com.xywg.admin.modular.smz.model.PersonMo">
+          SELECT bpm.project_name,
+        btm.team_name as className,
+        bsc.id as comId,
+        bpm.id as projectId,
+        bwm.id as personId,
+        bwm.worker_name as name,
+        bwm.id_card_type as idCardType,
+        bwm.id_card_number as idCard,
+        bwm.cell_phone as mobile,
+        bwm.birthday as birthday,
+        bpw.join_status as joinStatus,
+        bwm.address as address,
+        bwm.gender as gender,
+        '' as currAddress,
+        bwm.work_type_code as kindCode,
+        bwm.id_card_number as loginName,
+        bwm.head_image as image,
+        su.password as password,
+        bpm.start_date as startDate,
+        bpm.complete_date as endDate,
+        bpw.entry_time as joinInDate,
+        bpw.exit_time as joinOutDate,
+        bwm.nation as nation,
+        bwm.birth_place_code as birthPlaceCode,
+        bwm.politics_type as politicsType,
+        bwm.is_joined as unJoined,
+        bwm.joined_time as joinedTime,
+        bwm.culture_level_type as cultureLevelType,
+        bwm.has_bad_medical_history as noBadMedicalHistory,
+        bwm.urgent_contract_name as urgentContractName,
+        bwm.urgent_contract_cellphone as urgentContractCellphone,
+        bwm.work_date as workDate,
+        bpw.worker_accommodation_type as workAccommodationType,
+        sd.NAME AS workTypeName 
+        from
+        buss_project_worker bpw
+        left join buss_team_master btm on btm.team_sys_no=bpw.team_sys_no
+        left join buss_sub_contractor bsc on bsc.organization_code=bpw.organization_code
+        left join buss_project_master bpm on bpm.project_code=bpw.project_code
+        left join buss_worker_master bwm on bpw.id_card_type =bwm.id_card_type and bpw.id_card_number=bwm.id_card_number
+        left join sys_user su on su.phone=bwm.cell_phone and su.status !=3
+        LEFT JOIN (SELECT d.NAME,d.num FROM sys_dict d 
+		  				WHERE d.pid = (SELECT id FROM sys_dict WHERE NAME = '工种字典数据')
+				) sd ON bpw.work_type_code = sd.num 
+        where  bpm.is_synchro = 1 AND bpm.is_del = 0 and bpw.id in
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+
+    </select>
+
+
+     <!-- 查询人员图片传输给实名制 -->
+      <select id="getPersonImageFromLabor" resultType="com.xywg.admin.modular.smz.model.PersonMo">
+             select
+        		bwm.id as personId,
+        		left(bwm.face, LOCATE(',',bwm.face)-1)as image
+        from buss_project_worker bpw
+        left join buss_project_master m on bpw.project_code = m.project_code 	
+        left join buss_worker_master bwm on bpw.id_card_type =bwm.id_card_type
+		  											 and bpw.id_card_number=bwm.id_card_number									
+        where   bpw.id >#{number}  and m.is_del = 0 and m.is_synchro = 1 and length(bwm.face) >1
+        group by bwm.id
+         order by bwm.id 
+        limit 2 
+    </select>
+    
+    
+         <!-- 查询人员图片传输给实名制 -->
+      <select id="getPersonImageFromLabor" resultType="com.xywg.admin.modular.smz.model.PersonMo">
+             select
+        		bwm.id as personId,
+        		left(bwm.face, LOCATE(',',bwm.face)-1)as image
+        from buss_project_worker bpw
+        left join buss_project_master m on bpw.project_code = m.project_code 	
+        left join buss_worker_master bwm on bpw.id_card_type =bwm.id_card_type
+		  											 and bpw.id_card_number=bwm.id_card_number									
+        where   bpw.id >#{number}  and m.is_synchro = 1 and length(bwm.face) >1
+        group by bwm.id
+         order by bwm.id 
+        limit 2 
+    </select>
+    
+    <!-- 用于临时传数据用 -->
+    <select id="getPersonImageToLabor"  resultType="com.xywg.admin.modular.smz.model.PersonMo">
+    	select
+        		bwm.id as personId,
+        		left(bwm.face, LOCATE(',',bwm.face)-1)as image
+        from buss_project_worker bpw
+        left join buss_worker_master bwm on bpw.id_card_type =bwm.id_card_type
+		  											 and bpw.id_card_number=bwm.id_card_number									
+        WHERE   bwm.id >#{number} and  length(bwm.face) >1 
+        group by bwm.id 
+        order by bwm.id 
+        limit 2 
+    </select>
+
+    <update id="updateWorkerPhone" >
+        update buss_worker_master set  cell_phone = #{newPhone}  where  cell_phone = #{oldPhone}  and  is_del = 0
+    </update>
+
+       <update id="updateAccountByIdCardNumber" >
+    	UPDATE buss_project_worker p
+		LEFT JOIN buss_worker_master w ON p.id_card_number = w.id_card_number  AND w.id_card_type = p.id_card_type
+		LEFT JOIN sys_user u ON p.id_card_number = u.id_card_number  AND w.id_card_type = p.id_card_type
+			SET p.cell_phone = #{phone},w.cell_phone=#{phone},u.phone =#{phone} ,u.account=#{phone}
+		WHERE p.id_card_number= #{idCardNumber} AND p.id_card_type = #{idCardType}
+    </update>
+
+    
+    <!-- 列表查询 分页 项目下的工人列表 -->
+    <select id="queryWorkerByPosition" resultType="map">
+       SELECT
+	        m.id,
+	        m.worker_name AS workerName,
+	        w.id_card_type AS idCardType,
+	        m.id_card_number AS idCardNumber,
+	        m.cell_phone AS cellPhone,
+	        w.sh_imei as shImei,
+            p.project_name as projectName
+        FROM buss_project_worker w
+        left join buss_project_master p on w.project_code = p.project_code
+        LEFT JOIN buss_worker_master m ON m.id_card_number = w.id_card_number
+        JOIN (
+	        SELECT social_credit_number 
+			  FROM sys_dept
+	        WHERE social_credit_number IS NOT NULL
+	        AND (id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%'))) M ON M.social_credit_number = w.organization_code
+       WHERE m.is_del = 0 and w.is_del = 0 AND w.sh_imei IS NOT null and w.sh_imei != ''
+        <if test="map.key != null and map.key != ''">
+            and (m.worker_name like CONCAT('%',#{map.key},'%')
+            OR
+            m.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.projectCode != null and map.projectCode != ''">
+            and w.project_code = #{map.projectCode}
+        </if>
+       GROUP BY m.id_card_number, w.project_code
+    </select>
+    
+    <!--查询人员是否存在 -->
+    <select id="getWorkerCountByIdCard" resultType="Long">
+		select id
+		from buss_worker_master
+		where id_card_type=#{idCardType}
+		  and id_card_number=#{idCardNumber}
+		  and is_del=0 limit 1
+	</select>
+	
+	  <select id="getWorkerListByProjectCode" resultType="com.xywg.admin.modular.worker.model.WorkerMaster">
+        SELECT
+				w.id,
+				w.worker_name AS workerName,
+				w.id_card_type AS idCardType,
+				w.id_card_number AS idCardNumber,
+				w.gender, w.nation,
+				w.birthday as birthday,
+				w.birth_place_code AS
+				birthPlaceCode,
+				w.address, w.head_image AS headImage,
+				w.politics_type AS
+				politicsType,
+				w.is_joined AS isJoined,
+				w.joined_time AS joinedTime,
+				w.cell_phone AS cellPhone,
+				w.culture_level_type AS cultureLevelType,
+				w.has_bad_medical_history AS hasBadMedicalHistory,
+				w.urgent_contract_name
+				AS urgentContractName,
+				w.urgent_contract_cellphone AS
+				urgentContractCellphone,
+				w.work_type_code AS workTypeCode, w.work_date AS
+				workDate,
+				w.icon_image AS iconImage,
+				w.id_image AS idImage,
+				w.is_face AS
+				isFace,
+				w.face,
+				w.is_auth AS isAuth,
+				w.create_date AS createDate,
+				w.create_user AS
+				createUser,
+				w.update_date AS updateDate,
+				w.update_user AS updateUser,
+				w.note,
+				w.is_del AS isDel
+			FROM
+			buss_project_worker AS pw
+			LEFT JOIN buss_worker_master AS w ON pw.id_card_number = w.id_card_number AND w.is_del = 0
+			WHERE
+			pw.is_del = 0 AND
+			pw.project_code = #{projectCode}
+    </select>
+    <select id="getZrUserInfo">
+    select w.* from buss_worker_master w
+		left join buss_project_worker pw on pw.id_card_number = w.id_card_number AND w.is_del = 0
+		left join buss_project_master p on pw.project_code = p.project_code
+	where p.contractor_org_code = '9132068113885448XD'
+    </select>
+</mapper>

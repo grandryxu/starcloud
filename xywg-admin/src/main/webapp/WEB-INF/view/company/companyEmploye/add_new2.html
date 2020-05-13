@@ -1,0 +1,87 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="form-group" style="margin:0;">
+                    <label class="col-sm-1 control-label">工种</label>
+                    <div class="col-sm-5">
+                        <select class="form-control m-b" name="account">
+                            <option>选项 1</option>
+                            <option>选项 2</option>
+                            <option>选项 3</option>
+                            <option>选项 4</option>
+                        </select>
+                    </div>
+                    <label class="col-sm-1 control-label">性别</label>
+                    <div class="col-sm-5">
+                        <select class="form-control m-b" name="account">
+                            <option>男</option>
+                            <option>女</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding:0 15px;">
+                <div class="col-sm-12 input-group">
+                    <input type="text" class="form-control">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary" id="searchButton">搜索</button>
+                    </span>
+                </div>
+            </div>
+
+            <ul class="list-group" id="ulContainer" style="margin-top:20px;">
+                <!--<li class="list-group-item">Cras justo odio</li>-->
+                <!--<li class="list-group-item">Dapibus ac facilisis in</li>-->
+                <!--<li class="list-group-item">Morbi leo risus</li>-->
+                <!--<li class="list-group-item">Porta ac consectetur ac</li>-->
+                <!--<li class="list-group-item">Vestibulum at eros</li>-->
+            </ul>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12" style="text-align: right;">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="CompanyEmployeInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="CompanyEmployeInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/companyEmploye/companyEmploye_info.js"></script>
+<style>
+    .list-group-item-checked {
+        background-color: #1ab394;
+        color:#FFF;
+    }
+</style>
+<script>
+    function checkedCallback(){
+        alert('选中的');
+    };
+var but = $('#searchButton');
+var list = [
+    {title:'Cras justo odio'},
+    {title:'Dapibus ac facilisis in'},
+    {title:'Morbi leo risus'}
+];
+but.on('click',function(){
+    var html = '';
+    for(var i =0; i<list.length;i++){
+        var obj = list[i];
+        var li = '<li class="list-group-item">'+obj.title+'</li>';
+        html+=li;
+    }
+    $('#ulContainer').html(html);
+});
+$('#ulContainer').on('click','li',function(){
+    $('.list-group-item').removeClass('list-group-item-checked');
+    $(this).addClass('list-group-item-checked');
+    checkedCallback();
+});
+</script>
+@}

@@ -1,0 +1,36 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+            <input type="hidden" id="id" value="">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-lg-11">
+                            <div class="inline-search-s">
+                                <label class="label-search-s">项目</label>
+                                <select data-placeholder="选择项目" class="input-search-s search-chosen
+                                    " id="projectCode" underline="true" name="项目"
+                                        onchange="ProjectTrainingInfoDlg.search()">
+                                    <option value="">请选择</option>
+                                    @for(item in project){
+                                    <option value="${item.projectCode}">${item.projectName}</option>
+                                    @}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row btn-group-m-t">
+                <div>
+                    <#button name="培训" icon="fa-plus" clickFun="ProjectTrainingInfoDlg.openTrain()"/>
+                    <#table id="projectTrain"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/project/projectTraining/projectTraining_info.js"></script>
+@}

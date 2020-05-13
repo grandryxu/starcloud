@@ -1,0 +1,173 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="tabs-container" style="margin-top: 10px;">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#byOrder" aria-expanded="true">按计工单</a>
+                </li>
+                <li class="" >
+                    <a data-toggle="tab" href="#byWorkerType" aria-expanded="false">按工种</a>
+                </li>
+            </ul>
+            <div class="tab-content" style="margin-top: 10px;">
+                <div id="byOrder" class="tab-pane active">
+                    <div class="form-horizontal">
+                        <input type="hidden" id="id" value="">
+                        <form class="row" id="searchForm">
+                            <div class="clear-float">
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input" id="byOrderProject" name="项目">
+                                            <option value="">请选择</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <select class="fn-input" id="byOrderTeam" name="班组"
+                                                onchange="DetailByAccount.teamChange()">
+                                            <option value="">请选择项目</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-4" style="padding-bottom: 1px;">
+                                    <div class="fn-div">
+                                        <label class="fn-label">计工单</label>
+                                        <select id="selectAccount" class="input-search-s"
+                                                data-placeholder="计工单"
+                                                multiple onchange="DetailByAccount.accountOnChange()">
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4" id="bzgrsl">
+                                    <div class="fn-div style-8-9">
+                                        <label class="fn-label">班组工人</label>
+                                        <select data-placeholder="选择班组工人" disabled class="input-search-s"
+                                                id="selectTeamWorker"
+                                                onchange="DetailByAccount.teamWorkerOnChange()" multiple
+                                                style="width:350px;"
+                                                tabindex="4">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fn-buttons clear-float">
+                                <div class="col-sm-4">
+                                    <input type="file" style="display:none" id="excelFile" name="excelFile"
+                                           class="form-control"
+                                           onchange="fileUpload()">
+                                    <#button name="查询" icon="fa-search" clickFun="DetailByAccount.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="hidden-xs" id="DetailByAccountToolbar" role="group">
+                        <#button name="批量写工资" icon="fa-plus" clickFun="DetailByAccount.batchAmount()"/>
+                        <#button name="批量写奖励" icon="fa-plus" clickFun="DetailByAccount.batchRewardAmount()"/>
+                        <#button name="批量写惩罚" icon="fa-plus" clickFun="DetailByAccount.batchPunishAmount()"/>
+                        <#button name="批量写实发" icon="fa-plus" clickFun="DetailByAccount.batchActualAmount()"/>
+                    </div>
+                    <#table id="DetailByAccount"/>
+
+                    <div class="row btn-group-m-t">
+                        <div class="col-sm-12 button-ta-r">
+                            <#button name="暂存" id="ensure" icon="fa-check" clickFun="DetailByAccount.addSubmit(1)"/>
+                            <#button name="提交" id="ensure" icon="fa-check" clickFun="DetailByAccount.addSubmit(2)"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="byWorkerType" class="tab-pane">
+                    <div class="form-horizontal">
+                        <form class="row" id="searchForm1">
+                            <div class="clear-float">
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">项目</label>
+                                        <select class="fn-input" id="byWorkerTypeProject" name="项目">
+                                            <option value="">请选择</option>
+                                            @for(item in project){
+                                            <option value="${item.projectCode}">${item.projectName}</option>
+                                            @}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组</label>
+                                        <select class="fn-input" id="byWorkerTypeTeam" name="班组" onchange="DetailByWorkerType.teamChange()">
+                                            <option value="">请选择项目</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">工资月份</label>
+                                        <div class="fn-datepicker" id="datepicker">
+                                            <input class="fn-datepicker-input" id="month" name="establishDate" readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="fn-div">
+                                        <label class="fn-label">班组工人</label>
+                                        <input type="text" class="fn-input" id="byWorkerTypeSelectTeamWorker" placeholder="请选择班组工人" onfocus="DetailByWorkerType.chooseWorkers()" readonly="readonly"/>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="fn-buttons clear-float">
+                                <div class="col-sm-4">
+                                    <#button name="查询" icon="fa-search" clickFun="DetailByWorkerType.search()"/>
+                                    <#reset name="重置" icon="fa-mail-forward" formId="searchForm1"/>
+                                </div>
+                            </div>
+
+                            <input type="file" style="display:none" id="excelFile2" name="excelFile2"
+                                   class="form-control"
+                                   onchange="fileUpload2()">
+                        </form>
+                    </div>
+                    <div class="hidden-xs" id="DetailByTimeToolbar" role="group">
+                        <#button name="批量写工资" icon="fa-plus" clickFun="DetailByWorkerType.batchAmount()"/>
+                        <#button name="批量写奖励" icon="fa-plus" clickFun="DetailByWorkerType.batchRewardAmount()"/>
+                        <#button name="批量写惩罚" icon="fa-plus" clickFun="DetailByWorkerType.batchPunishAmount()"/>
+                        <#button name="批量写实发" icon="fa-plus" clickFun="DetailByWorkerType.batchActualAmount()"/>
+                        <button type="button" class="btn btn-primary button-margin" onclick="DetailByWorkerType.removeDetail()" >
+                            <i class="fa fa-remove"></i>&nbsp;移除
+                        </button>
+                    </div>
+                    <#table id="DetailByTime"/>
+
+                    <div class="row btn-group-m-t">
+                        <div class="col-sm-12 button-ta-r">
+                            <#button name="暂存" id="ensure" icon="fa-check" clickFun="DetailByWorkerType.addSubmit(1)"/>
+                            <#button name="提交" id="ensure" icon="fa-check" clickFun="DetailByWorkerType.addSubmit(2)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="${ctxPath}/static/modular/wages/payRollDetail/payRollDetail_info_byOrder.js"></script>
+<script src="${ctxPath}/static/modular/wages/payRollDetail/payRollDetail_info_byWorkerType.js"></script>
+@}

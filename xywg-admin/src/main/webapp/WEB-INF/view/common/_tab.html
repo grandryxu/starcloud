@@ -1,0 +1,73 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="nav-close"><i class="fa fa-times-circle"></i>
+    </div>
+    <div class="sidebar-collapse" style="position: relative;">
+        <ul class="nav" id="side-menu">
+            <li class="logo-open-close"></li>
+            @if(deptId == 239 ||deptId == 1){
+            <li class="choose-company">
+                <div class="btn-group roll-nav" style="width:100%;">
+                    <button class="dropdown J_tabClose" id="select-company">
+                        <span class="sys-name-ss" title="${menuName}">${menuName}</span>
+                        <div class="choose-company-icon"></div>
+
+                    </button>
+                    <ul role="menu" class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <a>智慧工地</a>
+                        </li>
+                        <li>
+                            <a>江苏三建集团有限公司</a>
+                        </li>
+                        <li>
+                            <a>中南置业有限公司</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            @}
+            @for(title in titles){
+                @if(tool.isEmpty(title.children)){
+                    <li>
+                        <a class="J_menuItem" href="${ctxPath}${title.url}" name="tabMenuItem">
+                            <i class="fa ${title.icon}"></i>
+                            <span class="nav-label">${title.name}</span>
+                        </a>
+                    </li>
+                @}else{
+                    <li>
+                        <a href="#">
+                            <i class="fa ${title.icon}"></i>
+                            <span class="nav-label">${title.name}</span>
+                            <span class="fa fa-ss fa-angle-down"></span>
+                        </a>
+                        <ul class="nav nav-second-level">
+                            @for(subTitle in title.children){
+                                @if(tool.isEmpty(subTitle.children)){
+                                    <li>
+                                        <a class="J_menuItem" href="${ctxPath}${subTitle.url}" name="tabMenuItem">${subTitle.name}</a>
+                                    </li>
+                                @}else{
+                                    <li>
+                                        <a href="#">${subTitle.name} <span class="fa fa-ss fa-angle-down"></span></a>
+                                        <ul class="nav nav-third-level">
+                                            @for(thirdTitle in subTitle.children){
+                                            <li>
+                                                <a class="J_menuItem" href="${ctxPath}${thirdTitle.url}" name="tabMenuItem">${thirdTitle.name}</a>
+                                            </li>
+                                            @}
+                                        </ul>
+                                    </li>
+                                @}
+                            @}
+                        </ul>
+                    </li>
+                @}
+            @}
+
+        </ul>
+        <a class="navbar-minimalize open-close-bar-sss" href="#">
+            <!-- <i class="fa fa-bars" style="font-size: 16px; color:#FFF;"></i> -->
+        </a>
+    </div>
+</nav>

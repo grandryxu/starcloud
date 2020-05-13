@@ -1,0 +1,52 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>企业从业人员管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <#NameCon id="key" name="名称" />
+                            </div>
+                            <div class="col-sm-2">
+                                <#NameCon id="job" name="岗位" />
+                            </div>
+                            <div class="col-sm-2">
+                                <#select id="jobType" name="是否全职" >
+                                    <option value="">全部</option>
+                                    <option value="0">全职</option>
+                                    <option value="1">兼职</option>
+                                </#select>
+                            </div>
+                            <div class="col-sm-3">
+                                <#button name="搜索" icon="fa-search" clickFun="CompanyEmploye.search()"/>
+                            </div>
+                        </div>
+                        <div  id="CompanyEmployeTableToolbar" role="group">
+                            @if(shiro.hasPermission("/companyEmploye/add")){
+                                <#button name="添加" icon="fa-plus" clickFun="CompanyEmploye.openAddCompanyEmploye()"/>
+                            @}
+                            @if(shiro.hasPermission("/companyEmploye/add2")){
+                            <#button name="添加2" icon="fa-plus" clickFun="CompanyEmploye.openAddCompanyEmploye2()"/>
+                            @}
+
+                            @if(shiro.hasPermission("/companyEmploye/update")){
+                                <#button name="修改" icon="fa-edit" clickFun="CompanyEmploye.openCompanyEmployeDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/companyEmploye/delete")){
+                                <#button name="删除" icon="fa-remove" clickFun="CompanyEmploye.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="CompanyEmployeTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/companyEmploye/companyEmploye.js"></script>
+@}

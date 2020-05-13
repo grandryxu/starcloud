@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.flow.mapper.OrderMapper">
+    <resultMap id="Order" type="com.xywg.admin.flow.entity.Order">
+        <id column="id" property="id" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="dept_id" property="deptId" />
+        <result column="is_del" property="isDel" />
+
+        <result column="process_id" property="processId" />
+        <result column="sn" property="sn" />
+        <result column="vars" property="vars" />
+        <result column="order_status" property="orderStatus" />
+    </resultMap>
+    <insert id="insert">
+        INSERT INTO 
+        biz_wf_order
+        (
+        id,
+        create_time,
+        create_user,
+        dept_id,
+        is_del,
+        process_id,
+        sn,
+        vars,
+        order_status
+        )VALUES
+        (
+        #{id},
+        #{createTime},
+        #{createUser},
+        #{deptId},
+        #{isDel},
+        #{processId},
+        #{sn},
+        #{vars},
+        #{orderStatus}
+        )
+    </insert>
+    <update id="updateById">
+        UPDATE
+        biz_wf_order
+        SET
+        update_time = #{updateTime },
+        update_user = #{updateUser },
+        order_status = #{orderStatus },
+        vars = #{vars }
+        WHERE id = #{id }
+    </update>
+    <select id="findHistoryOrders" resultMap="Order">
+        SELECT
+        o.id,
+        o.create_time,
+        o.create_user,
+        o.update_time,
+        o.update_user,
+        o.dept_id,
+        o.process_id,
+        o.sn,
+        o.vars,
+        o.order_status
+        FROM
+        biz_wf_order o
+        <where>
+            o.is_del = FALSE
+            <!-- 用户id符合即入集合 -->
+            AND JSON_CONTAINS(o.vars ->>'$.*.updateUser',CONCAT(#{order.cUserId})) > 0
+            <if test="order.sn != null and order.sn != ''">
+                AND o.sn LIKE CONCAT('%',#{order.sn},'%')
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="findOrders" resultMap="Order">
+        SELECT
+        o.id,
+        o.create_time,
+        o.create_user,
+        o.update_time,
+        o.update_user,
+        o.dept_id,
+        o.process_id,
+        o.sn,
+        o.vars,
+        o.order_status
+        FROM
+        biz_wf_order o
+        WHERE
+        o.is_del = 0
+        AND o.create_user = CONCAT(#{order.createUser})
+        <if test="order.orderStatus != null">
+            AND o.order_status = #{order.orderStatus}
+        </if>
+        ORDER BY o.create_time DESC
+
+    </select>
+    <select id="selectById" resultMap="Order">
+        SELECT
+        o.id,
+        o.create_time,
+        o.create_user,
+        o.update_time,
+        o.update_user,
+        o.dept_id,
+        o.process_id,
+        o.sn,
+        o.vars,
+        o.order_status
+        FROM
+        biz_wf_order o
+        WHERE
+        o.is_del = 0
+        AND o.id = #{orderId }
+    </select>
+    <select id="findActiveOrders" resultMap="Order">
+        SELECT
+        o.id,
+        o.create_time AS createTime,
+        o.create_user AS createUser,
+        o.update_time AS updateTime,
+        o.update_user AS updateUser,
+        o.dept_id AS deptId,
+        o.process_id AS processId,
+        o.sn AS sn,
+        o.vars AS vars,
+        o.order_status AS orderStatus
+        FROM
+        biz_wf_order o
+        LEFT JOIN (
+        SELECT
+        id ,
+        JSON_EXTRACT( vars, REPLACE ( JSON_UNQUOTE( JSON_SEARCH( vars, 'all', 'no', NULL, '$.*.finished' ) ), 'finished', 'par.user' )) AS currUser,
+        JSON_EXTRACT( vars, REPLACE ( JSON_UNQUOTE( JSON_SEARCH( vars, 'all', 'no', NULL, '$.*.finished' ) ), 'finished', 'par.dept' )) AS currDept,
+        JSON_EXTRACT( vars, REPLACE ( JSON_UNQUOTE( JSON_SEARCH( vars, 'all', 'no', NULL, '$.*.finished' ) ), 'finished', 'par.role' )) AS currRole
+        FROM
+        biz_wf_order
+        WHERE
+        JSON_CONTAINS( vars ->> '$.*.finished', '"no"')  > 0
+        ) AS curr ON curr.id = o.id
+        <where>
+            o.is_del = FALSE
+            <!-- 用户id、部门id、角色id 有一符合即入集合 -->
+            AND (
+            curr.currUser ->> '$' = CONCAT('[',#{order.cUserId},']')
+            OR
+            (
+            curr.currDept ->> '$' = CONCAT('[',#{order.cDeptId},']')
+            <foreach collection="order.cRoleIds" item="role" separator="OR ">
+                OR JSON_CONTAINS(curr.currRole ->> '$',CONCAT(#{role}))
+            </foreach>
+            )
+            )
+            AND o.order_status = 1
+            <if test="order.sn != null and order.sn != ''">
+                AND o.sn LIKE CONCAT('%',#{order.sn},'%')
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+</mapper>

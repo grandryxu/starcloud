@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.SubContractorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.SubContractor">
+        <id column="id" property="id"/>
+        <result column="company_name" property="companyName"/>
+        <result column="organization_type" property="organizationType"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="biz_register_code" property="bizRegisterCode"/>
+        <result column="social_credit_number" property="socialCreditNumber"/>
+        <result column="area_code" property="areaCode"/>
+        <result column="address" property="address"/>
+        <result column="zip_code" property="zipCode"/>
+        <result column="representative_name" property="representativeName"/>
+        <result column="representative_idcard_type" property="representativeIdcardType"/>
+        <result column="representative_idcard_number" property="representativeIdcardNumber"/>
+        <result column="registration_capital" property="registrationCapital"/>
+        <result column="capital_currency" property="capitalCurrency"/>
+        <result column="establish_date" property="establishDate"/>
+        <result column="phone_number" property="phoneNumber"/>
+        <result column="fax_number" property="faxNumber"/>
+        <result column="contact_people_name" property="contactPeopleName"/>
+        <result column="contact_people_phone" property="contactPeoplePhone"/>
+        <result column="contact_people_cell_phone" property="contactPeopleCellPhone"/>
+        <result column="email" property="email"/>
+        <result column="home_website_url" property="homeWebsiteUrl"/>
+        <result column="business_status" property="businessStatus"/>
+        <result column="memo" property="memo"/>
+        <result column="source" property="source"/>
+        <result column="is_audit" property="isAudit"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="status" property="status"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, company_name AS companyName, organization_type AS organizationType, organization_code AS organizationCode, biz_register_code AS bizRegisterCode, social_credit_number AS socialCreditNumber, area_code AS areaCode, address, zip_code AS zipCode, representative_name AS representativeName, representative_idcard_type AS representativeIdcardType, representative_idcard_number AS representativeIdcardNumber, registration_capital AS registrationCapital, capital_currency AS capitalCurrency, establish_date AS establishDate, phone_number AS phoneNumber, fax_number AS faxNumber, contact_people_name AS contactPeopleName, contact_people_phone AS contactPeoplePhone, contact_people_cell_phone AS contactPeopleCellPhone, email, home_website_url AS homeWebsiteUrl, business_status AS businessStatus, memo, source, is_audit AS isAudit, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, is_del AS isDel
+    </sql>
+
+    <select id="list" resultType="Map" parameterType="com.baomidou.mybatisplus.plugins.Page">
+        SELECT
+        bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel
+        FROM buss_sub_contractor bsc
+        <!--承包公司列表 -->
+        JOIN (SELECT social_credit_number FROM sys_dept WHERE social_credit_number IS NOT NULL AND (id = #{map.deptId}
+        OR pids LIKE CONCAT('%[', #{map.deptId},']%') ) ) s ON s.social_credit_number = bsc.social_credit_number
+        WHERE 1=1
+        and bsc.is_del=0
+        <if test="map.condition != null  and map.condition != '' ">
+            AND ((bsc.company_name like CONCAT('%',#{map.condition},'%')) OR (bsc.representative_name like
+            CONCAT('%',#{map.condition},'%')) OR (bsc.social_credit_number like CONCAT('%',#{map.condition},'%'))
+            OR (bsc.organization_code like CONCAT('%',#{map.condition},'%')) OR (bsc.contact_people_name like
+            CONCAT('%',#{map.condition},'%')) OR (bsc.email like CONCAT('%',#{map.condition},'%')))
+            or(bsc.contact_people_cell_phone like concat('%',#{map.condition},'%'))
+        </if>
+        <if test="map.organizationType != null and map.organizationType != '' ">
+            AND bsc.organization_type = #{map.organizationType}
+        </if>
+        <if test="map.businessStatus != null and map.businessStatus != '' ">
+            AND bsc.business_status = #{map.businessStatus}
+        </if>
+        <if test="map.startDate != null and map.startDate != '' ">
+            AND bsc.establish_date <![CDATA[>=]]> #{map.startDate}
+        </if>
+        <if test="map.endDate != null and map.endDate != '' ">
+            AND bsc.establish_date <![CDATA[<=]]> #{map.endDate}
+        </if>
+        GROUP BY id
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getList" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT
+        bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel
+        FROM buss_sub_contractor bsc
+        <!--承包公司列表 -->
+        JOIN (SELECT social_credit_number FROM sys_dept WHERE social_credit_number IS NOT NULL AND (id = #{map.deptId}
+        OR pids LIKE CONCAT('%[', #{map.deptId},']%') ) ) s ON s.social_credit_number = bsc.social_credit_number
+        WHERE 1=1
+        and bsc.is_del=0
+        <if test="map.generalContractorName!=null and map.generalContractorName!=''">
+            AND bsc.company_name LIKE CONCAT('%',#{map.generalContractorName},'%')
+        </if>
+        GROUP BY id
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getAllSubContractor" resultType="Map">
+        SELECT
+        bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel ,
+        if(A.construction_code IS NULL ,0,1 ) AS hasAssociated ,
+        bwbl.start_time AS blackStartTime ,
+        bwbl.end_time AS blackEndTime ,
+        bwbl.black_reason AS blackReason
+        FROM buss_sub_contractor bsc
+        LEFT JOIN buss_worker_black_list bwbl ON bwbl.organization_code = bsc.organization_code AND bwbl.type = 3 AND
+        bwbl.is_valid = 1 AND bwbl.is_del = 0
+        LEFT JOIN (
+        SELECT
+        bscc.construction_code
+        FROM
+        buss_sub_contractor_construction bscc
+        JOIN sys_dept d ON (d.id = #{map.deptId} OR d.pids LIKE CONCAT('%[', #{map.deptId},']%'))
+        AND d.social_credit_number = bscc.contractor_code AND d.social_credit_number IS NOT NULL
+        WHERE bscc.is_del = 0
+        GROUP BY
+        bscc.construction_code ) A ON A.construction_code = bsc.organization_code
+        WHERE 1=1
+        and bsc.is_del=0
+
+        <if test="map.condition !=null and map.condition !=''">
+            AND (bsc.company_name LIKE CONCAT('%',#{map.condition},'%') OR bsc.organization_code LIKE
+            CONCAT('%',#{map.condition},'%'))
+        </if>
+        GROUP BY id
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+
+    <select id="getAllNoParentSubContractor" resultType="Map">
+        SELECT
+        bsc.id, bsc.company_name AS companyName, bsc.organization_type AS organizationType, bsc.organization_code AS
+        organizationCode,
+        bsc.biz_register_code AS bizRegisterCode, bsc.social_credit_number AS socialCreditNumber, bsc.area_code AS
+        areaCode, bsc.address,
+        bsc.zip_code AS zipCode, bsc.representative_name AS representativeName, bsc.representative_idcard_type AS
+        representativeIdcardType,
+        bsc.representative_idcard_number AS representativeIdcardNumber, bsc.registration_capital AS registrationCapital,
+        bsc.capital_currency AS capitalCurrency, bsc.establish_date AS establishDate, bsc.phone_number AS phoneNumber,
+        bsc.fax_number AS faxNumber,
+        bsc.contact_people_name AS contactPeopleName, bsc.contact_people_phone AS contactPeoplePhone,
+        bsc.contact_people_cell_phone AS contactPeopleCellPhone,
+        bsc.email, bsc.home_website_url AS homeWebsiteUrl, bsc.business_status AS businessStatus, bsc.memo, bsc.source,
+        bsc.is_audit AS isAudit,
+        bsc.create_date AS createDate, bsc.create_user AS createUser, bsc.update_date AS updateDate, bsc.update_user AS
+        updateUser, bsc.status,
+        bsc.is_del AS isDel ,
+        if(A.construction_code IS NULL ,0,1 ) AS hasAssociated ,
+        bwbl.start_time AS blackStartTime ,
+        bwbl.end_time AS blackEndTime ,
+        bwbl.black_reason AS blackReason
+        FROM buss_sub_contractor bsc
+        LEFT JOIN buss_worker_black_list bwbl ON bwbl.organization_code = bsc.organization_code AND bwbl.type = 3 AND
+        bwbl.is_valid = 1 AND bwbl.is_del = 0
+        LEFT JOIN (
+        SELECT
+        bscc.construction_code
+        FROM
+        buss_sub_contractor_construction bscc
+        JOIN sys_dept d ON (d.id = #{map.deptId} OR d.pids LIKE CONCAT('%[', #{map.deptId},']%'))
+        AND d.social_credit_number = bscc.contractor_code AND d.social_credit_number IS NOT NULL
+        WHERE bscc.is_del = 0
+        GROUP BY
+        bscc.construction_code ) A ON A.construction_code = bsc.organization_code
+        LEFT JOIN sys_dept d2 ON d2.social_credit_number = bsc.organization_code
+        WHERE 1=1 AND (d2.pids = '[0],[1],' OR d2.id IS NULL )  AND bsc.organization_code != (select social_credit_number from sys_dept where id = #{map.deptId})
+        and bsc.is_del=0
+        <if test="map.condition !=null and map.condition !=''">
+            AND (bsc.company_name LIKE CONCAT('%',#{map.condition},'%') OR bsc.organization_code LIKE
+            CONCAT('%',#{map.condition},'%'))
+        </if>
+        GROUP BY id
+        <choose>
+            <when test="map.orderByField != null and map.orderByField !=''">
+                <choose>
+                    <when test="map.isAsc == true">
+                        order by ${map.orderByField} ASC
+                    </when>
+                    <otherwise>
+                        order by ${map.orderByField} DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="selectGeneralContractors" resultType="Map">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM buss_sub_contractor
+        WHERE 1=1
+        <if test="generalContractorName !='' and generalContractorName!=null">
+            AND company_name like CONCAT('%',#{generalContractorName},'%')
+        </if>
+    </select>
+
+    <update id="changeState" parameterType="Map">
+    update buss_sub_contractor
+    set status=#{map.status}
+    where id=#{map.id}
+    </update>
+
+    <select id="hasSubContractor" resultType="int">
+        SELECT
+           count(1)
+        FROM buss_sub_contractor WHERE is_del = 0
+        and organization_code = #{organizationCode}
+        <if test="companyName != null and companyName != ''">
+        	or company_name=#{companyName}
+        </if>
+    </select>
+    
+     <select id="hasSubContractorByOrganizationCode" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT
+            id,
+            company_name as companyName
+        FROM buss_sub_contractor 
+        WHERE is_del = 0
+          and organization_code = #{organizationCode}
+    </select>
+
+
+
+    <select id="getSubContractorByCondition" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT
+        T.id, T.company_name AS companyName, T.organization_code AS organizationCode
+        FROM buss_sub_contractor T
+        where T.is_del= 0 AND ((T.company_name like CONCAT('%',#{condition},'%')) OR (T.organization_code like
+                    CONCAT('%',#{condition},'%')))
+    </select>
+
+
+    <select id="getByCompanyName" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        SELECT
+          organization_code as organizationCode
+        FROM buss_sub_contractor WHERE company_name =#{companyName}
+    </select>
+
+    <!---->
+    <select id="getOneById" resultType="Map">
+        SELECT
+    sc.economic_nature AS economicNature,
+    sc.enterprise_market_type AS enterpriseMarketType,
+	sc.id,
+	sc.company_name AS companyName,
+	sc.organization_type AS organizationType,
+	sc.organization_code AS organizationCode,
+	sc.biz_register_code AS bizRegisterCode,
+	sc.social_credit_number AS socialCreditNumber,
+	sc.area_code AS areaCode,
+	sc.address,
+	sc.zip_code AS zipCode,
+	sc.representative_name AS representativeName,
+	sc.representative_idcard_type AS representativeIdcardType,
+	sc.representative_idcard_number AS representativeIdcardNumber,
+	sc.registration_capital AS registrationCapital,
+	sc.capital_currency AS capitalCurrency,
+	sc.establish_date AS establishDate,
+	sc.phone_number AS phoneNumber,
+	sc.fax_number AS faxNumber,
+	sc.contact_people_name AS contactPeopleName,
+	sc.contact_people_phone AS contactPeoplePhone,
+	sc.contact_people_cell_phone AS contactPeopleCellPhone,
+	sc.email,
+	sc.home_website_url AS homeWebsiteUrl,
+	sc.business_status AS businessStatus,
+	sc.memo,
+	sc.source,
+	sc.is_audit AS isAudit,
+	sc.create_date AS createDate,
+	sc.create_user AS createUser,
+	sc.update_date AS updateDate,
+	sc.update_user AS updateUser,
+	sc. STATUS,
+	sc.is_del AS isDel,
+	sd. NAME AS capitalCurrencyName ,
+	CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName ,
+	sc.is_synchro as isSynchro
+FROM
+	buss_sub_contractor sc
+	LEFT JOIN ref_area ra ON ra.id = sc.area_code
+	LEFT JOIN ref_area ras ON ras.id = ra.parentid
+	LEFT JOIN ref_area rap ON rap.id = ras.parentid
+LEFT JOIN sys_dict sd ON sc.capital_currency = sd.num
+AND sd.pid = (select id from sys_dict where name='币种' and num = 0)
+WHERE
+	sc.id = #{id}
+</select>
+
+    <select id="getSubContractorByOrganizationCode" resultType="Map">
+         SELECT
+	sc.id,
+	sc.company_name AS companyName,
+	sc.organization_type AS organizationType,
+	sc.organization_code AS organizationCode,
+	sc.biz_register_code AS bizRegisterCode,
+	sc.social_credit_number AS socialCreditNumber,
+	sc.area_code AS areaCode,
+	sc.address,
+	sc.zip_code AS zipCode,
+	sc.representative_name AS representativeName,
+	sc.representative_idcard_type AS representativeIdcardType,
+	sc.representative_idcard_number AS representativeIdcardNumber,
+	sc.registration_capital AS registrationCapital,
+	sc.capital_currency AS capitalCurrency,
+	sc.establish_date AS establishDate,
+	sc.phone_number AS phoneNumber,
+	sc.fax_number AS faxNumber,
+	sc.contact_people_name AS contactPeopleName,
+	sc.contact_people_phone AS contactPeoplePhone,
+	sc.contact_people_cell_phone AS contactPeopleCellPhone,
+	sc.email,
+	sc.home_website_url AS homeWebsiteUrl,
+	sc.business_status AS businessStatus,
+	sc.memo,
+	sc.source,
+	sc.is_audit AS isAudit,
+	sc.create_date AS createDate,
+	sc.create_user AS createUser,
+	sc.update_date AS updateDate,
+	sc.update_user AS updateUser,
+	sc.STATUS,
+	sc.is_del AS isDel,
+	sd.NAME AS capitalCurrencyName ,
+	CONCAT( ifnull(rap.areaname,''), ifnull(ras.areaname,''), ifnull(ra.areaname,'') ) AS areaName
+FROM
+	buss_sub_contractor sc
+	LEFT JOIN ref_area ra ON ra.id = sc.area_code
+		LEFT JOIN ref_area ras ON ras.id = ra.parentid
+		LEFT JOIN ref_area rap ON rap.id = ras.parentid
+	LEFT JOIN sys_dict sd ON sc.capital_currency = sd.num
+	AND sd.pid = (select id from sys_dict where name='币种' and num = 0)
+WHERE
+	organization_code = #{organizationCode}
+    </select>
+
+    <update id="deleteConstruction">
+        UPDATE buss_sub_contractor_construction
+        SET is_del = 1
+        WHERE construction_code = #{organizationCode} AND contractor_code IN (SELECT social_credit_number FROM sys_dept WHERE social_credit_number IS NOT NULL AND (id = #{deptId}
+        OR pids LIKE CONCAT('%[', #{deptId},']%') ) )
+    </update>
+    <!--查询劳务通数据发送到实名制-->
+    <select id="getCompanyFromLabor" resultType="com.xywg.admin.modular.smz.model.CompanyMo">
+        select
+        id as companyId,
+        company_name as name,
+        organization_code as code,
+        biz_register_code as registerNo,
+        representative_name as legal,
+        contact_people_cell_phone as mobile,
+        contact_people_name as contacts,
+        address as address,
+        area_code as areaCode,
+        contact_people_cell_phone as userMobile,
+        organization_type as organizationType,
+        zip_code as zipCode,
+        representative_idcard_type as representativeIdcardType,
+        representative_idcard_number as representativeIdcardNumber,
+        registration_capital as registrationCapital,
+        capital_currency as capitalCurrency,
+        establish_date as establishDate,
+        fax_number as fox,
+        email as email,
+        home_website_url as homewebsiteUrl,
+        business_status as businessStatus,
+        memo as memo,
+        3 as level,
+        economic_nature as organizationEconomicNature,
+        enterprise_market_type as domainType
+        from buss_sub_contractor
+        where is_del = 0 and is_synchro =1 and id in
+        <foreach item="ids" collection="list" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+        <!-- and left(area_code, 4)='3206' -->
+    </select>
+
+
+    <select id="getArea" resultType="map">
+        select
+            a1.areaname as districtName,
+            a1.id as district,
+            a2.areaname as cityName,
+            a2.id as city,
+            a3.areaname as provinceName,
+            a3.id as province
+        from ref_area a1
+        left join ref_area a2 on a1.parentid=a2.id
+        left join ref_area a3 on a2.parentid=a3.id  and a3.parentid=0
+        where a1.id=#{id}
+    </select>
+    <select id="getAreaProvinceCity" resultType="map">
+        select
+        "" as districtName,
+        "" as district,
+        a1.areaname as cityName,
+        a1.id as city,
+        a2.areaname as provinceName,
+        a2.id as province
+        from ref_area a1
+        left join ref_area a2 on a1.parentid=a2.id  and a2.parentid=0
+        where a1.id=#{id}
+    </select>
+
+    <select id="getOrgidByName" resultType="com.xywg.admin.modular.company.model.SubContractor">
+        select
+        organization_code as organizationCode
+        from buss_sub_contractor where company_name=#{name}
+    </select>
+
+    <select id="getSubContractor" resultType="Map" >
+        SELECT
+        bsc.id, bsc.company_name AS companyName,
+        bsc.organization_code AS organizationCode,
+        bsc.is_del AS isDel
+        FROM buss_sub_contractor bsc
+        <!--承包公司列表 -->
+        JOIN (SELECT social_credit_number FROM sys_dept WHERE social_credit_number IS NOT NULL AND (id = #{map.deptId}
+        OR pids LIKE CONCAT('%[', #{map.deptId},']%') ) ) s ON s.social_credit_number = bsc.social_credit_number
+        WHERE 1=1
+        and bsc.is_del=0
+        GROUP BY id
+    </select>
+</mapper>

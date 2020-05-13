@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.wages.dao.PayRollFlowMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.wages.model.PayRollFlow">
+        <id column="id" property="id" />
+        <result column="pay_roll_code" property="payRollCode" />
+        <result column="project_code" property="projectCode" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="type" property="type" />
+        <result column="time" property="time" />
+        <result column="pay_amount" property="payAmount" />
+        <result column="actual_amount" property="actualAmount" />
+        <result column="balance_amount" property="balanceAmount" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, pay_roll_code AS payRollCode, project_code AS projectCode, organization_code AS organizationCode, id_card_type AS idCardType, id_card_number AS idCardNumber, type, time, pay_amount AS payAmount, actual_amount AS actualAmount, balance_amount AS balanceAmount, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, remark, is_del AS isDel
+    </sql>
+
+    <select id="getPayRollFlowByIdCardAndIdNumber" resultType="com.xywg.admin.modular.wages.model.PayRollFlowVo">
+        SELECT
+        b.time , b.pay_amount AS payAmount, b.actual_amount AS actualAmount, b.balance_amount AS  balanceAmount ,b.create_user AS createUser ,
+        if(b.balance_amount > 0 ,'部分发放' , '全部发放') AS paySatus ,bpm.project_name AS projectName ,b.project_code AS projectCode,if(b.type=1,"工资单","结算单") as payType
+        FROM
+        buss_pay_roll_flow b
+        LEFT JOIN buss_project_master bpm ON bpm.project_code = b.project_code
+        WHERE
+        b.id_card_type = #{idCardType} AND b.id_card_number = #{idCardNumber}
+        ORDER BY b.id DESC
+    </select>
+
+
+    <insert id="insertBySettlement">
+          insert into buss_pay_roll_flow(
+              pay_roll_code,
+              project_code,
+              organization_code,
+              id_card_type,
+              id_card_number,
+              type,
+              time,
+              pay_amount,
+              actual_amount,
+              balance_amount,
+              create_date,
+              create_user
+          )VALUES
+           <foreach collection="list" close=")" open="(" separator="),(" index="index" item="item">
+               #{item.settlementCode},
+               #{item.projectCode},
+               #{item.organizationCode},
+               #{item.idCardType},
+               #{item.idCardNumber},
+               2,
+               now(),
+               #{item.settlePayAmount},
+               #{item.settleActualAmount},
+               #{item.settleBalanceAmount},
+               now(),
+               #{createUser}
+           </foreach>
+    </insert>
+</mapper>

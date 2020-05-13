@@ -1,0 +1,1430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.DeviceRecord">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="team_sys_no" property="teamSysNo"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="device_sn" property="deviceSn"/>
+        <result column="sh_imei" property="shImei"/>
+        <result column="record_user_id" property="recordUserId"/>
+        <result column="time" property="time"/>
+        <result column="type" property="type"/>
+        <result column="photo" property="photo"/>
+        <result column="lng" property="lng"/>
+        <result column="lat" property="lat"/>
+        <result column="address" property="address"/>
+        <result column="source" property="source"/>
+        <result column="is_valid" property="isValid"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <!-- <result column="status" property="status"/> -->
+        <result column="remark" property="remark"/>
+        <result column="map" property="map"/>
+        <result column="icon_photo" property="iconPhoto"/>
+        <result column="device_type" property="deviceType"/>
+        <result column="is_deal" property="isDeal"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+		id, organization_code AS organizationCode, project_code AS projectCode,
+		team_sys_no AS teamSysNo, id_card_type AS idCardType, id_card_number
+		AS idCardNumber, device_sn AS deviceSn, sh_imei AS shImei,
+		record_user_id AS recordUserId, time, type, photo, lng, lat, address,
+		source, is_valid AS isValid, create_date AS createDate, create_user AS
+		createUser, update_date AS updateDate, update_user AS updateUser, 
+		remark, map, icon_photo AS iconPhoto, device_type AS
+		deviceType, is_deal AS isDeal
+	</sql>
+
+    <select id="getAllForTestCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select
+          count(id) c
+        from buss_device_record where organization_code = #{orgCode} and DATE_FORMAT(time,'%Y-%m') = #{time}
+        and photo not like '/lwtgb_smz/%'
+    </select>
+
+    <select id="getAllForTest" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+          id, IFNULL(photo, '') photo, DATE_FORMAT(time,'%Y-%m-%d %T') recordTime
+        from buss_device_record where organization_code = #{orgCode} and DATE_FORMAT(time,'%Y-%m') = #{time} and photo not like '/lwtgb_smz/%'
+        limit #{startIndex},200
+    </select>
+
+    <update id="updatePic" parameterType="java.util.List">
+        <foreach item="data" collection="list" separator=";" open="" close="">
+            update buss_device_record set photo = #{data.photo} where id = #{data.id}
+        </foreach>
+    </update>
+
+    <!-- 查询工人某天考勤列表 -->
+    <select id="getDayRecord"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+		SELECT
+		d.time,
+		d.icon_photo as iconPhoto,
+		d.photo,
+		w.worker_name as recordUserName,
+		ww.worker_name as deviceWorkerName,
+		d.address,
+		d.map,
+		d.is_valid as isValid,
+		d.id
+		FROM buss_device_record d
+		LEFT JOIN sys_user s on s.id = d.record_user_id and  s.status != 3
+		LEFT JOIN buss_worker_master w on w.cell_phone = s.phone and w.is_del = 0
+		LEFT JOIN buss_worker_master ww on ww.id_card_type = d.id_card_type and ww.id_card_number = d.id_card_number and ww.is_del = 0 
+		WHERE
+		d.id_card_number = #{d.idCardNumber} AND
+		d.project_code = #{d.projectCode} AND
+		d.id_card_type = #{d.idCardType} AND
+		left(d.time,10) = #{n}
+		order by d.time desc
+	</select>
+	
+	<select id="getDayRecordV116"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+		SELECT
+		d.time,
+		d.icon_photo as iconPhoto,
+		d.photo,
+		w.worker_name as recordUserName,
+		ww.worker_name as deviceWorkerName,
+		d.address,
+		d.map,
+		d.is_valid as isValid,
+		d.id
+		FROM buss_device_record d
+		LEFT JOIN sys_user s on s.id = d.record_user_id and  s.status != 3
+		LEFT JOIN buss_worker_master w on w.cell_phone = s.phone and w.is_del = 0
+		LEFT JOIN buss_worker_master ww on ww.id_card_type = d.id_card_type and ww.id_card_number = d.id_card_number and ww.is_del = 0 
+		WHERE
+		d.id_card_number = #{d.idCardNumber} AND
+		d.project_code = #{d.projectCode} AND
+		d.id_card_type = #{d.idCardType} AND
+		left(d.time,10) = #{n}
+		order by d.time desc
+		limit #{pn},#{ps} 
+	</select>
+
+    <!-- 查询工人某天考勤列表 -->
+    <select id="v116GetDayRecord"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        SELECT
+        d.time,
+        d.icon_photo as iconPhoto,
+        d.photo,
+        w.worker_name as recordUserName,
+        ww.worker_name as deviceWorkerName,
+        d.address,
+        d.map,
+        d.is_valid as isValid,
+        d.id
+        FROM buss_device_record d
+        LEFT JOIN sys_user s on s.id = d.record_user_id and  s.status != 3
+        LEFT JOIN buss_worker_master w on w.cell_phone = s.phone and w.is_del = 0
+        LEFT JOIN buss_worker_master ww on ww.id_card_type = d.id_card_type and ww.id_card_number = d.id_card_number and ww.is_del = 0
+        WHERE
+        d.id_card_number = #{d.idCardNumber} AND
+        d.project_code = #{d.projectCode} AND
+        d.id_card_type = #{d.idCardType} AND
+        left(d.time,10) = #{n}
+        order by d.time desc
+        limit #{d.index},#{d.pageSize}
+    </select>
+
+    <!-- 查询工人历史考勤记录（结果封装） -->
+    <resultMap id="DeviceRecordDtoResultMap"
+               type="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        <result column="year" property="year"/>
+        <result column="totalNum" property="totalNum"/>
+        <collection property="projects"
+                    ofType="com.xywg.admin.modular.device.model.dto.ProjectMasterDto">
+            <id column="id" property="id"/>
+            <result column="projectName" property="projectName"/>
+            <result column="num" property="num"/>
+            <result column="isDel" property="isDel"/>
+        </collection>
+    </resultMap>
+
+    <!-- 查询工人历史考勤记录 -->
+    <select id="getRecordsByAll" resultMap="DeviceRecordDtoResultMap">
+		SELECT
+			YEAR(dr.time) as `year`,
+			COUNT(DISTINCT (DATE_FORMAT(dr.time, '%Y-%m-%d'))) AS num,
+			pt.project_name AS projectName,
+			sub.totalNum AS totalNum
+		FROM buss_device_record dr
+		LEFT JOIN buss_project_master pt ON dr.`project_code` = pt.`project_code`
+		LEFT JOIN (
+			SELECT
+				DATE_FORMAT(dd.`TIME`, '%Y') AS sub_date,
+				COUNT(DISTINCT (DATE_FORMAT(dd.`TIME`, '%Y-%m-%d'))) AS totalNum
+			FROM buss_device_record dd
+			WHERE
+			dd.id_card_number = #{d.idCardNumber} AND
+			dd.id_card_type = #{d.idCardType} AND
+			dd.is_valid = 1
+			GROUP BY DATE_FORMAT(dd.`TIME`, '%Y')
+		) sub ON DATE_FORMAT(dr.time, '%Y') = sub.sub_date
+		WHERE
+		dr.id_card_number = #{d.idCardNumber} AND
+		dr.id_card_type = #{d.idCardType} AND
+		dr.is_valid = 1
+		GROUP BY DATE_FORMAT(dr.time, '%Y'),dr.project_code
+	</select>
+	<select id="getRecordsByAllV116" resultMap="DeviceRecordDtoResultMap">
+		SELECT
+			YEAR(dr.time) as `year`,
+			COUNT(DISTINCT (DATE_FORMAT(dr.time, '%Y-%m-%d'))) AS num,
+			pt.project_name AS projectName,
+			sub.totalNum AS totalNum
+		FROM buss_device_record dr
+		LEFT JOIN buss_project_master pt ON dr.`project_code` = pt.`project_code`
+		LEFT JOIN (
+			SELECT
+				DATE_FORMAT(dd.`TIME`, '%Y') AS sub_date,
+				COUNT(DISTINCT (DATE_FORMAT(dd.`TIME`, '%Y-%m-%d'))) AS totalNum
+			FROM buss_device_record dd
+			WHERE
+			dd.id_card_number = #{d.idCardNumber} AND
+			dd.id_card_type = #{d.idCardType} AND
+			dd.is_valid = 1
+			GROUP BY DATE_FORMAT(dd.`TIME`, '%Y')
+		) sub ON DATE_FORMAT(dr.time, '%Y') = sub.sub_date
+		WHERE
+		dr.id_card_number = #{d.idCardNumber} AND
+		dr.id_card_type = #{d.idCardType} AND
+		dr.is_valid = 1
+		GROUP BY DATE_FORMAT(dr.time, '%Y'),dr.project_code
+		limit #{d.pageNo},#{d.pageSize} 
+	</select>
+
+    <!-- 获取某人在项目下总共出勤天数 -->
+    <select id="getAllRecordByProject" resultType="java.lang.Integer">
+		SELECT
+		count( DISTINCT DATE_FORMAT(time, "%Y-%m-%d"))
+		FROM buss_device_record
+		WHERE
+		id_card_number = #{d.idCardNumber} AND
+		project_code = #{d.projectCode} AND
+		id_card_type = #{d.idCardType}
+	</select>
+
+    <!-- 查询工人在某个项目里的月考勤列表 -->
+    <select id="getMonthRecords" resultType="java.lang.String">
+		select
+		date_format(time,'%Y-%m-%d') as recordTime
+		from buss_device_record
+		where
+		id_card_number = #{d.idCardNumber} and
+		project_code = #{d.projectCode} and
+		id_card_type = #{d.idCardType} and
+		date_format(time,'%Y-%m') = #{m}
+		group by (date_format(time,'%Y-%m-%d'))
+	</select>
+	<select id="getMonthRecordsV116" resultType="java.lang.String">
+		select
+		date_format(time,'%Y-%m-%d') as recordTime
+		from buss_device_record
+		where
+		id_card_number = #{d.idCardNumber} and
+		project_code = #{d.projectCode} and
+		id_card_type = #{d.idCardType} and
+		date_format(time,'%Y-%m') = #{m}
+		group by (date_format(time,'%Y-%m-%d'))
+		limit #{pn},#{ps} 
+	</select>
+
+    <!-- 查询工人在某个项目里的月考勤列表 -->
+    <select id="v116GetMonthRecords" resultType="java.lang.String">
+        select
+        date_format(time,'%Y-%m-%d') as recordTime
+        from buss_device_record
+        where
+        id_card_number = #{d.idCardNumber} and
+        project_code = #{d.projectCode} and
+        id_card_type = #{d.idCardType} and
+        date_format(time,'%Y-%m') = #{m}
+        group by (date_format(time,'%Y-%m-%d'))
+        limit #{d.index},#{d.pageSize}
+    </select>
+
+    <!-- 获取公司的某项目的今日考勤人数 -->
+    <select id="getWorkerTotalCount" resultType="java.lang.Integer">
+        select
+        count(d.id_card_number)
+        from(
+        select
+        id_card_number,
+        id_card_type
+        from buss_device_record
+        where
+        project_code = #{d.projectCode}
+        <if test=" d.organizationCode != null and d.organizationCode != '' ">
+            and
+            organization_code = #{d.organizationCode}
+        </if>
+        and
+        left(time,10) = curdate() and
+        is_valid = 1
+        group by id_card_number,id_card_type
+        ) d
+    </select>
+
+    <!-- 获取公司的某项目的今日考勤人数 -->
+    <select id="getWorkerTotalCountReport" resultType="java.lang.Integer">
+        select
+        count(d.id_card_number)
+        from(
+        select
+        id_card_number,
+        id_card_type
+        from buss_device_record
+        where
+        project_code = #{deviceRecord.projectCode}
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+            and organization_code in (SELECT social_credit_number FROM  sys_dept WHERE id = #{deptId} or pids like CONCAT('%',#{deptId},'%'))
+        </if>
+        and
+        left(time,10) = curdate() and
+        is_valid = 1
+        group by id_card_number,id_card_type
+        ) d
+    </select>
+
+    <select id="getWorkerTotalCountFromCompany" resultType="java.lang.Integer">
+        select
+        count(d.id_card_number)
+        from(
+        select
+        id_card_number,
+        id_card_type
+        from buss_device_record
+        where
+        project_code = #{pc}
+        and
+        organization_code in
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        and
+        left(time,10) = curdate() and
+        is_valid = 1
+        group by id_card_number,id_card_type
+        ) d
+    </select>
+
+    <!-- 根据考勤记录ID更新是否有效 -->
+    <update id="updateRecordById">
+		UPDATE buss_device_record
+		SET
+		is_valid = #{f}
+		WHERE
+		id =
+		#{i}
+	</update>
+
+    <!-- 获取日期区间考勤天数 -->
+    <select id="getDaySectionRecord"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        <foreach collection="wl" item="item" separator="union">
+            SELECT
+            #{item.idCardType} AS idCardType,
+            #{item.idCardNumber} AS idCardNumber,
+            b.worker_name AS workerName,
+            COUNT( DISTINCT date_format( a.time, '%Y-%m-%d' ) ) AS totalNum
+            FROM
+            buss_device_record a
+            LEFT JOIN
+            buss_worker_master b ON a.id_card_type = b.id_card_type AND a.id_card_number =
+            b.id_card_number
+            WHERE
+            a.id_card_number = #{item.idCardNumber} AND
+            a.project_code = #{pc} AND
+            a.id_card_type = #{item.idCardType} AND
+            date_format(a.time, '%Y-%m-%d' ) <![CDATA[<=]]>
+            #{ed} AND
+            a.is_valid = 1
+        </foreach>
+    </select>
+
+    <!-- 获取公司的某项目的最近7天出勤人数 -->
+    <select id="getTotalNumFromSevenDays"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        select ta.date,ta.count from
+        (SELECT
+        substring(a.date,6) as date,
+        IFNULL(b.count, 0) AS count
+        FROM
+        (
+        SELECT
+        curdate() AS date
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 1 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 2 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 3 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 4 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 5 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 6 DAY)
+        ) a
+        LEFT JOIN (
+        SELECT
+        d.date,
+        count(d.date) count
+        FROM
+        (
+        SELECT
+        LEFT (time, 10) AS date,
+        id_card_type,
+        id_card_number
+        FROM
+        buss_device_record
+        WHERE
+        project_code = #{pc}
+        <if test="oc !=null and oc != '' ">
+            AND organization_code = #{oc}
+        </if>
+        AND is_valid = 1
+        GROUP BY
+        LEFT (time, 10),
+        id_card_type,
+        id_card_number
+        ) d
+        GROUP BY
+        d.date
+        ) b ON a.date = b.date) ta
+        order by ta.date
+    </select>
+
+    <!-- 获取公司的某项目的最近7天出勤人数 -->
+    <select id="getTotalNumFromSevenDaysFromCompany"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        select ta.date,ta.count from
+        (SELECT
+        substring(a.date,6) as date,
+        IFNULL(b.count, 0) AS count
+        FROM
+        (
+        SELECT
+        curdate() AS date
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 1 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 2 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 3 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 4 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 5 DAY)
+        UNION
+        SELECT
+        date_sub(curdate(), INTERVAL 6 DAY)
+        ) a
+        LEFT JOIN (
+        SELECT
+        d.date,
+        count(d.date) count
+        FROM
+        (
+        SELECT
+        LEFT (time, 10) AS date,
+        id_card_type,
+        id_card_number
+        FROM
+        buss_device_record
+        WHERE
+        project_code = #{pc}
+        and
+        organization_code in
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        AND is_valid = 1
+        GROUP BY
+        LEFT (time, 10),
+        id_card_type,
+        id_card_number
+        ) d
+        GROUP BY
+        d.date
+        ) b ON a.date = b.date) ta
+        order by ta.date
+    </select>
+
+    <!-- 获取班组人员考勤记录 -->
+    <select id="getByClass"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        SELECT
+        c.head_image AS headImage,
+        c.worker_name AS workerName,
+        c.id_card_number AS idCardNumber,
+        c.id_card_type AS idCardType,
+        c.cell_phone AS cellPhone,
+        c.is_auth AS isAuth,
+        a.totalNum,
+        b.projectsCount
+        FROM
+        (
+        select ta.id_card_number,
+        ta.id_card_type,count(ta.da) AS totalNum from
+        (SELECT
+        id_card_number,
+        id_card_type,
+        left(time,10) AS da
+        FROM
+        buss_device_record
+        WHERE
+        (
+        id_card_number != #{icn}
+        OR id_card_type != #{ict}
+        )
+        AND team_sys_no IN (
+        SELECT DISTINCT
+        team_sys_no
+        FROM
+        buss_team_member
+        WHERE
+        id_card_type = #{ict}
+        AND id_card_number = #{icn}
+        AND team_worker_type = '0'
+        ) AND
+        is_valid = 1
+        GROUP BY
+        id_card_number,
+        id_card_type,
+        left(time,10)) ta group by ta.id_card_number,
+        ta.id_card_type
+        ) a
+        LEFT JOIN (
+        SELECT
+        t.id_card_number,
+        t.id_card_type,
+        count(1) AS projectsCount
+        FROM
+        (
+        SELECT
+        id_card_number,
+        id_card_type,
+        project_code
+        FROM
+        buss_device_record
+        WHERE
+        (
+        id_card_number != #{icn}
+        OR id_card_type != #{ict}
+        )
+        AND team_sys_no IN (
+        SELECT DISTINCT
+        team_sys_no
+        FROM
+        buss_team_member
+        WHERE
+        id_card_type = #{ict}
+        AND id_card_number = #{icn}
+        AND team_worker_type = '0'
+        ) AND
+        is_valid = 1
+        GROUP BY
+        id_card_number,
+        id_card_type,
+        project_code
+        ) t
+        GROUP BY
+        t.id_card_number,
+        t.id_card_type
+        ) b ON a.id_card_number = b.id_card_number
+        AND a.id_card_type =
+        b.id_card_type
+        LEFT JOIN buss_worker_master c ON a.id_card_number =
+        c.id_card_number
+        AND a.id_card_type = b.id_card_type
+        <where>
+            <if test="tm != null and tm != ''">
+                c.cell_phone LIKE concat('%', #{tm}, '%')
+                OR c.worker_name LIKE concat('%',
+                #{tm}, '%')
+            </if>
+        </where>
+    </select>
+    
+    <select id="getByClassV116"
+            resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        SELECT
+        c.head_image AS headImage,
+        c.worker_name AS workerName,
+        c.id_card_number AS idCardNumber,
+        c.id_card_type AS idCardType,
+        c.cell_phone AS cellPhone,
+        c.is_auth AS isAuth,
+        a.totalNum,
+        b.projectsCount
+        FROM
+        (
+        select ta.id_card_number,
+        ta.id_card_type,count(ta.da) AS totalNum from
+        (SELECT
+        id_card_number,
+        id_card_type,
+        left(time,10) AS da
+        FROM
+        buss_device_record
+        WHERE
+        (
+        id_card_number != #{icn}
+        OR id_card_type != #{ict}
+        )
+        AND team_sys_no IN (
+        SELECT DISTINCT
+        team_sys_no
+        FROM
+        buss_team_member
+        WHERE
+        id_card_type = #{ict}
+        AND id_card_number = #{icn}
+        AND team_worker_type = '0'
+        ) AND
+        is_valid = 1
+        GROUP BY
+        id_card_number,
+        id_card_type,
+        left(time,10)) ta group by ta.id_card_number,
+        ta.id_card_type
+        ) a
+        LEFT JOIN (
+        SELECT
+        t.id_card_number,
+        t.id_card_type,
+        count(1) AS projectsCount
+        FROM
+        (
+        SELECT
+        id_card_number,
+        id_card_type,
+        project_code
+        FROM
+        buss_device_record
+        WHERE
+        (
+        id_card_number != #{icn}
+        OR id_card_type != #{ict}
+        )
+        AND team_sys_no IN (
+        SELECT DISTINCT
+        team_sys_no
+        FROM
+        buss_team_member
+        WHERE
+        id_card_type = #{ict}
+        AND id_card_number = #{icn}
+        AND team_worker_type = '0'
+        ) AND
+        is_valid = 1
+        GROUP BY
+        id_card_number,
+        id_card_type,
+        project_code
+        ) t
+        GROUP BY
+        t.id_card_number,
+        t.id_card_type
+        ) b ON a.id_card_number = b.id_card_number
+        AND a.id_card_type =
+        b.id_card_type
+        LEFT JOIN buss_worker_master c ON a.id_card_number =
+        c.id_card_number
+        AND a.id_card_type = b.id_card_type
+        <where>
+            <if test="tm != null and tm != ''">
+                c.cell_phone LIKE concat('%', #{tm}, '%')
+                OR c.worker_name LIKE concat('%',
+                #{tm}, '%')
+            </if>
+        </where>
+        limit #{pn},#{ps} 
+    </select>
+
+    <!-- 获取班组指定人员历史考勤记录 -->
+    <select id="getByClassMemeber" resultMap="DeviceRecordDtoResultMap">
+		SELECT
+		YEAR(dr.time) as `year`,
+		COUNT(DISTINCT (DATE_FORMAT(dr.time, '%Y-%m-%d'))) AS num,
+		pt.project_name AS projectName,
+		sub.totalNum AS totalNum,
+		tts.isDel as isDel
+		FROM buss_device_record dr
+		LEFT JOIN buss_project_master pt ON dr.`project_code` = pt.`project_code`
+		left join(select ts.project_code,sum(ts.isDel) as isDel
+			from (select ps.project_code,case when ps.is_del = 1 then 0 else 1 end as isDel
+			from buss_project_worker ps where ps.id_card_number = #{tmicn} AND ps.id_card_type = #{tmict}
+			group by ps.project_code,ps.is_del 
+			) ts group by ts.project_code) tts on tts.project_code = dr.project_code
+		LEFT JOIN (
+		SELECT
+		DATE_FORMAT(dd.`TIME`, '%Y') AS sub_date,
+		COUNT(DISTINCT (DATE_FORMAT(dd.`TIME`, '%Y-%m-%d'))) AS totalNum
+		FROM buss_device_record dd
+		WHERE
+		dd.id_card_number = #{tmicn} AND
+		dd.id_card_type = #{tmict} AND
+		dd.team_sys_no in (
+		SELECT DISTINCT
+		team_sys_no
+		FROM
+		buss_team_member
+		WHERE
+		id_card_type = #{ict}
+		AND id_card_number = #{icn}
+		AND team_worker_type = '0'
+		) AND
+		dd.is_valid = 1
+		GROUP BY DATE_FORMAT(dd.`TIME`, '%Y')
+		) sub ON DATE_FORMAT(dr.time, '%Y') = sub.sub_date
+		WHERE
+		dr.id_card_number = #{tmicn} AND
+		dr.id_card_type = #{tmict} AND
+		dr.team_sys_no in (
+		SELECT DISTINCT
+		team_sys_no
+		FROM
+		buss_team_member
+		WHERE
+		id_card_type = #{ict}
+		AND id_card_number = #{icn}
+		AND team_worker_type = '0'
+		) AND
+		dr.is_valid = 1
+		GROUP BY DATE_FORMAT(dr.time, '%Y'),dr.project_code
+	</select>
+	
+	<select id="getByClassMemeberV116" resultMap="DeviceRecordDtoResultMap">
+		SELECT
+		YEAR(dr.time) as `year`,
+		COUNT(DISTINCT (DATE_FORMAT(dr.time, '%Y-%m-%d'))) AS num,
+		pt.project_name AS projectName,
+		sub.totalNum AS totalNum,
+		tts.isDel as isDel
+		FROM buss_device_record dr
+		LEFT JOIN buss_project_master pt ON dr.`project_code` = pt.`project_code`
+		left join(select ts.project_code,sum(ts.isDel) as isDel
+			from (select ps.project_code,case when ps.is_del = 1 then 0 else 1 end as isDel
+			from buss_project_worker ps where ps.id_card_number = #{tmicn} AND ps.id_card_type = #{tmict}
+			group by ps.project_code,ps.is_del 
+			) ts group by ts.project_code) tts on tts.project_code = dr.project_code
+		LEFT JOIN (
+		SELECT
+		DATE_FORMAT(dd.`TIME`, '%Y') AS sub_date,
+		COUNT(DISTINCT (DATE_FORMAT(dd.`TIME`, '%Y-%m-%d'))) AS totalNum
+		FROM buss_device_record dd
+		WHERE
+		dd.id_card_number = #{tmicn} AND
+		dd.id_card_type = #{tmict} AND
+		dd.team_sys_no in (
+		SELECT DISTINCT
+		team_sys_no
+		FROM
+		buss_team_member
+		WHERE
+		id_card_type = #{ict}
+		AND id_card_number = #{icn}
+		AND team_worker_type = '0'
+		) AND
+		dd.is_valid = 1
+		GROUP BY DATE_FORMAT(dd.`TIME`, '%Y')
+		) sub ON DATE_FORMAT(dr.time, '%Y') = sub.sub_date
+		WHERE
+		dr.id_card_number = #{tmicn} AND
+		dr.id_card_type = #{tmict} AND
+		dr.team_sys_no in (
+		SELECT DISTINCT
+		team_sys_no
+		FROM
+		buss_team_member
+		WHERE
+		id_card_type = #{ict}
+		AND id_card_number = #{icn}
+		AND team_worker_type = '0'
+		) AND
+		dr.is_valid = 1
+		GROUP BY DATE_FORMAT(dr.time, '%Y'),dr.project_code
+		limit #{pn},#{ps} 
+	</select>
+
+    <!-- 根据登录者获取项目 wangshibo -->
+    <select id="getProjectsByUserId"
+            resultType="com.xywg.admin.modular.project.model.AppProjectListByPersonVo">
+		SELECT
+		p.project_name AS projectName,
+		p.project_code AS projectCode
+		FROM
+		buss_project_master AS p
+		WHERE
+		p.is_del = 0
+		AND p.project_code IN (
+		SELECT
+		pw.project_code
+		FROM
+		buss_worker_master AS w
+		LEFT JOIN buss_project_worker AS pw ON w.id_card_type = pw.id_card_type
+		AND w.id_card_number = pw.id_card_number
+		WHERE
+		w.is_del = 0
+		AND pw.is_del = 0
+		AND w.cell_phone = (
+		SELECT
+		u.phone
+		FROM
+		sys_user AS u
+		WHERE
+		u.id = #{userId}
+		)
+		)
+	</select>
+
+    <!-- 增加 -->
+    <insert id="saveRecord">
+        insert into
+        buss_device_record (
+        id_card_type,
+        id_card_number,
+        organization_code,
+        project_code,
+        device_sn,
+        team_sys_no,
+        `time`,
+        `type`,
+        photo,
+        source,
+        create_date,
+        device_type,
+        is_valid)
+        values
+        <foreach collection="deviceRecords" item="deviceRecord" open="(" separator="),(" close=")">
+            1,
+            #{deviceRecord.person.idCardNumber},
+            #{deviceRecord.organizationCode},
+            #{deviceRecord.projectCode},
+            #{deviceRecord.deviceSn},
+            #{deviceRecord.person.teamSysNo},
+            #{deviceRecord.time},
+            1,
+            #{deviceRecord.photo},
+            #{deviceRecord.source},
+            now(),
+            #{deviceRecord.deviceType},
+            1
+        </foreach>
+    </insert>
+
+    <!-- 新增补考勤 author duanfen -->
+    <insert id="insertRepair">
+       insert into buss_device_record(
+       			organization_code,
+          		project_code,
+          		team_sys_no,
+          		id_card_type,
+          		id_card_number,
+          		time,
+          		type,
+          		source,
+          		is_valid,
+          		create_date,
+          		create_user,
+          		remark,
+          		device_type,
+          		is_deal
+          	)
+			select 
+					t.organization_code,
+				    t.project_code,
+				    t.team_sys_no,
+				    t.id_card_type,
+				    t.id_card_number, 
+				    #{t.recordTime},
+				    #{t.type},
+				    #{t.source},
+				    #{t.isValid},
+				    now(),
+				    #{t.createUser},
+				    #{t.remark},
+				    #{t.deviceType},
+				    #{t.isDeal}
+			from buss_project_worker t
+			where (t.id_card_type,t.id_card_number)=(select w.id_card_type,w.id_card_number from buss_worker_master w where w.id = #{t.id}) 
+			and t.project_code = #{t.projectCode} and t.is_del = 0
+  </insert>
+
+    <select id="getProPerInfo" resultType="com.xywg.admin.modular.project.model.ProjectWorker">
+        select
+        id, project_code AS projectCode,
+        build_project_code AS buildProjectCode,
+        contractor_org_code AS contractorOrgCode,
+        general_contractor_code AS generalContractorCode
+        from buss_project_worker
+        where
+        <foreach collection="deviceRecords" item="deviceRecord" open="(" separator=") or (" close=")">
+            id_card_number = #{deviceRecord.idCardNumber} and
+            id_card_type = #{deviceRecord.idCardType} and
+            project_code = #{deviceRecord.projectCode}
+        </foreach>
+        and join_status=2 and status=1 and is_del=0
+    </select>
+
+    <!-- 查询未统计考勤记录  -->
+    <select id="getRecordListByIsDeal" resultType="com.xywg.admin.modular.report.model.DeviceReport">
+        select
+        <include refid="Base_Column_List"/>
+        from buss_device_record
+        where is_deal != '1' or is_deal is null
+        and is_valid = 1
+    </select>
+
+    <!-- 按照5属性查询考勤记录,公司,项目,班组,人员,时间 -->
+    <select id="getRecordListBy5Fields" parameterType="com.xywg.admin.modular.report.model.DeviceReport"
+            resultType="com.xywg.admin.modular.report.model.dto.DeviceReportDto">
+        select
+        is_deal as deal,
+        device_type as type,
+        time
+        from buss_device_record
+        where organization_code = #{d.organizationCode}
+        and project_code = #{d.projectCode}
+        <choose>
+            <when test="d.teamSysNo != null">
+                and team_sys_no = #{d.teamSysNo}
+            </when>
+            <otherwise>
+                and team_sys_no is null
+            </otherwise>
+        </choose>
+        and id_card_number = #{d.idCardNumber}
+        and id_card_type = #{d.idCardType}
+        and left(time,10) = #{d.time}
+        and is_valid = 1
+        order by time asc
+    </select>
+
+    <!-- 更新考勤记录处理标记 -->
+    <update id="updateIsDeal" parameterType="com.xywg.admin.modular.report.model.DeviceReport">
+        update buss_device_record
+        set is_deal = 1
+        where organization_code = #{d.organizationCode}
+        and project_code = #{d.projectCode}
+        <choose>
+            <when test="d.teamSysNo != null">
+                and team_sys_no = #{d.teamSysNo}
+            </when>
+            <otherwise>
+                and team_sys_no is null
+            </otherwise>
+        </choose>
+        and id_card_number = #{d.idCardNumber}
+        and id_card_type = #{d.idCardType}
+        and left(time,10) = #{d.time}
+        and is_valid = 1
+    </update>
+
+    <!-- 新增考勤 author duanfen -->
+    <insert id="saveDevice" keyProperty="t.id" useGeneratedKeys="true">
+			insert into buss_device_record (
+    	  		organization_code,
+		        project_code,
+		        team_sys_no,
+		        id_card_type,
+		        id_card_number,
+		        sh_imei,
+		        `type`,
+		        lng,
+		        `lat`,
+	            source,
+		        is_valid,
+		        device_type,
+		        time,
+		        create_date)
+		     values(
+	        	   #{t.organizationCode},
+	        	   #{t.projectCode},
+	        	   #{t.teamSysNo},
+	        	   #{t.idCardType},
+	        	   #{t.idCardNumber},
+	        	   #{t.imei},
+		           #{t.type},
+	        	   #{t.lng},
+	        	   #{t.lat},
+	        	   #{t.source},
+	        	   #{t.isValid},
+	        	   3,
+	        	   #{t.recordTime},
+	        	   now()
+		        )
+    </insert>
+
+    <!-- 查询考勤记录 author duanfen -->
+    <select id="list" parameterType="com.baomidou.mybatisplus.plugins.Page" resultType="Map">
+        select
+	        b.id,
+	        b.project_code AS projectCode,
+	        pm.project_name as projectName,
+	        b.team_sys_no AS teamSysNo,
+	        tm.team_name as teamName,
+	        b.id_card_type AS idCardType,
+	        insert(b.id_card_number,11,6,'******') AS idCardNumber,
+	        wm.worker_name as workerName,
+	        b.time,
+	        b.source,
+	        b.is_valid AS isValid,
+	        concat('/labor/',b.photo) AS iconPhoto,
+	        b.device_type AS deviceType,
+	        b.create_date as createDate,
+	        b.create_user as createUser
+        from buss_device_record b
+        left join buss_worker_master wm ON b.id_card_type = wm.id_card_type AND b.id_card_number = wm.id_card_number and
+        wm.is_del = 0
+        left join buss_project_master pm on b.project_code = pm.project_code and pm.is_del = 0
+        left join buss_team_master tm on b.team_sys_no = tm.team_sys_no and tm.is_del = 0
+        where
+        1=1
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        AND b.organization_code in (
+        SELECT social_credit_number
+        FROM sys_dept
+        WHERE social_credit_number IS NOT NULL AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        )
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != '' ">
+            AND b.project_code = #{map.projectCode}
+        </if>
+        <if test="map.team !=null and map.team != '' ">
+            AND b.team_sys_no = #{map.team}
+        </if>
+        <if test="map.teamSysNo !=null and map.teamSysNo != '' ">
+            AND b.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.workerName !=null and map.workerName != '' ">
+            AND wm.worker_name like CONCAT('%', #{map.workerName},'%')
+        </if>
+        <if test="map.condition !=null and map.condition != '' ">
+            and (
+            locate(#{map.condition}, b.id_card_number)
+            or locate(#{map.condition}, wm.worker_name)
+            )
+        </if>
+        <if test="map.source !=null and map.source != '' ">
+            AND b.source = #{map.source}
+        </if>
+        <if test="map.isValid !=null and map.isValid != '' ">
+            AND b.is_valid = #{map.isValid}
+        </if>
+        <if test="map.deviceType !=null and map.deviceType != '' ">
+            AND b.device_type = #{map.deviceType}
+        </if>
+        
+        <if test="map.startDate !=null and map.startDate != '' ">
+            AND b.time >= #{map.startDate}
+        </if>
+        <if test="map.endDate !=null and map.endDate != '' ">
+            AND b.time <![CDATA[<=]]> #{map.endDate}
+        </if>
+        order by b.time desc
+    </select>
+
+    <!-- 根据ID查询考勤记录 author duanfen -->
+    <select id="findById" resultType="Map">
+ 				select
+		 		b.id,
+		 		c.company_name as companyName,
+		 		pm.project_name as projectName,
+				tm.team_name as teamName,
+				b.id_card_number AS idCardNumber,
+				wm.worker_name as workerName,
+				b.time,
+				if(b.is_valid=0,'无效','有效') as isValid,
+				if(b.`type`=0,'补考勤','正常') as type,
+				if(b.device_type=3,'上班','下班')  AS deviceType,
+				concat('http://labor.jsxywg.cn/labor/',b.photo) AS photo,
+				c.name as source,
+				b.lng,
+				b.lat,
+				b.address
+		from buss_device_record b
+		left join buss_worker_master wm ON b.id_card_type = wm.id_card_type AND b.id_card_number = wm.id_card_number and wm.is_del = 0
+		left join buss_project_master pm on b.project_code = pm.project_code and pm.is_del = 0
+		left join buss_team_master tm on b.team_sys_no = tm.team_sys_no and tm.is_del = 0
+		left join buss_sub_contractor c on b.organization_code = c.organization_code and c.is_del = 0
+		left join (select t.num,t.name from sys_dict t
+							where t.pid = (select d.id from sys_dict d where d.name = '考勤类型')) c on b.source = c.num
+        where b.id = #{id}
+    </select>
+
+
+    <!-- 获取今日考勤人数 -->
+    <select id="getTotalDevice" resultType="java.lang.Integer">
+        select count(1) from(
+        select dr.id_card_number,dr.id_card_type
+        from buss_device_record dr
+        left join buss_team_master tm on tm.team_sys_no = dr.team_sys_no
+        where left(dr.time,10) = #{time} and tm.organization_code in
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and dr.project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        group by dr.id_card_number,dr.id_card_type
+        ) t
+    </select>
+
+    <!-- 获取项目当天考勤情况 -->
+    <select id="getProjectDevice" resultType="com.xywg.admin.modular.device.model.dto.DeviceRecordDto">
+        select tt.workerName,tt.totalNum,
+        FORMAT(
+        IFNULL(
+        IFNULL(tt.totalNum,0) / ttt.joinTotal,
+        '0.00')
+        ,2)
+        AS bfb
+        from
+        (select t.pc,t.project_name as workerName,count(*) as totalNum
+        from
+        (select pm.project_code as pc,pm.project_name,dr.id_card_number,dr.id_card_type
+        from buss_device_record dr
+        left join buss_team_master tm on tm.team_sys_no = dr.team_sys_no
+        left join buss_project_master pm on pm.project_code = dr.project_code
+        where left(dr.time,10) = #{time} and tm.organization_code in
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        <if test="projectCodes!=null and projectCodes.size()==0 ">
+            and 1=2
+        </if>
+        <if test="projectCodes!=null and projectCodes.size()>0 ">
+            and dr.project_code in
+            <foreach collection="projectCodes" close=")" open="(" separator="," index="index" item="item">
+                #{item}
+            </foreach>
+        </if>
+        group by pm.project_name,dr.id_card_number,dr.id_card_type) t
+        group by project_name) tt
+        left join(
+        SELECT
+        bp.project_code as pc,
+        count(1) as joinTotal
+        FROM
+        buss_project_worker bp
+        WHERE
+        bp.organization_code IN
+        <foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+            #{item}
+        </foreach>
+        AND bp.join_status = 2
+        GROUP BY
+        bp.project_code
+        ) ttt on ttt.pc = tt.pc
+    </select>
+
+    <!-- 项目考勤详情 -->
+    <select id="getDeviceRecordByProjectCode" parameterType="com.baomidou.mybatisplus.plugins.Page" resultType="Map">
+        select
+        b.id,
+        tm.team_name as teamName,
+        wm.worker_name as workerName,
+        b.time,
+        b.is_valid AS isValid,
+        b.photo ,
+        b.icon_photo AS iconPhoto,
+        b.device_type AS deviceType
+        from buss_device_record b
+        left join buss_worker_master wm ON b.id_card_type = wm.id_card_type AND b.id_card_number = wm.id_card_number and
+        wm.is_del = 0
+        left join buss_team_master tm on b.team_sys_no = tm.team_sys_no and tm.is_del = 0
+        where
+        1=1
+        <if test="map.page != 'ZBXM'">
+        AND b.organization_code in (
+        SELECT social_credit_number
+        FROM sys_dept
+        WHERE social_credit_number IS NOT NULL AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        )
+        </if>
+        and b.project_code = #{map.projectCode}
+        <if test="map.teamSysNo !=null and map.teamSysNo != '' ">
+            AND b.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.workerName !=null and map.workerName != '' ">
+            AND wm.worker_name like CONCAT('%', #{map.workerName},'%')
+        </if>
+        order by b.id desc
+    </select>
+
+    <!-- 新增考勤 author duanfen -->
+    <insert id="insertDeviceRecord">
+		insert into buss_device_record (
+		organization_code,
+		project_code,
+		team_sys_no,
+		id_card_type,
+		id_card_number,
+		remark,
+		address,
+		photo,
+		icon_photo,
+		device_sn,
+		`type`,
+		lng,
+		`lat`,
+		source,
+		is_valid,
+		device_type,
+		time,
+		create_user,
+		create_date)
+		values(
+		#{t.organizationCode},
+		#{t.projectCode},
+		#{t.teamSysNo},
+		#{t.idCardType},
+		#{t.idCardNumber},
+		#{t.remark},
+		#{t.address},
+		#{t.photo},
+		#{t.iconPhoto},
+		#{t.deviceSn},
+		#{t.type},
+		#{t.lng},
+		#{t.lat},
+		#{t.source},
+		#{t.isValid},
+		#{t.deviceType},
+		#{t.time},
+		#{t.createUser},
+		now()
+		)
+	</insert>
+
+    <!--发送劳务通考勤数据对接到实名制-->
+    <select id="getDeviceRecordFromLabor" resultType="com.xywg.admin.modular.smz.model.DeviceRecordMo">
+		SELECT
+		bdr.id as lablorId,
+		bpm.id as projectId,
+		bpm.project_code as projectCode,
+		bdr.id_card_number as idCard,
+		bwm.id as personId,
+		bwm.worker_name as name,
+		bdr.source as recordMode,
+		bdr.type as type,
+		bdr.photo as photo,
+		bdr.time as time,
+		bdr.remark as remark,
+		bd.id as deviceId
+		from buss_device_record bdr
+		left join buss_project_master bpm on bpm.project_code=bdr.project_code
+		left join buss_worker_master bwm on bdr.id_card_type=bwm.id_card_type and bdr.id_card_number=bwm.id_card_number
+		left join buss_device bd on bd.sn=bdr.device_sn
+		where bdr.id <![CDATA[>]]> #{lastNumber} and bpm.is_synchro = 1 and bpm.is_del = 0
+		order by bdr.id
+		 limit 100 
+	</select>
+	
+	
+	
+    <!--发送劳务通考勤图片数据对接到实名制-->
+    <select id="getDeviceRecordImageFromLabor" resultType="com.xywg.admin.modular.smz.model.DeviceRecordMo">
+        SELECT
+			bdr.id as lablorId,
+			bdr.photo as photo
+		from buss_device_record bdr
+		left join buss_project_master bpm on bpm.project_code=bdr.project_code
+		where bdr.id  <![CDATA[>]]> #{lastNumber} and bpm.is_synchro = 1 and bpm.is_del = 0
+		order by bdr.id
+		limit 5 
+	</select>
+
+    <!--发送劳务通考勤数据对接到实名制-->
+    <select id="getDeviceRecordFromLaborYC" resultType="com.xywg.admin.modular.smz.model.DeviceRecordMo">
+		select
+		bdr.id as lablorId,
+		rsl.smz_id as projectId,
+		bdr.id_card_number as idCard,
+		r.smz_id as personId,
+		bwm.worker_name as name,
+		bdr.type as type,
+		bdr.photo as photo,
+		bdr.time as time,
+		bdr.remark as remark
+		from buss_device_record bdr
+		join buss_worker_master bwm on bwm.id_card_type=bdr.id_card_type and bwm.id_card_number=bdr.id_card_number
+		join buss_project_master bpm on bdr.project_code=bpm.project_code
+		join r_smz_lwt rsl on rsl.lwt_id=bpm.id and rsl.table_name='ProjectCompanyYC'
+		join r_smz_lwt r on r.lwt_id=bwm.id and r.table_name='PersonnelYC'
+		where bpm.is_synchro = 1  and bpm.is_del = 0 and bdr.id <![CDATA[>]]> #{lastNumber}
+		order by bdr.id
+		limit 100
+	</select>
+	
+	<update id="updateSn">
+		update buss_device_record set device_sn = #{sn} where id = #{id}
+	</update>
+	
+	<update id="updateSnList">
+		update buss_device_record set device_sn = (select sn from buss_device where id = #{di}) where device_sn is null and project_code = #{pc}
+	</update>
+	
+	<select id="getExportExcel" parameterType="com.baomidou.mybatisplus.plugins.Page" resultType="Map">
+        select
+        b.id,
+        b.project_code AS projectCode,
+        pm.project_name as projectName,
+        b.team_sys_no AS teamSysNo,
+        tm.team_name as teamName,
+        s2.name AS idCardType,
+        insert(b.id_card_number,11,6,'******') AS idCardNumber,
+        wm.worker_name as workerName,
+        b.time,
+        s1.name as source,
+        case when b.is_valid = 1 then '有效' else '无效' end AS isValid,
+        concat('/labor/',b.photo) AS iconPhoto,
+        case when b.device_type = 3 then '上班' else '下班' end  AS deviceType,
+        b.create_date as createDate,
+        b.create_user as createUser
+        from buss_device_record b
+        left join buss_worker_master wm ON b.id_card_type = wm.id_card_type AND b.id_card_number = wm.id_card_number and
+        wm.is_del = 0
+        left join buss_project_master pm on b.project_code = pm.project_code and pm.is_del = 0
+        left join buss_team_master tm on b.team_sys_no = tm.team_sys_no and tm.is_del = 0
+        left join sys_dict s1 on s1.pid = (select id from sys_dict where name = '考勤类型') and s1.num = b.source
+        left join sys_dict s2 on s2.pid = (select id from sys_dict where name = '人员证件类型') and s2.num = b.id_card_type
+        where
+        1=1
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+        AND b.organization_code in (
+        SELECT social_credit_number
+        FROM sys_dept
+        WHERE social_credit_number IS NOT NULL AND (
+        id = #{map.deptId} OR pids LIKE CONCAT('%[', #{map.deptId},']%') )
+        )
+        </if>
+        <if test="map.projectCode !=null and map.projectCode != '' ">
+            AND b.project_code = #{map.projectCode}
+        </if>
+        <if test="map.team !=null and map.team != '' ">
+            AND b.team_sys_no = #{map.team}
+        </if>
+        <if test="map.teamSysNo !=null and map.teamSysNo != '' ">
+            AND b.team_sys_no = #{map.teamSysNo}
+        </if>
+        <if test="map.workerName !=null and map.workerName != '' ">
+            AND wm.worker_name like CONCAT('%', #{map.workerName},'%')
+        </if>
+        <if test="map.condition !=null and map.condition != '' ">
+            and (
+            locate(#{map.condition}, b.id_card_number)
+            or locate(#{map.condition}, wm.worker_name)
+            )
+        </if>
+        <if test="map.source !=null and map.source != '' ">
+            AND b.source = #{map.source}
+        </if>
+        <if test="map.isValid !=null and map.isValid != '' ">
+            AND b.is_valid = #{map.isValid}
+        </if>
+        <if test="map.deviceType !=null and map.deviceType != '' ">
+            AND b.device_type = #{map.deviceType}
+        </if>
+        order by b.id desc
+    </select>
+
+    <update id="overTime">
+    UPDATE
+    buss_device_report
+    SET
+    over_time = ifnull(over_time, 0) + #{overTime}
+    WHERE
+    id=#{id}
+    </update>
+
+    <update id="setData">
+        UPDATE
+            buss_device_report
+            SET
+            over_time = ifnull(over_time, 0) + #{overTime},
+            rain = #{rain},
+            fall_ill = #{fallIll},
+            compassionate_leave = #{compassionateLeave},
+            absent = #{absent}
+        WHERE
+          id=#{id}
+    </update>
+
+    <select id="getReport" resultType="java.util.Map">
+        select
+        pm.project_name as projectName,
+        tm.team_name as teamName,
+        wm.worker_name as workerName,
+        d.`name` as idCardType,
+        dr.id_card_number as idCardNumber,
+        #{map.searchMonth} as searchMonth,
+        sum(1) as attendanceDay
+        from (
+        select * from buss_device_record where DATE_FORMAT( time, '%Y-%m' ) = #{map.searchMonth}
+        group by project_code, team_sys_no, id_card_number, DATE_FORMAT( time, '%Y-%m-%d' )
+        ) dr
+        left join buss_project_master pm on dr.project_code = pm.project_code
+        left join buss_worker_master wm on dr.id_card_number = wm.id_card_number
+        left join buss_team_master tm on dr.team_sys_no = tm.team_sys_no
+        left join sys_dict d on dr.id_card_type = d.num and pid in (select id from sys_dict where name = '人员证件类型')
+        where dr.organization_code in
+        <foreach collection="map.ocList" item="orgCode" separator="," open="(" close=")">
+            #{orgCode}
+        </foreach>
+        <if test="map.projectCode != null and map.projectCode != ''">
+            and dr.project_code = #{map.projectCode}
+        </if>
+        <if test="map.teamCode != null and map.teamCode != ''">
+            and dr.team_sys_no = #{map.teamCode}
+        </if>
+        group by dr.project_code, dr.team_sys_no, dr.id_card_number
+    </select>
+    <select id="getZrAttendance">
+    select r.*,w.id as workerId from buss_device_record r
+    left join buss_worker_master w on r.id_card_number = w.id_card_number
+    where r.organization_code =  ''
+    and r.id not in (
+    select lwt_id from r_lwt_zr
+    where table_name = 'record'
+    )
+    order by id asc
+    </select>
+</mapper>

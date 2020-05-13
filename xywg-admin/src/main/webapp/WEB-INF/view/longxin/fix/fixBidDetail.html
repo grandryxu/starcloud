@@ -1,0 +1,168 @@
+@layout("/common/_container.html"){
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../../static/css/longxin/reset.css">
+    <link rel="stylesheet" href="../../static/css/longxin/wb.css">
+    <link rel="stylesheet" href="../../static/css/longxin/db.css">
+    <title>定标详情</title>
+</head>
+
+<body>
+    <div class="main">
+        <h2 class="title">${tender.fileName}</h2>
+        <div class="subTitle">
+            <span>发布单位：龙信集团 </span>
+            <span>发布时间： ${tender.startTime}</span>
+        </div>
+        <p class="desc">
+            ${tender.resume}
+        </p>
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr class="cellBg">
+                <td colspan="2">招投标内容介绍</td>
+            </tr>
+            <tr>
+                <td>工程内容：${tender.fileName}</td>
+            </tr>
+ 
+        </table>
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr class="cellBg">
+                <td>拟选中标单位：</td>
+            </tr>
+            <tr>
+                <td id="selectCompanyVal">
+                @if(!flag){
+                	${selectCom.companyName}
+                @}
+                </td>
+                <input id="selectCompany" type='hidden' value=''/>
+                <input id="tenderId" type='hidden' value='${tender.id}'/>
+                <input id="id" type='hidden' value=''/>
+            </tr>
+
+        </table>
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr class="cellBg">
+                <td colspan="8">参加投标单位及投标报价：</td>
+            </tr>
+            <tr class="rowCenter">
+                <td>企业名称</td>
+                <td>投标报价（万元）</td>
+                <!--<td>资质等级</td>
+                <td>注册资金（万元）</td>-->
+                <td>评标</td>
+                <td>二次评标</td>
+                <td>三次评标</td>
+                <td>联系人</td>
+                <td>联系电话</td>
+                <td>操作</td>
+            </tr>
+            @for(i in companys){
+            <tr>
+                <td>${i.companyName}</td>
+                <td><button type="button" class="btn btn-outline btn-success" onclick="priceDetail(${i.id})">详细报价</button></td>
+                <!--<td>${i.qualifyLevel}</td>
+                <td>${i.registrationCapital}</td>-->
+                <td>
+                    @if(i.pingbiao1 !=null ) {
+                        ${i.pingbiao1}
+                    @}
+                </td>
+                <td>
+                    @if(i.pingbiao2 !=null ) {
+                        ${i.pingbiao2}
+                    @}
+                </td>
+                <td>
+                    @if(i.pingbiao3 !=null ) {
+                        ${i.pingbiao3}
+                    @}
+                </td>
+                <td>${i.contactPeopleName}</td>
+                <td>${i.contactPeopleCellPhone}</td>
+                <td>
+                @if(flag){
+                <button  class="btn btn-sm btn-primary" style="background-color:#4876FF" onclick="selectCompany('${i.id}','${i.companyId}','${i.companyName}')" ><strong><font color="white">选中</font></strong></button>
+                <button  class="btn btn-sm btn-primary" style="background-color:#4876FF" onclick="cancelCompany()" ><strong><font color="white">取消选中</font></strong></button>
+                @}
+                </td>
+            </tr>
+			@}
+        </table>
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr class="cellBg">
+                <td>定标文件详细说明</td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="font14">
+                        ${tender.tenderResume}
+                    </span>
+                </td>
+
+            </tr>
+
+        </table>
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr class="cellBg">
+                <td>定标相关材料</td>
+            </tr>
+            @for(i in files){
+            <tr>
+                <td>
+                    <span class="font14 bgColor">
+                      <a href="${path}${i.filePath}">${i.fileName}</a>
+                    </span>
+                </td>
+
+            </tr>
+			@}
+        </table>
+        @if(flag){
+        <div class="row btn-group-m-t">
+                <div class="col-sm-12 tac-sss button-ta-r">
+                    <#button btnCss="info" name="定标" id="ensure" icon="fa-check" clickFun="SubContractor.addSubmit()"/>
+                </div>
+            </div>
+          @}
+    </div>
+</body>
+
+</html>
+
+
+<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="${ctxPath}/static/modular/longxin/fix/fixBidDetail.js"></script>
+<script>
+    function selectCompany(e2,id,e){
+    	$("#selectCompanyVal").html(e);
+    	$("#selectCompany").val(id);
+    	$("#id").val(e2);
+    }
+    
+    function cancelCompany(){
+    	$("#selectCompanyVal").html('');
+    	$("#selectCompany").val('');
+    	$("#id").val('');
+    }
+    
+    function  priceDetail(e){
+    	var tenderId = $("#tenderId").val();
+        var index = layer.open({
+            type: 2,
+            title: true?'查看竞标价格':'添加竞标价格',
+            area: ['40%', '40%'], //宽高
+            fix: false, //不固定
+            maxmin: false,
+            content: Feng.ctxPath + '/lxInviteBid/price_add_view?bidId=' + e +'&tenderId=' + tenderId + '&flag=' + true
+            // content: Feng.ctxPath + '/subContractor/getAllSubContractor'
+        });
+        this.layerIndex = index;
+    }
+</script>
+@}

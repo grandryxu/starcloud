@@ -1,0 +1,40 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+
+            <input type="hidden" id="id" value="">
+
+            <div class="row">
+                <div class="col-sm-6 b-r">
+                            <#input id="id" name="" underline="true"/>
+                            <#input id="sysNo" name="系统编号" underline="true"/>
+                            <#input id="organizationCode" name="企业组织机构代码" underline="true"/>
+                            <#input id="certificationType" name="证书类型" underline="true"/>
+                            <#input id="certificationName" name="证书名称" underline="true"/>
+                            <#input id="certificationCode" name="证书编号" underline="true"/>
+                            <#input id="validBeginDate" name="证书有效时间(起)"/>
+                </div>
+
+                <div class="col-sm-6">
+                            <#input id="recentValidDate" name="最近发放日期" underline="true"/>
+                            <#input id="validEndDate" name="证书有效时间(止)" underline="true"/>
+                            <#input id="grantOrg" name="发证机关" underline="true"/>
+                            <#input id="qualificationStatus" name="资质状态  1:有效2：注销3：过期4：降级" underline="true"/>
+                            <#input id="certificationStatus" name="资质证书状态1:有效2：注销3：暂扣4：过期" underline="true"/>
+                            <#input id="isDel" name="是否删除 1：是 0:否" underline="true"/>
+                </div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-10">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="SubContractorCertificationsInfoDlg.addSubmit()"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="SubContractorCertificationsInfoDlg.close()"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/company/cooperationSubContractor/cooperationSubContractorCertifications_info.js"></script>
+@}

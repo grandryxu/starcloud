@@ -1,0 +1,29 @@
+@layout("/common/_container.html"){
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>绑定门禁卡 </title>
+        <div class="tab-content" id="ProjectMasterCardInfoForm">
+            <div id="projectInfo" class="tab-pane active">
+                <div class="panel-body">
+                    <div class="ibox-content">
+                        <div class="form-horizontal">
+                            <input type="hidden" id="id" value="${pwId}">
+                            <div class="row">
+                                <div class="col-sm-6 b-r">
+                                    <#input_sjf id="cardNumber" name="门禁卡号" underline="true" requiredFlag="true"  value="${cardNumber}" />
+                                </div>
+							    <div class="row btn-group-m-t">
+							    <div class="col-sm-12 button-ta-r" style="text-align:center;margin-top: 20px">
+							        <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="ProjectMasterCardDlg.setCard()"/>
+							        <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="ProjectMasterCardDlg.close()"/>
+							    </div>
+							</div>
+						</div>
+                   </div>
+                </div>
+              </div>
+           </div>
+       </div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/project/projectMaster/projectMaster_card.js"></script>
+@}

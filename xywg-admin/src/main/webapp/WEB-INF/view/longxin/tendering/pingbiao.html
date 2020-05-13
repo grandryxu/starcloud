@@ -1,0 +1,62 @@
+@layout("/common/_container.html"){
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/reset.css">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/wb.css">
+    <link rel="stylesheet" href="${ctxPath}/static/modular/longxin/css/zb.css">
+    <script src="${ctxPath}/static/js/jquery.min.js?v=2.1.4"> </script>
+        <title>评标</title>
+</head>
+
+<body>
+<div class="main">
+
+        <div class="form-group">
+            <label>评标内容</label>
+            <input type="text" id="id" value="${id}" style="display: none" />
+            <input type="text" id="flag" value="${flag}" style="display: none" />
+            <input type="text" id="ctx" value="${ctxPath}" style="display: none" />
+            <textarea   placeholder="请输入评标内容" class="form-control"  id = "sss"></textarea>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-primary pull-right m-t-n-xs"  onclick="submit1()"><strong>提交</strong>
+            </button>
+        </div>
+</div>
+</body>
+<script type="text/javascript">
+           function submit1(){
+               var id = $("#id").val();
+               var text = $("#sss").val();
+              if(text.length>15){
+                    alert("请输入15个字以内")
+                return;
+              }
+               var flag = $("#flag").val();
+               var path = "../tendering/addPingbiao?id="+id+"&text="+text + "&flag=" + $("#flag").val();
+                $.post(path,{},function(data){
+                    if(data.code!=200){
+                        Feng.error(data.message);
+                        parent.layer.close(1);
+
+                    }else{
+                        parent.$("#"+id+flag).html(text);
+                        Feng.success(data.message);
+                        parent.layer.close(parent.layerIndex);
+                        if(flag!="3"){
+                            var s = parseInt(flag)+1
+                            parent.$("#"+id+"bt"+s).removeAttr("disabled");
+                            parent.$("#"+id+"bt"+s).attr("class","btn btn-outline btn-success");
+                        }
+
+                    }
+                })
+           }
+</script>
+
+</html>
+@}

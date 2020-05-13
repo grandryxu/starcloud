@@ -1,0 +1,56 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal" id="TeamMasterInfoForm">
+
+            <input type="hidden" id="id" value="">
+            <input type="hidden" id="leaderId" name="leaderId" class="form-control" />
+            <input type="hidden" id="projectCode" name="projectCode" class="form-control" />
+            <div class="row" >
+                <div class="col-sm-1"></div>
+                <div class="col-sm-9">
+                        <#input_sjf id="teamName" name="班组名称" underline="true" requiredFlag="true" />
+                        
+                        <div class="form-group form-group-sss">
+                            <label class="col-sm-3 control-label control-label-sss">参建公司:</label>
+                            <div class="col-sm-9">
+                                <select data-placeholder="选择参建公司"  class="form-control form-control-sss" id="organizationCode"  underline="true" name="organizationCode">
+                                            @for(item in companys){
+                                            <option value="${item.code}">${item.name}</option>
+                                            @}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group form-group-sss" style="padding-top:5px;">
+                            <label class="col-sm-3 control-label control-label-sss" style="padding-top:7px;">
+                                班组长:</label>
+                            <div class="col-sm-9 input-search-look">
+                                <input type="text" id="teamLeader" name="teamLeader" class="form-control" readonly />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-primary" onclick="TeamMasterInfoDlg.openSelectTeamLeader()">查找
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+
+                        <#input_sjf id="contact" placeholder="请填入联系人手机号码" name="联系手机号码"/>
+                        <#input_sjf id="teamLeaderIdNumber" placeholder="班组长身份证号码" readonly="true"   name="班组长身份证号码" underline="true"/>
+                        <#textarea_sjf id="note" name="备注信息"/>
+                </div>
+                <div class="col-sm-2"></div>
+            </div>
+
+            <div class="row btn-group-m-t">
+                <div class="col-sm-12 button-ta-r">
+                    <#button btnCss="info" name="提交" id="ensure" icon="fa-check" clickFun="TeamMasterInfoDlg.addSubmit()" value="提交"/>
+                    <#button btnCss="danger" name="取消" id="cancel" icon="fa-eraser" clickFun="TeamMasterInfoDlg.close()"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster_info.js"></script>
+
+
+@}

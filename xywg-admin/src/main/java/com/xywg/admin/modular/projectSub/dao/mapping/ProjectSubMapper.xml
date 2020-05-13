@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.projectSub.dao.ProjectSubMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.projectSub.model.ProjectSub">
+        <id column="id" property="id" />
+        <result column="sub_id" property="subId" />
+        <result column="child_num_id" property="childNumId" />
+        <result column="project_code" property="projectCode" />
+        <result column="create_date" property="createDate" />
+        <result column="create_user" property="createUser" />
+        <result column="update_date" property="updateDate" />
+        <result column="update_user" property="updateUser" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, sub_id AS subId, child_num_id AS childNumId, project_code AS projectCode, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, is_del AS isDel
+    </sql>
+
+    <select id="selectList" resultType="com.xywg.admin.modular.projectSub.model.ProjectSub">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        buss_project_sub
+        WHERE 1=1 AND is_del = 0
+        <if test="map.projectCode !=null  and map.projectCode != '' ">
+            AND project_code = #{map.projectCode}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getDefaultProjectSub" resultType="com.xywg.admin.modular.projectSub.model.ProjectSub">
+        SELECT
+        spp.num AS subId ,"" AS childNumId
+        FROM
+        sys_partitioned_project spp
+        WHERE
+        spp.id = (SELECT min(id) FROM sys_partitioned_project WHERE p_num = '022')
+    </select>
+
+</mapper>

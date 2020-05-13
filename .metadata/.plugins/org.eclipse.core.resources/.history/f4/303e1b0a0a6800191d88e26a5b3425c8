@@ -1,0 +1,27 @@
+package com.xywg.admin.task;
+
+import com.xywg.admin.core.base.controller.BaseController;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+//@RequestMapping("/test")
+public class Test extends BaseController {
+	
+	public Test (){
+		System.out.println("sssssssssssssss");
+	}
+	
+	@Autowired
+    public SmzNtGeneralDataJobHandler ss;
+
+//	@Scheduled(cron = "0 */10 * * * ?")
+	@Scheduled(cron = "0 0/2 18-4 * * ? *")
+	public void sss() throws Exception {
+		System.out.println("xxxxxxxxxxxx");
+		ss.execute("");
+	}
+}

@@ -1,0 +1,36 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-horizontal">
+                <input type="hidden" id="projectCode"  value="${projectCode}">
+                <input type="hidden" id="team"  value="${team}">
+            <div class="row">
+                <div class="col-sm-10">
+                    <div class="inline-search-s">
+                        <label class="label-search-s">姓名</label>
+                        <input id="workerName" name="姓名" underline="true" maxlength="45"  class="input-search-s"/>
+                    </div>
+                    <div class="inline-search-s">
+                        <label class="label-search-s">证件编号</label>
+                        <input id="idCardNumber" name="证件编号" underline="true" maxlength="30"   class="input-search-s"/>
+                    </div>
+                </div>
+                <div class="col-sm-1">
+                    <#button name="查询" icon="fa-search" clickFun="accountWorkerList.search()"/>
+                </div>
+                <div class="col-sm-1">
+                    <#button name="确定" icon="fa-plus" clickFun="accountWorkerList.add()"/>
+                </div>
+            </div>
+            <div class="hidden-xs" id="accountWorkerTableToolbar" role="group">
+                <div class="inline-search-s">
+                    <label class="label-search-s">选中工人</label>
+                    <span id="workerNames"></span>
+                </div>
+            </div>
+            <#table id="accountWorkerTable" />
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/wages/account/account_workerList.js"></script>
+@}

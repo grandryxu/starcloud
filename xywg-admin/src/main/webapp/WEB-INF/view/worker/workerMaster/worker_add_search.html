@@ -1,0 +1,25 @@
+@layout("/common/_container.html"){
+<div class="ibox float-e-margins">
+    <div class="ibox-content">
+        <div class="form-inline">
+            <div class="row" style="padding:0 15px;">
+                    <div class="form-group add-XD85-FD">
+                        <input type="text" id="condition" class="form-control" name="condition" placeholder="姓名/身份证">
+                        <span class="input-group-btn" ></span>
+                        <button type="button" class="btn btn-primary btn-dsf1" onclick="Worker.search()">搜索</button>
+
+                    </div>
+            </div>
+            <#table id="WorkerTable"/>
+
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/modular/worker/workerMaster/worker_add_search.js"></script>
+<style>
+    .list-group-item-checked {
+        background-color: #1ab394;
+        color:#FFF;
+    }
+</style>
+@}

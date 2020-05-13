@@ -1,0 +1,125 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>考勤记录管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <f class="row">
+                            <form id="searchForm">
+                                <div class="clear-float">
+
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">项目</label>
+                                            <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                                <option value="">请选择</option>
+                                                @for(item in project){
+                                                <option value="${item.projectCode}">${item.projectName}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">班组</label>
+                                            <select class="fn-input search-chosen" id="team" name="班组">
+                                                <option value="">请选择班组</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-condition">
+                                        <#button name="搜索" icon="fa-search" clickFun="DeviceRecord.search()"/>
+                                        <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                        <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                        <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">名称</label>
+                                            <input type="text" class="fn-input" id="condition" placeholder="名称"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">来源</label>
+                                            <select class="fn-input search-chosen" id="source" name="来源">
+                                                <option value="">请选择</option>
+                                                @for(s in source){
+                                                <option value="${s.num}">${s.name}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">是否有效</label>
+                                            <select class="fn-input" id="isValid" name="是否有效">
+                                                <option value="">请选择</option>
+                                                <option value="1">是</option>
+                                                <option value="0">否</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">考勤类型</label>
+                                            <select class="fn-input" id="deviceType" name="考勤类型">
+                                                <option value="">请选择</option>
+                                                <option value="3">上班</option>
+                                                <option value="4">下班</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+	                                        <label class="fn-label">考勤时间</label>
+	                                        <div class="fn-datepicker" id="datepicker1">
+	                                            <input class="fn-datepicker-input" id="startDate" type="datetime" name="recordTime"></input>
+	                                            <span class="">-</span>
+	                                             <input class="fn-datepicker-input" id="endDate" type="datetime" name="recordTime" ></input>
+	                                        </div>
+                                    	</div>
+                                    </div>
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">设备名称</label>
+                                            <input type="text" class="fn-input" id="deviceName" placeholder="设备名称"/>
+                                        </div>
+                                </div>
+                                </div>
+
+                                <div class="fn-buttons clear-float fn-need-hide">
+                                    <div class="col-sm-4">
+
+                                    </div>
+                                </div>
+                                
+                                
+                                
+
+                                    
+                            </form>
+                            <div class="hidden-xs" id="DeviceRecordTableToolbar" role="group">
+                                <#button name="补考勤" icon="fa-plus" clickFun="DeviceRecord.openAddDeviceRecord()"/>
+                                <#button name="导出" icon="fa-download" clickFun="DeviceRecord.download()"/>
+                            </div>
+                            <#table id="DeviceRecordTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/deviceRecord/deviceRecord/deviceRecord.js"></script>
+@}

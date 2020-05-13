@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.worker.model.WorkerMaster"/>
+<fullyQualifiedTypeName name="org.springframework.scheduling.annotation.Scheduled"/>
+<fullyQualifiedTypeName name="com.kenai.jffi.Main"/>
+<fullyQualifiedTypeName name="com.xywg.admin.task.Test"/>
+<fullyQualifiedTypeName name="com.xywg.admin.task.SmzNtGeneralDataJobHandler"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.smz.model.SmzCorProject"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.smz.model.TeamMemberSmz"/>
+<fullyQualifiedTypeName name="org.springframework.beans.factory.annotation.Autowired"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.team.dao.TeamMasterMapper"/>
+<fullyQualifiedTypeName name="org.springframework.transaction.annotation.Transactional"/>
+<fullyQualifiedTypeName name="java.awt.List"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.project.service.impl.ProjectWorkerServiceImpl"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.smz.model.SmzLwt"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="com.xywg.admin.modular.smz.model.SmzCallBack"/>
+<fullyQualifiedTypeName name="org.springframework.context.annotation.Bean"/>
+<fullyQualifiedTypeName name="org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer"/>
+<fullyQualifiedTypeName name="javax.servlet.http.HttpServletRequest"/>
+<fullyQualifiedTypeName name="org.springframework.web.context.request.ServletRequestAttributes"/>
+<fullyQualifiedTypeName name="org.springframework.web.context.request.RequestContextHolder"/>
+<fullyQualifiedTypeName name="javax.servlet.http.HttpSession"/>
+</qualifiedTypeNameHistroy>

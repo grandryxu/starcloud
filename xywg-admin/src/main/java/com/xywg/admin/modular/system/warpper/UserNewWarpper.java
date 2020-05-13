@@ -1,0 +1,29 @@
+package com.xywg.admin.modular.system.warpper;
+
+import com.xywg.admin.core.common.constant.factory.ConstantFactory;
+import com.xywg.admin.core.base.warpper.BaseControllerWarpper;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 用户管理的包装类
+ *
+ * @author wangcw
+ * @date 2017年2月13日 下午10:47:03
+ */
+public class UserNewWarpper extends BaseControllerWarpper {
+
+    public UserNewWarpper(List<Map<String, Object>> list) {
+        super(list);
+    }
+
+    @Override
+    public void warpTheMap(Map<String, Object> map) {
+        map.put("sexName", (Integer) map.get("sex")==null?"":(Integer) map.get("sex")==0?'男':'女');
+        //map.put("roleName", ConstantFactory.me().getRoleName((String) map.get("roleid")));
+        //map.put("deptName", ConstantFactory.me().getDeptNameFromCache((Integer) map.get("deptid")));
+        map.put("statusName", ConstantFactory.me().getStatusName((Integer) map.get("status")));
+    }
+
+}

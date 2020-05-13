@@ -1,0 +1,21 @@
+package com.xywg.admin.modular.zr.service;
+
+import com.xywg.admin.modular.workerEnshrine.model.PersonEnshrineDto;
+import com.xywg.admin.modular.workerEnshrine.model.PersonEnshrineVo;
+import com.xywg.admin.modular.workerEnshrine.model.WorkerEnshrine;
+import com.baomidou.mybatisplus.service.IService;
+import com.xywg.admin.modular.workerEnshrine.model.WorkerEnshrineDto;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 中如接口
+ * </p>
+ *
+ * @author jln
+ */
+public interface IZrInterfaceService {
+
+   
+}

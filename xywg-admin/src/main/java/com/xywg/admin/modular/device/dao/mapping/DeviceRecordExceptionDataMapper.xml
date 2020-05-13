@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.device.dao.DeviceRecordExceptionDataMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.device.model.DeviceRecordExceptionData">
+        <id column="id" property="id"/>
+        <result column="organization_code" property="organizationCode"/>
+        <result column="project_code" property="projectCode"/>
+        <result column="team_sys_no" property="teamSysNo"/>
+        <result column="device_sn" property="deviceSn"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="Id_card" property="idCard"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="sh_id" property="shId"/>
+        <result column="time" property="time"/>
+        <result column="type" property="type"/>
+        <result column="photo" property="photo"/>
+        <result column="lng" property="lng"/>
+        <result column="lat" property="lat"/>
+        <result column="source" property="source"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="exceptionType" property="exceptionType"/>
+        <result column="tx_face" property="txFace"/>
+        <result column="alg_version" property="algVersion"/>
+        <result column="personDataType" property="personDataType"/>
+        <result column="user_name" property="userName"/>
+    </resultMap>
+
+
+    <select id="selectDeviceExceptions" resultType="map">
+        select
+        e.id,
+        e.organization_code AS organizationCode,
+        e.project_code AS projectCode,
+        e.team_sys_no AS teamSysNo,
+        e.device_sn AS deviceSn,
+        e.id_card_type AS idCardType,
+        insert( e.id_card_number,11,6,'******') AS idCardNumber,
+        e.sh_id AS shId,
+        e.device_type as deviceType,
+        e.time,
+        e.type,
+        e.source,
+        e.remark,
+        e.exceptionType,
+        p.project_name as projectName,
+        m.team_name as teamName,
+        wm.worker_name as workerName ,
+        if(M.social_credit_number is null,0,1) AS isGeneralContractorOperation ,
+        s.company_name as companyName
+        from buss_device_record_exception_data e
+        left join buss_team_master m on m.team_sys_no=e.team_sys_no and m.is_del=0 and m.status=1
+        left join buss_project_master p on p.project_code = e.project_code and p.is_del=0 and p.status=1
+        left join buss_worker_master wm on wm.id_card_type=e.id_card_type and wm.id_card_number = e.id_card_number and
+        wm.is_del=0
+        left join buss_contractor_worker cw on cw.id_card_type=e.id_card_type and cw.id_card_number=e.id_card_number and
+        cw.is_del= 0 and cw.organization_code=e.organization_code
+        AND cw.organization_code in
+        <foreach collection="map.depts" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        LEFT JOIN (
+        SELECT
+        social_credit_number
+        FROM
+        sys_dept
+        WHERE
+        social_credit_number IS NOT NULL
+        AND
+        id IN
+        <foreach collection="map.depts" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) M ON M.social_credit_number = e.organization_code
+        left join buss_sub_contractor s on e.organization_code = s.organization_code
+        where
+        1=1
+        <if test="!(switchType.switchType==0 and switchType.isGeneralContractor==1)">
+            and e.organization_code in
+            <foreach collection="map.depts" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="map.key != null and map.key != ''">
+            and (wm.worker_name like CONCAT('%',#{map.key},'%')
+            OR
+            e.id_card_number LIKE CONCAT('%',#{map.key},'%')
+            )
+        </if>
+        <if test="map.exceptionType !=null  and  map.exceptionType !=''  ">
+            AND e.exceptionType = #{map.exceptionType}
+        </if>
+        <if test="map.deviceType !=null  and  map.deviceType !=''  ">
+            AND e.device_type like CONCAT('%',#{map.deviceType},'%')
+        </if>
+        <if test="map.source !=null  and  map.source !=''  ">
+            AND e.source like CONCAT('%',#{map.source},'%')
+        </if>
+        <if test="map.projectCode !=null  and  map.projectCode !=''  ">
+            AND p.project_code = #{map.projectCode}
+        </if>
+        <if test="map.team !=null  and  map.team !=''  ">
+            AND m.team_sys_no = #{map.team}
+        </if>
+        and e.status=1
+        and e.is_del=0
+        order by e.id DESC
+
+
+    </select>
+
+    <select id="getExceptionDeviceById" resultType="map">
+        select
+        e.id,
+        e.organization_code AS organizationCode,
+        e.project_code AS projectCode,
+        e.team_sys_no AS teamSysNo,
+        e.device_sn AS deviceSn,
+        e.id_card_type AS idCardType,
+        e.id_card_number AS idCardNumber,
+        e.sh_id AS shId,
+        e.device_type as deviceType,
+        e.time,
+        e.type,
+        e.source,
+        e.remark,
+        e.exceptionType,
+        p.project_name as projectName,
+        m.team_name as teamName,
+        wm.worker_name as workerName
+        from buss_device_record_exception_data e
+        left join buss_team_master m on m.team_sys_no=e.team_sys_no and m.is_del=0 and m.status=1
+        left join buss_project_master p on p.project_code = e.project_code and p.is_del=0 and p.status=1
+        left join buss_worker_master wm on wm.id_card_type=e.id_card_type and wm.id_card_number = e.id_card_number and wm.is_del=0
+        where e.id=#{id}
+
+
+
+    </select>
+    <select id="selectByIdCard" resultType="com.xywg.admin.modular.device.model.DeviceRecordExceptionData">
+        SELECT
+         organization_code AS organizationCode,
+         project_code AS projectCode,
+         team_sys_no AS teamSysNo,
+         device_sn AS deviceSn,
+         #{idCardType} AS idCardType,
+         #{idCardNumber} AS idCardNumber,
+         device_id AS deviceId,
+         sh_id AS shId,
+         time,
+         type,
+         photo,
+         lng,
+         lat,
+         source,
+         status,
+         remark,
+         device_type as deviceType,
+         exceptionType,
+         tx_face AS txFace, alg_version AS algVersion,
+         personDataType, user_name AS userName,
+         update_user as updateUser
+         from buss_device_record_exception_data where id_card_type=#{exceptionIdCardType} and id_card_number=#{exceptionIdCardNumber} and source=(select num from sys_dict where name='考勤机' and pid=(SELECT id from sys_dict where name='考勤类型')) and is_del=0 and status=1
+    </select>
+
+    <!-- 将异常考勤数据删除 -->
+    <update id="deleteExceptionDevices">
+        UPDATE buss_device_record_exception_data SET  is_del=1 ,update_user=#{updateUser},update_date=now() where id_card_type=#{exceptionIdCardType} and id_card_number =#{exceptionIdCardNumber} and is_del=0
+    </update>
+
+    <!-- 将异常考勤数据删除(根据id单条) -->
+    <update id="deleteExceptionDeviceById">
+        UPDATE buss_device_record_exception_data SET  is_del=1 ,update_user=#{updateUser},update_date=now() where id =#{id}
+    </update>
+
+
+    <!-- 批量删除 yuanyang -->
+    <update id="deleteByIds">
+        update buss_device_record_exception_data set
+        is_del=1,update_user=#{map.updateUser},update_date=now()
+        where
+        FIND_IN_SET(id,#{map.ids})
+    </update>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, organization_code AS organizationCode, project_code AS projectCode, team_sys_no AS teamSysNo, device_sn AS deviceSn, id_card_type AS idCardType, id_card_number AS idCardNumber, Id_card AS idCard, device_id AS deviceId, sh_id AS shId, time, type, photo, lng, lat, source, create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser, status, remark, exceptionType, tx_face AS txFace, alg_version AS algVersion, personDataType, user_name AS userName
+    </sql>
+
+    <!-- 删除同版本的异常模板 -->
+    <update id="removeExceptionFaceLike">
+        UPDATE buss_device_record_exception_data SET status = -3
+        WHERE exceptionType = 1 AND id_card_type = #{t.idCardType} and id_card_number = #{t.idCardNumber} AND status > 0
+        AND
+        <choose>
+            <when test="t.algVersion!=null">
+                alg_version = #{t.algVersion}
+            </when>
+            <otherwise>
+                alg_version is null
+            </otherwise>
+        </choose>
+    </update>
+
+    <!-- 注册人不在项目中 -->
+    <insert id="saveExceptionData">
+       INSERT INTO buss_device_record_exception_data (
+       		id_card_type,
+       		id_card_number,
+       		organization_code,
+            project_code,
+            device_sn,
+            tx_face,
+            alg_version,
+            create_date,
+            time,
+            personDataType,
+            exceptionType,
+            user_name,
+            source)
+         select  
+                #{t.idCardType},
+       			#{t.idCardNumber},
+			    a.organization_code,
+			    a.project_code,
+			   	#{t.deviceSn}, 
+			   	#{t.txFace}, 
+			   	#{t.algVersion},
+       			now(),
+       			now(),
+       			0,
+       			1,
+       			#{t.userName},
+       			4
+	     from (
+     			select organization_code,project_code from buss_device where id = #{t.deviceSn} 
+  	     )a
+	</insert>
+
+    <!-- 增加停用时的数据 -->
+    <insert id="saveDisabledRecord">
+        insert into
+        buss_device_record_exception_data (
+        id_card_type,
+        id_card_number,
+        organization_code,
+        project_code,
+        device_sn,
+        team_sys_no,
+        `time`,
+        `type`,
+        photo,
+        source,
+        create_date,
+        status,
+        exceptionType,
+        user_Name)
+        values
+        <foreach collection="list" item="DeviceRecordExceptionData" open="(" separator="),(" close=")">
+            #{DeviceRecordExceptionData.idCardType},
+            #{DeviceRecordExceptionData.idCardNumber},
+            #{DeviceRecordExceptionData.organizationCode},
+            #{DeviceRecordExceptionData.projectCode},
+            #{DeviceRecordExceptionData.deviceSn},
+            #{DeviceRecordExceptionData.teamSysNo},
+            #{DeviceRecordExceptionData.time},
+            1,
+            #{DeviceRecordExceptionData.photo},
+            3,
+            now(),
+            1,
+            #{DeviceRecordExceptionData.exceptionType},
+            #{DeviceRecordExceptionData.userName}
+        </foreach>
+    </insert>
+
+    <!-- 考勤人不在项目中-->
+    <insert id="saveExceptionRecord" parameterType="list">
+        INSERT INTO buss_device_record_exception_data (device_sn,organization_code, project_code,id_card_type,
+        id_card_number, user_name, photo, time, exceptionType, status,create_date,source, device_type)
+        SELECT did, organizationCode,pid, 1,uid1, name, photo, tm, 2, 1 ,now(),4 ,deviceType FROM
+        <foreach collection="list" item="r" separator=" UNION ALL " index="index" open="(" close=")">
+            SELECT #{r.device.sn,jdbcType=VARCHAR} AS did,
+            #{r.device.organizationCode,jdbcType=VARCHAR} AS organizationCode,
+            #{r.device.projectCode,jdbcType=VARCHAR} AS pid,
+            #{r.person.idCardNumber,jdbcType=VARCHAR} AS uid1,
+            #{r.person.workerName,jdbcType=VARCHAR} AS name,
+            #{r.photo,jdbcType=VARCHAR} AS photo, #{r.time,jdbcType=TIMESTAMP} AS tm,now() ,
+            #{r.deviceType,jdbcType=TINYINT} AS deviceType
+            FROM dual
+        </foreach>
+        r
+        WHERE NOT EXISTS
+        (SELECT 1 FROM buss_device_record_exception_data WHERE device_sn = r.did AND project_code=r.pid
+        AND id_card_number = r.uid1 AND time = r.tm AND exceptionType = 2)
+    </insert>
+
+    <!-- 考勤人不在考勤机所在项目中 -->
+    <insert id="saveRecord">
+        insert into
+        buss_device_record_exception_data (
+        id_card_type,
+        id_card_number,
+        project_code,
+        organization_code,
+        device_sn,
+        team_sys_no,
+        `time`,
+        `type`,
+        photo,
+        source,
+        create_date,
+        status,
+        exceptionType,
+        user_Name,
+        device_type)
+        values
+        <foreach collection="deviceRecordExceptionDatas" item="data" open="(" separator="),(" close=")">
+            #{data.idCardType},
+            #{data.idCardNumber},
+            #{data.projectCode},
+            #{data.organizationCode},
+            #{data.deviceSn},
+            #{data.teamSysNo},
+            #{data.time},
+            1,
+            #{data.photo},
+            3,
+            now(),
+            1,
+            2,
+            #{data.person.workerName} ,
+            #{data.deviceType}
+        </foreach>
+    </insert>
+</mapper>

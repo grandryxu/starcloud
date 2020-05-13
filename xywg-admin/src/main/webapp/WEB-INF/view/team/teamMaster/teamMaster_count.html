@@ -1,0 +1,67 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>班组统计</h5>
+            </div>
+     <!--       <div class="col-sm-4">
+                <div class="fn-div">
+                    <label class="fn-label">评分项</label>
+                    <input type="text" class="fn-input" id="condition" placeholder="评分项"/>
+                </div>
+            </div>
+            <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search()"/>-->
+
+<!--
+            <div class="col-sm-4">
+                <div class="fn-div">
+                    <label class="fn-label">名称</label>
+                    <input type="text" class="fn-input" id="condition" placeholder="项目名称"/>
+                </div>
+            </div>
+            <#button name="搜索" icon="fa-search" clickFun="ProjectMaster.search()"/>-->
+          <!--  <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>-->
+            <div class="ibox-content">
+
+                <div class="row row-lg">
+
+
+                    <div  id="ProjectMasterTableToolbar" role="group">
+
+                        <select  style='width:150px;' id="projectCode" name="项目"  underline="true"  must="${isEnterprise}"
+                        onchange="WorkerMasterInfoDlg.projectCodeChange()"  >
+                        <option value="">请选择项目</option>
+                        @for(i in project){
+                        @if(i.projectCode == projectCode){
+                        <option value="${i.projectCode}" selected>${i.projectName}</option>
+                        @}else{
+                        <option value="${i.projectCode}">${i.projectName}</option>
+                        @}
+                        @}
+                    </select>
+
+                        <#button name="添加" icon="fa-plus" clickFun="ProjectMaster.openAddProjectMaster()"/>
+
+
+                      <!-- <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openProjectMasterDetail()" space="true"/>-->
+                        <#button name="修改" icon="fa-edit" clickFun="ProjectMaster.openTeamMasterDetail()" space="true"/>
+
+                        <#button name="删除" icon="fa-remove" clickFun="ProjectMaster.delete()" space="true"/>
+
+                    </div>
+
+                    <#table id="ProjectMasterTable"/>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<!--<script src="${ctxPath}/static/modular/longxin/evaluate/evaluate.js"></script>-->
+<script src="${ctxPath}/static/modular/team/teamMaster/teamMaster_count.js"></script>
+
+@}

@@ -1,0 +1,58 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>项目信息管理</h5>
+            </div>
+            <input hidden id="tenderId" value="${tenderId}">
+            <div class="ibox-content">
+
+                <div class="col-sm-4">
+                    <div class="fn-div">
+                        <label class="fn-label">名称</label>
+                        <input type="text" class="fn-input" id="condition" placeholder="公司名称"/>
+                        <input type="text" class="fn-input" id="searchYb" placeholder="公司名称"/>
+                    </div>
+                </div>
+                <div>
+                <#button  id="search" name="搜索" icon="fa-search" clickFun="ProjectMaster.search()"/>
+                <#button  id="searchYb1" name="搜索" icon="fa-search" clickFun="ProjectMasterYb.searchYb()"/>
+                </div>
+                <div class="row row-lg">
+
+                    <div  id="ProjectCompanyTableToolbar" role="group">
+                        <nobr>
+                        <#button id="commit" name="确认邀标勾选企业" icon="fa-plus" clickFun="ProjectMaster.commitYbCompany()" space="true"/>  &ensp;&ensp;&ensp;&ensp;
+                        <#button id="commitAll" name="邀标所有未被邀请的企业" icon="fa-remove" clickFun="ProjectMaster.commitYbCompanyALL()" space="true"/>  &nbsp;&nbsp;&nbsp;&nbsp;
+         <!--               <#button id="selectCompany" name="查看未邀标企业" icon="fa-edit" clickFun="ProjectMaster.selectCompanyAndNotYb()" space="true"/>
+                        <#button id="selectCompanyAndYb" name="查看已邀标企业" icon="fa-plus" clickFun="ProjectMasterYb.selectCompanyAndYb()" space="true"/>-->
+
+                       选择：<select id="selectValue"  name="选择" onchange="companyList()" underline="true">
+                        <option value="0" >查看未邀标企业</option>
+                        <option value="1" >查看已邀标企业</option>
+                        </select>
+                        </nobr>
+
+                    </div>
+
+                    <div  id="ProjectCompanyTableDiv">
+                        <#table id="ProjectCompanyTable"/>
+                    </div>
+
+                    <div  id="ProjectCompanyTableYbDiv">
+                    <#table id="ProjectCompanyTableYb"/>
+                    </div>
+
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/js/common/onEnter.js"></script>
+<script src="${ctxPath}/static/modular/longxin/projectMaster/yb.js"></script>
+@}

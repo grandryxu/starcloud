@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.led.dao.UserProjectForLedMapper">
+
+	<!-- 根据项目名称，查询该项目目前的进场人数 -->
+	<select id="getPrjectUserCount" resultType="int">
+		SELECT
+		COUNT(t.id)
+		FROM
+		(SELECT
+		pw.id
+		FROM
+		buss_project_worker AS pw
+		WHERE
+		pw.is_del = 0 AND
+		pw.join_status = 2 AND
+		pw.project_code = (SELECT p.project_code from
+		buss_project_master AS p WHERE p.is_del
+		= 0 AND
+		p.project_name =
+		#{projectName} LIMIT 1
+		)
+		GROUP BY
+		pw.project_code,
+		pw.id_card_number) AS t
+	</select>
+
+	<!-- 存储上传人员信息 -->
+	<insert id="uploadUser">
+		INSERT INTO `led_upload`
+		( `work_id`, `create_date`,
+		`memo` )
+		VALUES
+		( #{workId}, NOW(), #{memo} );
+	</insert>
+
+	<!-- 获取单个人员信息 -->
+	<select id="getUserInfoByIdToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.face AS photo,
+		<!-- w.id_image AS photo, -->
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+		AND pw.project_code = (SELECT project_code
+		FROM buss_project_master WHERE
+		project_name =#{projectName} AND
+		is_del=0 ORDER BY id
+		DESC LIMIT 1 )
+		AND pw.id_card_number = #{idCard}
+		LIMIT 1
+	</select>
+
+	<!-- 根据项目名称，查询出该项目已进场的人员信息 -->
+	<select id="queryUserInfoByNameToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.face AS photo,
+		<!-- w.id_image AS photo, -->
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+		AND pw.project_code = (SELECT project_code
+		FROM buss_project_master WHERE
+		project_name =#{projectName} AND
+		is_del=0 ORDER BY id
+		DESC LIMIT 1 )
+		AND pw.join_status = 2
+
+	</select>
+
+	<!-- 批量查找人员信息 -->
+	<select id="queryUserInfoToLed" resultType="com.xywg.admin.modular.led.model.UserProjectForLed">
+		SELECT
+		DATE_FORMAT(pw.create_date,'%Y-%m-%d %H:%i:%S') AS createDate,
+		w.worker_name AS userName,
+		w.id_card_number AS userId,
+		w.cell_phone AS mobile,
+		pw.work_type_code AS
+		workKind,
+		w.id_image AS
+		photo,
+		t.team_name AS classNo,
+		p.project_name AS
+		ProjectName,
+		p.id AS
+		projectId,
+		d.`name` AS workKindName
+		FROM
+		buss_project_worker AS pw
+		LEFT
+		JOIN buss_worker_master AS w ON
+		pw.id_card_type = w.id_card_type AND
+		pw.id_card_number =
+		w.id_card_number AND w.is_del = 0
+		LEFT JOIN
+		buss_team_master AS t ON
+		pw.team_sys_no = t.team_sys_no AND
+		t.is_del = 0
+		LEFT JOIN
+		buss_project_master AS p ON pw.project_code = p.project_code
+		AND
+		p.is_del = 0
+		LEFT JOIN sys_dict AS d ON pw.work_type_code = d.num
+		AND
+		d.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		where
+		pw.is_del =
+		0
+		AND pw.id_card_type = 1
+	</select>
+
+	<!-- 统计今日考勤 -->
+	<select id="getCountByProjectNameToLed" resultType="int">
+		SELECT
+		count( t.id_card_number )
+		FROM
+		(
+		SELECT
+		r.id_card_number,
+		r.id_card_type
+
+		FROM
+		buss_device_record AS r
+		WHERE
+		r.project_code = ( SELECT project_code FROM buss_project_master WHERE
+		is_del = 0 AND project_name = #{projectName} ORDER BY id DESC LIMIT 1 )
+		AND
+		LEFT ( time, 10 ) = curdate( )
+		AND is_valid = 1
+		GROUP BY
+		id_card_number,
+		id_card_type
+		) t
+	</select>
+
+	<select id="getRecordByProjectNameToLed" resultType="com.xywg.admin.modular.led.model.Record">
+		SELECT
+		COUNT(1) AS count,
+		work_type_code AS workKind,
+		`name` AS workKindName
+		FROM(
+		SELECT
+		r.id_card_number,
+		r.id_card_type,
+		w.work_type_code,
+		sd.`name`
+		FROM
+		buss_device_record AS r
+		LEFT JOIN buss_worker_master AS w ON r.id_card_type = w.id_card_type AND
+		r.id_card_number = w.id_card_number AND w.is_del = 0
+		LEFT JOIN sys_dict AS sd ON w.work_type_code = sd.num AND sd.pid = (SELECT
+		sys_dict.id
+		FROM
+		sys_dict
+		WHERE
+		sys_dict.pid = 0 AND
+		sys_dict.`name` = '工种字典数据')
+		WHERE
+		r.project_code = ( SELECT project_code FROM buss_project_master WHERE is_del = 0 AND
+		project_name = #{projectName} ORDER BY id DESC LIMIT 1 ) AND
+		LEFT ( time, 10 ) = curdate( ) AND
+		r.is_valid = 1
+		GROUP BY
+		r.id_card_number,
+		r.id_card_type
+		) AS d
+		GROUP BY
+		d.work_type_code
+	</select>
+</mapper>

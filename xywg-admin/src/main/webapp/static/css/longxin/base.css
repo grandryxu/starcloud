@@ -1,0 +1,45 @@
+.page__width {
+    width: 1200px;
+    margin: 0 auto;
+}
+.index__header {
+    padding-left: 30px;
+}
+.bg__white {
+    background: #ffffff;
+    padding: 4px;
+}
+.header__white {
+    background: #2a82e4;
+}
+.page__header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    height: 80px;
+}
+
+.header__left {
+    font-size: 30px;
+    font-weight: normal;
+    font-stretch: normal;
+    line-height: 30px;
+    letter-spacing: -1px;
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+.header__left>img {
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+}
+.flex {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}

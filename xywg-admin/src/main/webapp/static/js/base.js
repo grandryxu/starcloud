@@ -1,0 +1,1 @@
+var baseUrl = 'https://www.easy-mock.com/mock/5d1ff3fc74f2e2709fc1c7a9/longxin'

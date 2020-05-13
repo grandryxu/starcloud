@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.system.dao.TeamMemberMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.system.model.TeamMember">
+        <id column="id" property="id" />
+        <result column="team_sys_no" property="teamSysNo" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="team_worker_type" property="teamWorkerType" />
+        <result column="is_del" property="isDel" />
+        <result column="is_sign" property="isSign" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, team_sys_no AS teamSysNo, id_card_type AS idCardType, id_card_number AS idCardNumber, team_worker_type AS teamWorkerType, is_del AS isDel, is_sign AS isSign
+    </sql>
+
+    <update id="deleteUserInProjectTeam">
+        UPDATE  buss_team_member
+        SET is_del = 1
+        WHERE team_sys_no = (select team_sys_no 
+		  						from buss_project_worker 
+								  where project_code = #{projectCode} 
+								  	AND organization_code = #{organizationCode}
+								  	and id_card_type = 1 
+									and id_card_number = #{idCardNumber} 
+									and is_del = 0
+								)
+        AND id_card_type = 1 AND id_card_number = #{idCardNumber}
+    </update>
+    
+    <update id="updateByOldTeamSysNo"  >
+		update buss_team_member m 
+  		   SET m.team_sys_no = #{t.teamSysNo}, 
+               m.team_worker_type = #{t.teamWorkerType}
+         WHERE m.team_sys_no = #{oldTeamSysNo} 
+           AND m.id_card_number = #{t.idCardNumber}
+	</update>
+	
+	<delete id="batchDeleteByPwId" parameterType="java.util.List">
+		DELETE a FROM  buss_team_member as  a
+            WHERE (a.team_sys_no,a.id_card_number) IN 
+			(SELECT p.team_sys_no,p.id_card_number FROM buss_project_worker as  p 
+    		WHERE p.id 	
+    		<foreach collection="list" item="id" open="in (" close=")" separator="," >
+    	 		#{id}
+    	 	</foreach>
+    	 	)
+	</delete>
+	
+	<!-- 查询人员是否加入了班组 -->
+	<select id="queryCountByIdCardNumberAndTeamSysNo" resultType="int">
+		   SELECT COUNT(1) FROM buss_team_member r 
+   			WHERE r.id_card_type = #{t.idCardType} AND r.id_card_number = #{t.idCardNumber} AND r.is_del = 0 AND r.team_sys_no = #{t.teamSysNo}
+    
+	</select>
+
+    <select id="selectIdByTeamSysNoAndIdCard" resultType="java.util.Map">
+        select count(id) AS num,id  from  buss_team_member  where team_sys_no=#{teamSysNo} and  id_card_number=#{idCardNumber}
+
+
+    </select>
+
+</mapper>

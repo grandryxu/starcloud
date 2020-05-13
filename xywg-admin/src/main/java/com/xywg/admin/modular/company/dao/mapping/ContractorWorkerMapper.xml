@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.admin.modular.company.dao.ContractorWorkerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.xywg.admin.modular.company.model.ContractorWorker">
+        <id column="id" property="id" />
+        <result column="id_card_type" property="idCardType" />
+        <result column="id_card_number" property="idCardNumber" />
+        <result column="work_name" property="workName" />
+        <result column="organization_code" property="organizationCode" />
+        <result column="contractor_name" property="contractorName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, id_card_type AS idCardType, id_card_number AS idCardNumber, work_name AS workName, organization_code AS organizationCode, contractor_name AS contractorName
+    </sql>
+
+    <!-- 根据证件类型和证件号查询工人 yuanyang -->
+    <select id="getByIdCard" resultType="com.xywg.admin.modular.company.model.ContractorWorker">
+        select
+        id,is_del as isDel from buss_contractor_worker
+        where
+        id_card_type=#{idCardType}
+        and
+        id_card_number=#{idCardNumber}
+        and organization_code=#{organizationCode}
+    </select>
+    
+    <!-- 根据证件类型和证件号查询某人是否在某公司里 -->
+    <select id="getByIdCardAndOrganization" resultType="com.xywg.admin.modular.company.model.ContractorWorker">
+     select
+        id from buss_contractor_worker
+        where
+        id_card_type=#{idCardType}
+        and
+        id_card_number=#{idCardNumber}
+        and organization_code = #{organizationCode}
+        and is_del = 0
+        LIMIT 1
+    </select>
+
+	<!-- 获取人员年龄分布 -->
+    <select id="getAgeRange" resultType="com.xywg.admin.modular.company.model.dto.ContractorWorkerDto">
+    	select ageRange,count(ageRange) count
+    	from
+    	(select wm.id_card_type,wm.id_card_number,
+			 (case when (CURDATE()-wm.birthday)/10000 <![CDATA[<]]> 18 then '18岁以下'
+			 when (CURDATE()-wm.birthday)/10000 <![CDATA[<]]> 30 then '18-30岁'
+			 when (CURDATE()-wm.birthday)/10000 <![CDATA[<]]> 40 then '30-40岁'
+			 when (CURDATE()-wm.birthday)/10000 <![CDATA[<]]> 50 then '40-50岁'
+			 when (CURDATE()-wm.birthday)/10000 <![CDATA[<]]> 60 then '50-60岁'
+			 else '60岁以上' end) as ageRange
+    	from
+	    	(select cw.id_card_number,cw.id_card_type
+	    	from buss_contractor_worker cw
+	    	where cw.organization_code in
+	    	<foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	    	group by cw.id_card_number,cw.id_card_type) t
+	    left join buss_worker_master wm on t.id_card_type = wm.id_card_type and t.id_card_number = wm.id_card_number) d
+	    group by d.ageRange
+    </select>
+    
+    <!-- 获取人员籍贯分布 -->
+    <select id="getPlaceCodeRange" resultType="com.xywg.admin.modular.company.model.dto.ContractorWorkerDto">
+    	select sysd.name as placeCode,count(sysd.name) count
+    	from
+    	(select wm.id_card_type,wm.id_card_number,left(wm.birth_place_code,2) pcode
+    	from
+	    	(select cw.id_card_number,cw.id_card_type
+	    	from buss_contractor_worker cw
+	    	where cw.organization_code in
+	    	<foreach collection="list" open="(" close=")" separator="," index="index" item="item">
+	            #{item}
+	        </foreach>
+	    	group by cw.id_card_number,cw.id_card_type) t
+	    left join buss_worker_master wm on t.id_card_type = wm.id_card_type and t.id_card_number = wm.id_card_number) d
+	    left join (select sdt.num,sdt.name from sys_dict sdt where pid =(select sd.id from sys_dict sd where name='身份证省份代码')) sysd
+	    	on sysd.num = d.pcode
+	    group by sysd.name
+    </select>
+    <select id="selectIdByIdCardAndOrgCode" resultType="java.util.Map">
+        select id ,count(id) AS num from buss_contractor_worker  where id_card_number=#{idCardNumber} and organization_code =#{organizationCode}
+    </select>
+
+
+    <update id="updateIsDel">
+        update buss_contractor_worker set
+        is_del=0
+        where
+        id = #{id}
+    </update>
+</mapper>

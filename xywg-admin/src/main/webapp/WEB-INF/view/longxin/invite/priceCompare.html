@@ -1,0 +1,26 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>竞标价格对比</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg" id="container-5zxcADS">
+                    <div class="row echart-row">
+                        <div class="col-sm-12">
+                            <div id="priceCompareEChartsDiv" style="width: 100%;height:500px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts-en.common.js"></script>
+<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.js"></script>
+<script src="${ctxPath}/static/modular/longxin/invite/priceCompare.js"></script>
+<script>
+    var tenderId = ${tenderId};
+</script>
+@}

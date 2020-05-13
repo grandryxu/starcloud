@@ -1,0 +1,102 @@
+@layout("/common/_container.html"){
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>考勤异常列表管理</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <form id="searchForm">
+                                <div class="clear-float">
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">项目</label>
+                                            <select class="fn-input search-chosen" id="projectCode" name="项目">
+                                                <option value="">请选择</option>
+                                                @for(item in project){
+                                                <option value="${item.projectCode}">${item.projectName}</option>
+                                                @}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="fn-div">
+                                            <label class="fn-label">班组</label>
+                                            <select class="fn-input search-chosen" id="team" name="班组">
+                                                <option value="">请选择班组</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-condition">
+                                        <#button name="搜索" icon="fa-search" clickFun="DeviceRecordExceptionData.search()"/>
+                                        <#reset name="重置" icon="fa-mail-forward" formId="searchForm"/>
+                                        <span class="fn-icon fn-up">收起<i class="fa fa-angle-up"></i></span>
+                                        <span class="fn-icon fn-down">展开<i class="fa fa-angle-down"></i></span>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">查询</label>
+                                            <input type="text" class="fn-input" id="key" placeholder="姓名/证件号"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">异常类型</label>
+                                            <select class="fn-input" id="exceptionType" name="审核状态">
+                                                <option value="">请选择</option>
+                                                <option value="1">注册人不在项目中</option>
+                                                <option value="2">考勤人不在项目中</option>
+                                                <option value="3">禁用时考勤数据</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4 fn-need-hide">
+                                        <div class="fn-div">
+                                            <label class="fn-label">考勤类型</label>
+                                            <select class="fn-input" id="deviceType" name="考勤类型">
+                                                <option value="">请选择</option>
+                                                <option value="3">上班</option>
+                                                <option value="4">下班</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="fn-buttons clear-float fn-need-hide">
+                                    <div class="col-sm-4">
+
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div  id="DeviceRecordExceptionDataTableToolbar" role="group">
+                            <#button name="处理" icon="fa-edit" clickFun="DeviceRecordExceptionData.exceptionDeviceAction()"/>
+                            <#button name="删除" icon="fa-remove" clickFun="DeviceRecordExceptionData.delete()" space="true"/>
+                            @if(shiro.hasPermission("/deviceRecordExceptionData/add")){
+                            <#button name="添加" icon="fa-plus" clickFun="DeviceRecordExceptionData.openAddDeviceRecordExceptionData()"/>
+                            @}
+                            @if(shiro.hasPermission("/deviceRecordExceptionData/update")){
+                            <#button name="修改" icon="fa-edit" clickFun="DeviceRecordExceptionData.openDeviceRecordExceptionDataDetail()" space="true"/>
+                            @}
+                            @if(shiro.hasPermission("/deviceRecordExceptionData/delete")){
+                            <#button name="删除" icon="fa-remove" clickFun="DeviceRecordExceptionData.delete()" space="true"/>
+                            @}
+                        </div>
+                        <#table id="DeviceRecordExceptionDataTable"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${ctxPath}/static/js/common/searchShowHide.js"></script>
+<script src="${ctxPath}/static/modular/device/deviceRecordExceptionData/deviceRecordExceptionData.js"></script>
+@}
