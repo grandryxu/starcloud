@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
+    <RootNamespace>XMX.WMS</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Migrations\20180726102624_Upgrade_ABP_380.cs" />
+    <Compile Remove="Migrations\20180927062408_test.cs" />
+    <Compile Remove="Migrations\20190111071724_Upgraded_To_Abp_v4_1_0.cs" />
+    <Compile Remove="Migrations\20200116010328_usertest.cs" />
+    <Compile Remove="Migrations\20200116010328_usertest.Designer.cs" />
+    <Compile Remove="Migrations\20200118071841_diyModel3.cs" />
+    <Compile Remove="Migrations\20200118071841_diyModel3.Designer.cs" />
+    <Compile Remove="Migrations\20200118072157_diyModel3.cs" />
+    <Compile Remove="Migrations\20200118072157_diyModel3.Designer.cs" />
+    <Compile Remove="Migrations\20200311010546_taskimp.cs" />
+    <Compile Remove="Migrations\20200311010546_taskimp.Designer.cs" />
+    <Compile Remove="Migrations\20200312065222_taskinfo.cs" />
+    <Compile Remove="Migrations\20200312065222_taskinfo.Designer.cs" />
+    <Compile Remove="Migrations\20200312070346_taskinfo.cs" />
+    <Compile Remove="Migrations\20200312070346_taskinfo.Designer.cs" />
+    <Compile Remove="Migrations\20200312070934_taskinfo.cs" />
+    <Compile Remove="Migrations\20200312070934_taskinfo.Designer.cs" />
+    <Compile Remove="Migrations\20200312072053_taskinfo.cs" />
+    <Compile Remove="Migrations\20200312072053_taskinfo.Designer.cs" />
+    <Compile Remove="Migrations\20200312075309_taskinfo2.cs" />
+    <Compile Remove="Migrations\20200312075309_taskinfo2.Designer.cs" />
+    <Compile Remove="Migrations\20200312075607_taskinfo2.cs" />
+    <Compile Remove="Migrations\20200312075607_taskinfo2.Designer.cs" />
+    <Compile Remove="Migrations\20200326072712_editUnitAndOther.cs" />
+    <Compile Remove="Migrations\20200326072712_editUnitAndOther.Designer.cs" />
+    <Compile Remove="Migrations\20200427015926_ccalarm.cs" />
+    <Compile Remove="Migrations\20200427015926_ccalarm.Designer.cs" />
+    <Compile Remove="Migrations\20200427020507_ccalarm.cs" />
+    <Compile Remove="Migrations\20200427020507_ccalarm.Designer.cs" />
+    <Compile Remove="Migrations\20200427021115_ccalarms.cs" />
+    <Compile Remove="Migrations\20200427021115_ccalarms.Designer.cs" />
+    <Compile Remove="Migrations\20200507022554_loginfos.cs" />
+    <Compile Remove="Migrations\20200507022554_loginfos.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.60" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XMX.WMS.Core\XMX.WMS.Core.csproj" />
+  </ItemGroup>
+</Project>
