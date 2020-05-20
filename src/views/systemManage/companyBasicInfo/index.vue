@@ -56,7 +56,7 @@
                   <el-input class="iot-w240" v-model="ruleForm.addressDetail" placeholder="详细地址" clearable maxlength="30"></el-input>
                 </el-form-item>
                 <el-form-item label="备注" label-width="100px" prop="remark">
-                  <el-input class="iot-w240" v-model="ruleForm.remark" type="textarea" :rows="5" show-word-limit :maxlength="200" placeholder="请输入备注"></el-input>
+                  <el-input class="iot-w240" v-model="ruleForm.remark" type="textarea" :rows="5" show-word-limit :maxlength="200"></el-input>
                 </el-form-item>
                 <el-form-item label-width="100px">
                   <el-button size="small" type="primary" @click="click_submit">保 存</el-button>
@@ -178,8 +178,8 @@ export default {
     this.GetCompanyTreeList();
     this.GetSelectedParentCompanyList();
     this.divisions = Divisions;
-     this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,this.lang,this.$refs.page);
-      this.$utils.traverseFormValidator(this.rules,this.lang)
+    this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,this.lang,this.$refs.page);
+    this.$utils.traverseFormValidator(this.rules,this.lang)
   },
   watch: {
     filterText(val) {

@@ -97,6 +97,11 @@ class DropBox{
         let res = await http.get("/api/services/app/InventoryInfoService/GetAll");
         return res;
     }
+    //获取公司树形数据
+    static async getCompanyTreeList (params){
+        let res = await http.get("/api/services/app/CompanyInfo/GetCompanyTree", {params});
+        return res;
+    }
    
     
 }

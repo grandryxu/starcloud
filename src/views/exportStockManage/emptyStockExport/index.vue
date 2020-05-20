@@ -120,7 +120,7 @@ export default {
     dateTimeTransform(row) {
       let time = row.creationTime;
       //return this.$moment(time).format('YYYY-MM-DD hh:mm:ss')
-      return this.$utils.datetransSecond(time)
+      return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
     },
     //根据当前用户权限标识初始化按钮状态
     btnInit() {

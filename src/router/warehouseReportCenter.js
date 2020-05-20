@@ -70,6 +70,18 @@ export default [
               next()
             }
           },
+          {
+            path: "/warehouseReport/customReport",
+            component: () => import("@/views/warehouseReportCenter/CustomReport/index.vue"),
+            name: "warehouseReport-customReport",
+            meta: {
+              title: "customReport"
+            },
+            // beforeEnter: (to,from,next) => {
+            //   Store.commit('filterEnterTargetPermissions','WarehouseReport.InventoryReportForm')
+            //   next()
+            // }
+          },
         ]
       }
 ]

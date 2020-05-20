@@ -5,11 +5,11 @@
         <el-form inline label-width="100px" :model="searchForm">
           <div class="iot-form-row">
             <el-form-item label="仓库">
-              <el-select class="iot-w200" v-model="searchForm.row_warehouse_id" placeholder="请选择" clearable>
+              <el-select class="iot-w200" v-model="searchForm.row_warehouse_id">
                 <el-option v-for="item in warehouseList" :key="item.id" :label="item.warehouse_name" :value="item.id"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="类型">
+            <el-form-item label="初始化类型">
               <el-select class="iot-w200" v-model="searchForm.row_type" placeholder="请选择" clearable>
                 <el-option v-for="item in row_type_list" :key="item.id" :label="item.row_type_name" :value="item.id"></el-option>
               </el-select>
@@ -35,7 +35,8 @@
     <div class="iot-table">
       <el-table id="out-table" ref="print" :data="tableData" stripe style="width: 100%" border @row-dblclick="click_edit" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
+        <!-- <el-table-column align="center" type="index" label="序号" width="50"></el-table-column> -->
+        <el-table-column align="center" prop="row_order" label="排序" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="row_type" label="类型" min-width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="scope.row.row_type === 1">库位</span>
@@ -43,25 +44,30 @@
           </template>
         </el-table-column>
         <el-table-column align="center" prop="row_name" label="名称" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="row_no" label="库位排" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="row_tunnel_no" label="巷道排" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="row_inout_type" label="内外侧标识" min-width="100" show-overflow-tooltip></el-table-column>
+        <!-- <el-table-column align="center" prop="row_no" label="库位巷道排" min-width="100" show-overflow-tooltip></el-table-column> -->
+        <el-table-column align="center" prop="row_inout_type" label="内外侧标识" min-width="100" show-overflow-tooltip>
+           <template slot-scope="scope">
+            <span v-if="scope.row.row_inout_type === 0"></span>
+            <span v-else-if="scope.row.row_inout_type === 1">内测</span>
+            <span v-else-if="scope.row.row_inout_type === 2">外测</span>
+            <span v-else-if="scope.row.row_inout_type === 3">单排</span>
+          </template>
+        </el-table-column>
         <el-table-column align="center" prop="row.row_name" label="对应外侧名" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="warehouse.warehouse_name" label="所在仓库" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="row_start_layer" label="起始层" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="row_end_layer" label="终止层" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="row_order" label="排序" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="row_start_column" label="起始列" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="row_end_column" label="终止列" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="row_is_enable" label="启用状态" min-width="100" show-overflow-tooltip>
+        <el-table-column align="center" prop="row_status" label="状态" min-width="100" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="scope.row.row_is_enable === 1">启用</span>
-            <span v-else-if="scope.row.row_is_enable === 2">禁用</span>
+            <span v-if="scope.row.row_status === 1">未初始化</span>
+            <span v-else-if="scope.row.row_status === 2">已初始化</span>
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <div class="iot-pagination">
+     <div class="iot-pagination">
       <el-pagination background layout="prev, pager, next" :total="total" :page-size="pageSize" :current-page.sync="currentPage" @current-change="handleCurrentChange"></el-pagination>
     </div>
     <el-dialog class="iot-dialog" :title="dialogTitle" :visible.sync="dialogVisible" width="824px" append-to-body>
@@ -73,7 +79,7 @@
               <el-option v-for="item in warehouseList" :key="item.id" :label="item.warehouse_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="类型" label-width="100px" prop="row_type">
+          <el-form-item label="初始化类型" label-width="100px" prop="row_type">
             <el-select class="iot-w200" v-model="ruleForm.row_type" placeholder="请选择" @change="searchRowByType">
               <el-option v-for="item in row_type_list" :key="item.id" :label="item.row_type_name" :value="item.id"></el-option>
             </el-select>
@@ -89,7 +95,7 @@
         </div>
         <div class="iot-form-row">
           <el-form-item label="内外侧标识" label-width="100px" prop="row_inout_type">
-            <el-select class="iot-w200" v-model="ruleForm.row_inout_type" placeholder="请选择" @change="searchOutRow" :disabled="ruleForm.row_type===1?false:true">
+            <el-select class="iot-w200" v-model="ruleForm.row_inout_type" placeholder="请选择" @mouseover="searchOutRow" @change="searchOutRow" :disabled="ruleForm.row_type===1?false:true">
               <el-option v-for="item in inout_type_list" :key="item.id" :label="item.type_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
@@ -143,7 +149,6 @@ import {
   deleteApi,
   getRowInfoByRowNo,
   getRowInfoByType,
-  getAllRowInfoQuery,
   generateSlotByStock,
   getRowOrder
 } from "./api";
@@ -154,13 +159,12 @@ export default {
     singlePictureUpload
   },
   props: ["lang"],
-
-        watch: {
-            lang: function(lang) {
-            this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,lang,this.$refs.page);
-            this.$utils.traverseFormValidator(this.rules,this.lang)
-            }
-        },
+  watch: {
+      lang: function(lang) {
+      this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,lang,this.$refs.page);
+      this.$utils.traverseFormValidator(this.rules,this.lang)
+      }
+  },
   data() {
     return {
       slot_closed_statusList: [
@@ -310,9 +314,8 @@ export default {
     };
   },
   mounted() {
-    this.btnInit();
-    this.GetAll();
     this.GetWarehouseList();
+    this.btnInit();
   },
   methods: {
     //根据当前用户权限标识初始化按钮状态
@@ -364,7 +367,6 @@ export default {
       this.currentPage = val;
       this.GetAll();
     },
-
     //排序输入框验证去重
     async search_row_order(e) {
       let params = {};
@@ -395,6 +397,9 @@ export default {
       if (data) {
         this.warehouseList = data || [];
       }
+      this.searchForm.row_warehouse_id = this.warehouseList[0].id;
+      //查询
+      this.GetAll();
     },
     //列表
     async GetAll() {
@@ -404,7 +409,7 @@ export default {
         ...this.searchForm
       };
       // let data = await getListApi(params);
-      let data = await getAllRowInfoQuery(params);
+      let data = await getListApi(params);
       if (data) {
         this.tableData = data.items || [];
         this.total = data.totalCount || 0;
@@ -470,20 +475,23 @@ export default {
         //this.text_deleteRow  全局定义的提示  在textConfig.js中
         this.$message.error(this.text_deleteRow);
       } else {
-        let row = this.multipleSelection[0];
-        this.Delete(row);
+        this.Delete(this.multipleSelection[0]);
       }
     },
     click_edit(row) {
+      if (row.row_status === 2) {
+        let mes="当前选项已经生成"+(row.row_type==1?"库位":"巷道");
+        this.$message(mes);
+        return;
+      }
       this.dialogTitle = "编辑";
       this.resetForm();
       this.Get(row);
     },
     click_search() {
-      this.currentPage = 1;
+      //this.currentPage = 1;
       this.GetAll();
     },
-
     //生成库位
     generateSlot() {
       if (this.multipleSelection.length == 1) {
@@ -493,9 +501,8 @@ export default {
         this.$message.error(this.text_selectOne);
       }
     },
-
     async autoGenerate(row) {
-      if (row.row_is_enable === 2) {
+      if (row.row_status === 2) {
         let mes="当前选项已经生成"+(row.row_type==1?"库位":"巷道");
         this.$message(mes);
         return;
@@ -534,10 +541,9 @@ export default {
     },
     //获取外侧标识（当前排是内测时候才需要）
     async searchOutRow() {
-      let params = {
-        ...this.ruleForm
-      };
-      let res = await getRowInfoByRowNo(params);
+      if(this.ruleForm.row_inout_type != 1)
+        return false;
+      let res = await getRowInfoByRowNo({warehouse_id:this.ruleForm.row_warehouse_id});
       if (res) {
         this.row_info_list = res;
       }
@@ -565,6 +571,11 @@ export default {
     },
     //根据主键删除
     Delete(row) {
+      if (row.row_status === 2) {
+        let mes="当前选项已经生成"+(row.row_type==1?"库位":"巷道");
+        this.$message(mes);
+        return;
+      }
       const h = this.$createElement;
       this.$msgbox({
         title: "提示",
@@ -631,6 +642,8 @@ export default {
       };
       let res = await getOneApi(params);
       this.ruleForm = res;
+      if(this.ruleForm.row_inout_type == 1)
+        this.searchOutRow();
     },
     //导出表格
     exportExcel() {

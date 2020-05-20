@@ -71,6 +71,7 @@
 					<el-form-item label="备注" label-width="100px" prop="platform_remark">
 						<el-input class="iot-w240" :rows="5" maxlength="200" show-word-limit type="textarea" v-model="ruleForm.platform_remark" placeholder="请输入备注" clearable></el-input>
 					</el-form-item>
+					<companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
 				</div>
 			</el-form>
 			<span slot="footer" class="dialog-footer">
@@ -84,6 +85,8 @@
 <script>
 	import textConfig from '@/mixins/textConfig.js'
 	import singlePictureUpload from "_c/singlePictureUpload"
+	import Utils from '@/utils/index'
+	import Companycontrol from "../../../components/companycontrol";
 	import {
 		getListApi,
 		addApi,
@@ -96,7 +99,8 @@
 		//全局混入提示文字
 		mixins: [textConfig],
 		components: {
-			singlePictureUpload
+			singlePictureUpload,
+			Companycontrol,
 		},
 		props: ["lang"],
 
@@ -127,7 +131,8 @@
 					platform_name:"",
 					platform_warehouse_id:"",
 					platform_remark:"",
-					platform_state:""
+					platform_state:"",
+					platform_company_id:'',
 				},
 				//表单验证规则
 				rules: {
@@ -151,7 +156,9 @@
 						message: "请选择月台状态",
 						trigger: "change"
 					}]
-				}
+				},
+				companyId:'',
+				userId:'',
 			};
 		},
 		mounted() {
@@ -159,7 +166,21 @@
 			this.GetWarehouseAll();
 			this.GetAll(1);
 		},
+		created() {
+			if (Utils.getStorage("userInfo")) {
+				this.ruleForm.platform_company_id = Utils.getStorage("userInfo").data.result.companyId;
+				this.userId = Utils.getStorage("userInfo").data.result.userId;
+				this.companyId = Utils.getStorage("userInfo").data.result.companyId;
+			}
+		},
+
 		methods: {
+			updateCompanyId(val) {
+				if (val)
+					this.ruleForm.platform_company_id = val;
+				else
+					this.ruleForm.platform_company_id = Utils.getStorage("userInfo").data.result.companyId;
+			},
 			//根据当前用户权限标识初始化按钮状态
 			btnInit() {
 				this.$Common.DistributePermission.call(this)
@@ -398,8 +419,10 @@
 					platform_name:row.platform_name,
 					platform_warehouse_id:row.platform_warehouse_id,
 					platform_remark:row.platform_remark,
-					platform_state:row.platform_state
+					platform_state:row.platform_state,
+					platform_company_id:res.platform_company_id,
 				};
+				this.companyId=res.platform_company_id;
 				this.ruleForm = obj;
 			},
 			clickRow(row){

@@ -275,6 +275,7 @@
       :visible.sync="dialogVisible"
       width="824px"
       append-to-body
+      ref="dialog"
     >
       <el-form inline ref="dialogForm" :model="ruleForm" :rules="rules">
         <div class="iot-form-row">
@@ -532,6 +533,7 @@
               show-word-limit
             ></el-input>
           </el-form-item>
+
           <el-form-item label="外部系统ID" label-width="170px" prop="goods_external_id">
             <el-input
               class="iot-w240"
@@ -543,10 +545,16 @@
           </el-form-item>
         </div>
         <div class="iot-form-row">
+
           <el-form-item label="物料图片" label-width="100px" prop="applicableVersion">
-            <singlePictureUpload></singlePictureUpload>
+            <singlePictureUpload ></singlePictureUpload>
           </el-form-item>
+
         </div>
+        <div class="iot-form-row">
+          <companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
+        </div>
+
         <!-- <div class="iot-form-row">
 					<el-form-item label="修改备注" label-width="100px" prop="remark">GetAll
 						<el-input class="iot-w660" v-model="ruleForm.remark" type="textarea" :rows="4" :maxlength="200">
@@ -638,6 +646,7 @@
 <script>
 import textConfig from "@/mixins/textConfig.js";
 import singlePictureUpload from "_c/singlePictureUpload";
+import Companycontrol from "../../../components/companycontrol";
 import {
   getListApi,
   addApi,
@@ -661,7 +670,8 @@ export default {
   mixins: [textConfig],
   components: {
     MyNumberInput,
-    singlePictureUpload
+    singlePictureUpload,
+    Companycontrol,
   },
   props: ["lang"],
   data() {
@@ -715,7 +725,8 @@ export default {
         goods_monitor_id: "",
         goods_warehousing_id: "",
         goods_distribution_id: "",
-        goods_describe: ""
+        goods_describe: "",
+        goods_company_id:'',
       },
       areaOptions: [],
       diaareaOptions: [],
@@ -879,7 +890,8 @@ export default {
       },
       deleteList: [],
       keyDownDel: false,
-      companyId: ""
+      companyId:'',
+      userId:'',
     };
   },
   watch: {
@@ -899,9 +911,9 @@ export default {
     this.getPackList();
     this.getUnitList();
 	  this.GetAll();
-    if (Utils.getStorage("userInfo")) {
+   /* if (Utils.getStorage("userInfo")) {
       this.companyId = Utils.getStorage("userInfo").data.result.companyId;
-    }
+    }*/
 
     var that = this;
     window.document.onkeydown = function(event) {
@@ -914,7 +926,20 @@ export default {
   };
 	
   },
+  created() {
+    if (Utils.getStorage("userInfo")) {
+      this.ruleForm.goods_company_id = Utils.getStorage("userInfo").data.result.companyId;
+      this.userId = Utils.getStorage("userInfo").data.result.userId;
+      this.companyId= Utils.getStorage("userInfo").data.result.companyId;
+    }
+  },
   methods: {
+    updateCompanyId(val) {
+      if (val)
+        this.ruleForm.goods_company_id = val;
+      else
+        this.ruleForm.goods_company_id = Utils.getStorage("userInfo").data.result.companyId;
+    },
     //根据当前用户权限标识初始化按钮状态1
     btnInit() {
       this.$Common.DistributePermission.call(this);
@@ -959,7 +984,9 @@ export default {
       this.dialogVisible = true;
       await this.$nextTick();
       await this.$refs["dialogForm"].resetFields();
-	    this.$utils.traverseDialogDom.call(this.$utils,this.$store.state.currentLang,this.lang,this.$refs.dialogForm);
+      console.log(this.$refs.dialog)
+      this.$utils.traverseDialogDom.call(this.$utils,this.$store.state.currentLang,this.lang,this.$refs.dialogForm);
+      this.dialogTitle=this.$utils.traverDialogHeader(this.dialogTitle,this.lang);
     },
     async resetStrategyForm() {
       this.strategyDialogVisible = true;
@@ -1076,7 +1103,6 @@ export default {
         let params = {
           ...this.ruleForm
         };
-        params.goods_company_id = this.companyId;
         let res = await addApi(params);
         if (res) {
           this.$message({
@@ -1289,7 +1315,6 @@ export default {
         let params = {
           ...this.ruleForm
         };
-        params.goods_company_id = this.companyId;
         let res = await editApi(params);
         if (res) {
           this.$message({
@@ -1332,8 +1357,10 @@ export default {
         goods_monitor_id: res.goods_monitor_id,
         goods_warehousing_id: res.goods_warehousing_id,
         goods_distribution_id: res.goods_distribution_id,
-        goods_describe: res.goods_describe
+        goods_describe: res.goods_describe,
+        goods_company_id: res.goods_company_id,
       };
+      this.companyId=res.goods_company_id;
       this.ruleForm = obj;
     },
     //导出表格

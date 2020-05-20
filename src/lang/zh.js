@@ -2,7 +2,7 @@ const plInput= '请输入';
 const plSelect = '请选择';
 export default {
   lang: {
-    zh: '中文',
+    zh:'中文',
     en:'English',
     ja:'日語'
   },
@@ -101,6 +101,7 @@ export default {
     ImportReportForm: '入库报表',
     ExportReportForm: '出库报表',
     inventoryReportForm: '库存报表',
+    customReport:'自定义报表',
     
     //仓库设备中心
     RGVStateManage: 'RGV状态管理',
@@ -447,7 +448,9 @@ export default {
     detailAddress:'详细地址',
     plInputcompanyName:plInput + '公司名称',
     plInputprincipal:plInput+ '负责人',
-    plInputNote:plInput + '备注'
+    plInputNote:plInput + '备注',
+    Yes:'是',
+    No:'否'
   },
   //部门基础
   departmentBasicInfo:{
@@ -506,7 +509,8 @@ export default {
     plInputName:plInput + '名称',
     plInputSort:plInput + '排序',
     cloumnNum:'排号',
-    plInputCloumnNum:plInput + '排号'
+    plInputCloumnNum:plInput + '排号',
+    row_type:'初始化类型'
   },
   //入库单据管理
   importWarehouseManage:{

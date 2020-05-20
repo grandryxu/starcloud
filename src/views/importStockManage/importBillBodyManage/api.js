@@ -45,3 +45,9 @@ export const deleteListApi = async function(params){
     let res = await http.post("/api/services/app/ImportOrderService/DelteList",params);
     return res;
 }
+//生成立库任务
+export const addMainTaskApi = async function(params){
+    let res = await http.post("/api/services/app/TaskMainInfoService/CreateImportTask",params);
+    //let res = await http.post("/api/services/app/ImportBillheadService/CreateTask",params);
+    return res;
+}

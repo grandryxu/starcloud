@@ -14,7 +14,7 @@ export default [
             path: "/task/maintask",          
             component: () => import("@/views/taskManage/mainTask/index.vue"),
             name: "task-maintask",
-            meta: {
+            meta: {//立库任务管理
               title: "MainTaskManage"
             },
             beforeEnter: (to,from,next) => {
@@ -26,7 +26,7 @@ export default [
             path: "/task/historytask",          
             component: () => import("@/views/taskManage/historytask/index.vue"),
             name: "task-taskManage",
-            meta: {
+            meta: {//立库历史任务
               title: "MainHistorytask"
             },
             beforeEnter: (to,from,next) => {
@@ -38,7 +38,7 @@ export default [
             path: "/task/flatBankTask",          
             component: () => import("@/views/taskManage/flatBankTask/index.vue"),
             name: "task-flatBankTask",
-            meta: {
+            meta: {//平库任务管理
               title: "FlatBankTask"
             },
             beforeEnter: (to,from,next) => {
@@ -50,7 +50,7 @@ export default [
             path: "/task/pickingTask",          
             component: () => import("@/views/taskManage/pickingTask/index.vue"),
             name: "task-pickingTask",
-            meta: {
+            meta: {//拣选任务管理
               title: "PickingTask"
             },
             beforeEnter: (to,from,next) => {
@@ -62,7 +62,7 @@ export default [
             path: "/task/AGVTask",          
             component: () => import("@/views/taskManage/AGVTask/index.vue"),
             name: "task-AGVTask",
-            meta: {
+            meta: {//AGV任务管理
               title: "AGVTask"
             },
             beforeEnter: (to,from,next) => {
@@ -74,7 +74,7 @@ export default [
             path: "/task/RGVTask",          
             component: () => import("@/views/taskManage/RGVTask/index.vue"),
             name: "task-RGVTask",
-            meta: {
+            meta: {//RGV任务管理
               title: "RGVTask"
             },
             beforeEnter: (to,from,next) => {

@@ -29,7 +29,7 @@ export const deleteApi = async function(params){
 }
 
 //查询排位
-export const  getRowInfoByRowNo =async function(params){
+export const  getRowInfoByRowNo = async function(params){
     let res = await http.get("/api/services/app/RowInfoService/GetRowInfoByRowNo",{params});
     return res;
 }
@@ -37,12 +37,6 @@ export const  getRowInfoByRowNo =async function(params){
 //根据类型查询已有排号
 export const getRowInfoByType = async function(params){
    let res= await http.get("/api/services/app/RowInfoService/GetRowInfoByType",{params});
-   return res;
-}
-
-//查询所有
-export const getAllRowInfoQuery = async function(params){
-   let res= await http.get("/api/services/app/RowInfoService/GetAllRowInfoQuery",{params});
    return res;
 }
 // 根据当前库位排生成库位

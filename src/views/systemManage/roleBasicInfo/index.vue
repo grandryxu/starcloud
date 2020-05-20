@@ -632,7 +632,7 @@ export default {
     //日期时间转换
     dateTimeTransform(row) {
       let time = row.creationTime;
-      return this.$moment(time).format("YYYY-MM-DD hh:mm:ss");
+      return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
     },
     renderContent(h, { node, data, store }) {
       return h(

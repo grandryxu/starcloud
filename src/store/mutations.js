@@ -92,6 +92,7 @@ export default {
         let regCancles = /Cancles$/;
         let regManuals = /Manuals$/;
         let regLook = /Look$/;
+        let regSetTunnel = /SetTunnel$/;
         console.log(permissions)
         currentPermissions = permissions.filter(per=>{
             return per.indexOf(permissionName) !== -1
@@ -171,6 +172,8 @@ export default {
                 return per = '手动生成'
             }else if(regLook.test(per)) {
                 return per = '查看'
+            }else if(regSetTunnel.test(per)) {
+                return per = '设定巷道'
             }
         })
         console.log(currentPermissions)

@@ -49,6 +49,8 @@
 					<el-form-item label="备注" label-width="100px" prop="customtype_remark">
 						<el-input class="iot-w240" type="textarea" v-model="ruleForm.customtype_remark" :rows="5" maxlength="200" show-word-limit placeholder="请输入备注" clearable></el-input>
 					</el-form-item>
+					<companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
+
 				</div>
 			</el-form>
 			<span slot="footer" class="dialog-footer">
@@ -62,6 +64,8 @@
 <script>
 	import textConfig from '@/mixins/textConfig.js'
 	import singlePictureUpload from "_c/singlePictureUpload"
+	import Utils from '@/utils/index'
+	import Companycontrol from "../../../components/companycontrol";
 	import {
 		getListApi,
 		addApi,
@@ -73,7 +77,8 @@
 		//全局混入提示文字
 		mixins: [textConfig],
 		components: {
-			singlePictureUpload
+			singlePictureUpload,
+			Companycontrol,
 		},
 		props: ["lang"],
 
@@ -101,7 +106,8 @@
 				ruleForm: {
 					customtype_name:"",
 					customtype_code:"",
-					customtype_remark:""
+					customtype_remark:"",
+					customtype_company_id:'',
 				},
 				//表单验证规则
 				rules: {
@@ -115,14 +121,29 @@
 						message: "请输入类别编码",
 						trigger: "blur"
 					}]
-				}
+				},
+				companyId:'',
+				userId:'',
 			};
 		},
 		mounted() {
 			this.btnInit();
 			this.GetAll();
 		},
+		created() {
+			if (Utils.getStorage("userInfo")) {
+				this.ruleForm.customtype_company_id = Utils.getStorage("userInfo").data.result.companyId;
+				this.userId = Utils.getStorage("userInfo").data.result.userId;
+				this.companyId = Utils.getStorage("userInfo").data.result.companyId;
+			}
+		},
 		methods: {
+			updateCompanyId(val) {
+				if (val)
+					this.ruleForm.customtype_company_id = val;
+				else
+					this.ruleForm.customtype_company_id = Utils.getStorage("userInfo").data.result.companyId;
+			},
 			//根据当前用户权限标识初始化按钮状态
 			btnInit() {
 				this.$Common.DistributePermission.call(this)
@@ -150,7 +171,8 @@
 						let defaultFormData = {
    							customtype_name:"",
 							customtype_code:"",
-							customtype_remark:""
+							customtype_remark:"",
+							customtype_company_id:''
 						};
 						this.ruleForm = Object.assign({}, {}, defaultFormData )
 						this.$refs["dialogForm"].resetFields();
@@ -348,8 +370,10 @@
 					id:row.id,
 					customtype_name:res.customtype_name,
 					customtype_code:res.customtype_code,
-					customtype_remark:res.customtype_remark
+					customtype_remark:res.customtype_remark,
+					customtype_company_id:res.customtype_company_id,
 				};
+				this.companyId=res.customtype_company_id,
 				this.ruleForm = obj;
 			},
 			//导出表格

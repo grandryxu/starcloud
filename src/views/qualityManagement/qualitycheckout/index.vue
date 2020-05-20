@@ -5,7 +5,7 @@
         <el-form inline label-width="100px" :model="searchForm">
           <div class="iot-form-row">
             <el-form-item label="抽检单号">
-              <el-input class="iot-w200" placeholder clearable v-model="searchForm.check_bill"></el-input>
+              <el-input class="iot-w200" placeholder clearable v-model="searchForm.check_code"></el-input>
             </el-form-item>
             <el-form-item label="批次">
               <el-input class="iot-w200" placeholder clearable v-model="searchForm.check_batch_no"></el-input>
@@ -13,23 +13,18 @@
             <el-form-item label="物资名称">
               <el-input class="iot-w200" placeholder clearable v-model="searchForm.check_goods_name"></el-input>
             </el-form-item>
-            <el-form-item>
-              <el-button class="search__btn" type="primary" icon="el-icon-search" @click="click_search">查询</el-button>
-            </el-form-item>
           </div>
           <div class="iot-form-row">
-            <el-form-item label="原质量状态">
-              <el-select class="iot-w200" v-model="searchForm.origin_quality_status" placeholder="请选择" clearable>
-                <el-option v-for="item in qualityList" :key="item.id" :label="item.quality_name" :value="item.quality_name"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="检测后质量状态">
-              <el-select class="iot-w200" v-model="searchForm.checked_quality_status" placeholder="请选择" clearable>
-                <el-option v-for="item in qualityList" :key="item.id" :label="item.quality_name" :value="item.quality_name"></el-option>
-              </el-select>
+            <el-form-item label="单据类型">
+                <el-select class="iot-w200" v-model="searchForm.check_type" placeholder="请选择单据类型" clearable>
+                    <el-option v-for="item in checkTypeList" :key="item.id" :label="item.typeName" :value="item.id"></el-option>
+                </el-select>
             </el-form-item>
             <el-form-item label="抽检日期">
               <el-date-picker class="iot-w280" clearable v-model="searchForm.check_time" type="daterange" range-separator="-"></el-date-picker>
+            </el-form-item>
+            <el-form-item>
+              <el-button class="search__btn" type="primary" icon="el-icon-search" @click="click_search">查询</el-button>
             </el-form-item>
           </div>
         </el-form>
@@ -51,15 +46,15 @@
       <el-table id="out-table" ref="print" :data="tableData" stripe style="width: 100%" border @row-dblclick="click_edit" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
-        <el-table-column align="center" prop="check_bill" label="抽检单号" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="check_code" label="抽检单号" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="check_batch_no" label="批次" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="check_goods_name" label="物资名称" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="goods.goods_name" label="物资名称" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="check_num" label="抽检数量" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="origin_quality_status" label="原质量状态" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="checked_quality_status" label="检测后质量状态" min-width="100" show-overflow-tooltip :formatter="qualityStatusFormat"></el-table-column>
+        <el-table-column align="center" prop="Quality1.quality_name" label="原质量状态" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="check_quality_name" label="检测后质量状态" min-width="100" show-overflow-tooltip :formatter="qualityStatusFormat"></el-table-column>
         <el-table-column align="center" prop="check_time" label="抽检日期" min-width="100" :formatter="dateTransform" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="quality_check_export_code" label="出库单号" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="check_export_bill" label="出库单号" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="check_remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
       </el-table>
     </div>
     <div class="iot-pagination">
@@ -69,19 +64,19 @@
       <!--新增抽检 -->
       <el-form inline ref="dialogForm" :model="addCheckForm" :rules="rules">
         <div class="iot-form-row">
-          <el-form-item label="抽检单号" label-width="100px" prop="check_bill">
-            <el-input class="iot-w240" v-model="addCheckForm.check_bill" clearable disabled></el-input>
+          <el-form-item label="抽检单号" label-width="100px" prop="check_code">
+            <el-input class="iot-w240" v-model="addCheckForm.check_code" clearable disabled></el-input>
           </el-form-item>
-          <el-form-item label="仓库" label-width="100px" prop="inventory_warehouse_id">
-            <el-select class="iot-w240" v-model="addCheckForm.inventory_warehouse_id" placeholder="请选择" @change="GetAllInventoryBatchno">
+          <el-form-item label="仓库" label-width="100px" prop="check_warehouse_id">
+            <el-select class="iot-w240" v-model="addCheckForm.check_warehouse_id" placeholder="请选择" @change="GetAllInventoryBatchno">
               <el-option v-for="item in warehouseList" :key="item.id" :label="item.warehouse_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
         </div>
         <div class="iot-form-row">
-          <el-form-item label="单据类型" label-width="100px" prop="bill_type">
-            <el-select class="iot-w240" v-model="addCheckForm.bill_type" placeholder="请选择">
-              <el-option v-for="item in billTypeList" :key="item.id" :label="item.typeName" :value="item.typeName"></el-option>
+          <el-form-item label="单据类型" label-width="100px" prop="check_type">
+            <el-select class="iot-w240" v-model="addCheckForm.check_type" placeholder="请选择">
+              <el-option v-for="item in checkTypeList" :key="item.id" :label="item.typeName" :value="item.typeName"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="批次" label-width="100px" prop="check_batch_no">
@@ -192,7 +187,6 @@ export default {
     singlePictureUpload
   },
   props: ["lang"],
-
         watch: {
             lang: function(lang) {
             this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,lang,this.$refs.page);
@@ -212,25 +206,24 @@ export default {
       radio1: "",
       searchForm: {},
       addCheckForm: {
-        check_bill: "",
+        check_code: "",
         check_batch_no: "",
-        bill_type: "",
+        check_type: "",
         check_goods_name: "",
-        checked_quality_status_id: "",
-        checked_quality_status: "",
-        origin_quality_status: "",
-        inventory_warehouse_id: "",
+        check_origin_quality: "",
+        check_checked_quality: "",
+        check_warehouse_id: "",
         check_num: 0,
         check_time: "",
-        remark: ""
+        check_remark: ""
       },
       dialogTitle: "新增",
       checkDialogTitle: "检测结果",
       tableBatchDetail: [],
       tableData: [],
-      billTypeList: [
-        { id: 0, typeName: "有损抽检" },
-        { id: 1, typeName: "无损抽检" }
+      checkTypeList: [
+        { id: 1, typeName: "无损抽检" },
+        { id: 2, typeName: "有损抽检" }
       ],
       currentPage: 1,
       pageSize: 10,
@@ -239,14 +232,14 @@ export default {
       checkDialogVisible: false,
       // 表单验证规则
       rules: {
-        check_bill: [
+        check_code: [
           {
             required: true,
             message: "请输入抽检单号",
             trigger: "blur"
           }
         ],
-        inventory_warehouse_id: [
+        check_warehouse_id: [
           {
             required: true,
             message: "请选择仓库"
@@ -299,7 +292,7 @@ export default {
 
     //批次下拉列表
     async GetAllInventoryBatchno() {
-      let params = { inventory_warehouse_id: this.addCheckForm.inventory_warehouse_id };
+      let params = { inventory_warehouse_id: this.addCheckForm.check_warehouse_id };
       let data = await getBatchGoods(params);
       if (data) {
         this.optionsMetaAll = data || [];
@@ -312,12 +305,14 @@ export default {
       //根据选择的批次号，从optionsMetaAll列表中获得对应的物料名，质量状态名。
       this.optionsMetaAll.forEach(item => {
         if (item.inventory_batch_no == e) {
+          this.addCheckForm.check_goods_id = item.goods_id;
           this.addCheckForm.check_goods_name = item.goods_name;
           this.addCheckForm.check_goods_code = item.goods_code;
-          this.addCheckForm.origin_quality_status = item.quality_status;
+          this.addCheckForm.check_origin_quality = item.quality_status;
         }
       });
-      let params = { inventory_batch_no: this.addCheckForm.check_batch_no };
+      let params = { inventory_batch_no: this.addCheckForm.check_batch_no,
+                       };
       let data = await getCheckInventory(params);
       if (data) {
         this.tableBatchDetail = data || [];
@@ -339,13 +334,11 @@ export default {
           "YYYY-MM-DD"
         );
       }
-
       let params = {
         MaxResultCount: this.pageSize,
         SkipCount: (this.currentPage - 1) * this.pageSize,
         ...this.searchForm
       };
-
       let data = await getListApi(params);
       if (data) {
         this.tableData = data.items || [];
@@ -443,6 +436,10 @@ export default {
     //点击编辑按钮
     handleEdit() {
       if (this.multipleSelection.length == 1) {
+        if(this.multipleSelection[0].exist_out_bill == "") {
+          this.$message("放行成功");
+          return false;
+        }
         this.click_edit(this.multipleSelection[0]);
       } else {
         //this.text_selectOne  全局定义的提示  在textConfig.js中
@@ -480,7 +477,7 @@ export default {
         code: 'CJCode'
       };
       let code = await GetEncodingRuleCode(params);
-      this.addCheckForm.check_bill = code;
+      this.addCheckForm.check_code = code;
     },
     //点击检测，执行状态变更
     handleCheck() {
@@ -702,7 +699,7 @@ export default {
       if (res) {
         this.addCheckForm = res;
         this.change_check_time_format(Date.parse(res.check_time));
-        let detail_params = { check_bill_code: res.check_bill };
+        let detail_params = { check_bill_code: res.check_code };
         let detail_res = await getAllCheckDetails(detail_params);
         if (detail_res) {
           this.tableBatchDetail = detail_res.items;
@@ -779,7 +776,7 @@ export default {
         //点击确定时候，将form表单中的抽检单号赋值给当前行（此操作与当前函数的逻辑无关系，只是将抽检单号赋值给当前行的一种取巧方式）
         this.tableBatchDetail[
           index
-        ].check_bill_code = this.addCheckForm.check_bill;
+        ].check_bill_code = this.addCheckForm.check_code;
         ibtuIcon.onclick = () => {
           this.tableColumnEdit(index);
         };

@@ -18,13 +18,13 @@ export const ResetPwd = async function(params){
 
 //库存日期统计
 export const storeDateStatistics = async function(params){
-    let res = await http.get("/api/services/app/WarehouseStockService/GetList", params);
+    let res = await http.get("/api/services/app/WarehouseStockService/GetList", {params});
     return res;
 }
 
 //饼状图统计
 export const pieStatistics = async function(params){
-    let res = await http.get("/api/services/app/SlotInfoService/GetUtilizationRatePieChart", params);
+    let res = await http.get("/api/services/app/SlotInfoService/GetUtilizationRatePieChart", {params});
     return res;
 }
 
@@ -43,6 +43,12 @@ export const GetNowAlarmNum = async function(params){
 //获取库位使用率
 export const GetNowSlotPercent = async function(params){
     let res = await http.get("/api/services/app/SlotInfoService/GetNowSlotPercent", params);
+    return res;
+}
+
+//仓库使用率饼状图
+export const useRatioPie = async function(params){
+    let res = await http.get("/api/services/app/SlotInfoService/GetUtilizationRatePieChart",{params});
     return res;
 }
 

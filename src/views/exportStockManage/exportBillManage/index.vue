@@ -9,7 +9,7 @@
           <el-form-item label="合同号">
             <el-input class="iot-w200" placeholder="请输入合同号" maxlength="50" v-model="searchForm.exphead_external_code" clearable></el-input>
           </el-form-item>
-          <el-form-item label="供应商">
+          <el-form-item label="客户">
             <el-select class="iot-w200" v-model="searchForm.exphead_custom_id" placeholder="请选择" clearable>
               <el-option v-for="item in customList" :key="item.id" :label="item.custom_name" :value="item.id"></el-option>
             </el-select>
@@ -65,7 +65,7 @@
         <el-table-column align="center" prop="exphead_external_code" label="合同号" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="exphead_bill_id" label="单据类型" min-width="100" show-overflow-tooltip :formatter="toBillType"></el-table-column>
         <el-table-column align="center" prop="exphead_warehouse_id" label="仓库" min-width="100" show-overflow-tooltip :formatter="warehouseShow"></el-table-column>
-        <el-table-column align="center" prop="exphead_custom_id" label="供应商" min-width="100" show-overflow-tooltip :formatter="customNameShow"></el-table-column>
+        <el-table-column align="center" prop="exphead_custom_id" label="客户" min-width="100" show-overflow-tooltip :formatter="customNameShow"></el-table-column>
         <el-table-column align="center" prop="exphead_date" label="出库日期" min-width="100" show-overflow-tooltip :formatter="dateTransform"></el-table-column>
         <el-table-column align="center" prop="exphead_execute_flag" label="状态" min-width="100" show-overflow-tooltip>
           <template slot-scope="scope">
@@ -97,7 +97,7 @@
                 <el-option v-for="item in billTypeList" :key="item.id" :label="item.bill_name" :value="item.id"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="供应商" label-width="100px" prop="exphead_custom_id">
+            <el-form-item label="客户" label-width="100px" prop="exphead_custom_id">
               <el-select class="iot-w240" v-model="ruleForm.exphead_custom_id" placeholder="请选择">
                 <el-option v-for="item in customList" :key="item.id" :label="item.custom_name" :value="item.id"></el-option>
               </el-select>
@@ -113,13 +113,7 @@
               </el-select>
             </el-form-item>
           </div>
-          <div class="iot-form-row">
-            <el-form-item label="状态" label-width="100px" prop="exphead_execute_flag">
-              <el-select class="iot-w240" v-model="ruleForm.exphead_execute_flag" placeholder="请选择">
-                <el-option v-for="item in executeList" :key="item.value" :label="item.label" :value="item.value"></el-option>
-              </el-select>
-            </el-form-item>
-          </div>
+
           <div class="iot-form-row">
             <el-form-item label="备注" label-width="100px" prop="exphead_remark">
               <el-input type="textarea" :rows="4" :maxlength="200" class="iot-w240" show-word-limit v-model="ruleForm.exphead_remark" clearable></el-input>
@@ -145,12 +139,15 @@
             <el-table-column align="center" prop="expbody_goods_id" :label="$t('importWarehouseManage.goodsCode')" min-width="150" show-overflow-tooltip :formatter="toGoodsCode"></el-table-column>
             <el-table-column align="center" prop="expbody_goods_id" :label="$t('importWarehouseManage.goodsName')" min-width="150" show-overflow-tooltip :formatter="toGoodsName"></el-table-column>
             <el-table-column align="center" prop="expbody_batch_no" :label="$t('importWarehouseManage.bigBatchNum')" min-width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="expbody_lots_no" :label="$t('importWarehouseManage.smallBatchNum')" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="expbody_plan_quantity" :label="$t('importWarehouseManage.planNum')" min-width="100" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span v-show="!scope.row.isCanEdit">{{scope.row.expbody_plan_quantity}}</span>
                 <el-input v-show="scope.row.isCanEdit" v-model="scope.row.expbody_plan_quantity"></el-input>
               </template>
             </el-table-column>
+            <el-table-column align="center" prop="expbody_binding_quantity" :label="$t('importWarehouseManage.boundNum')" min-width="100" :disabled="true" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="expbody_fulfill_quantity" :label="$t('importWarehouseManage.completionNum')" min-width="100"  :disabled="true"show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="expbody_quality_status" :label="$t('importWarehouseManage.qalityStatus')" min-width="100" show-overflow-tooltip :formatter="toQuality"></el-table-column>
           </el-table>
         </div>
@@ -160,8 +157,10 @@
             <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
             <el-table-column align="center" prop="goods_id" label="物资编码" min-width="150" show-overflow-tooltip :formatter="toGoodsCode"></el-table-column>
             <el-table-column align="center" prop="goods_id" label="物资名称" min-width="150" show-overflow-tooltip :formatter="toGoodsName"></el-table-column>
-            <el-table-column align="center" prop="inventory_batch_no" label="批次号" min-width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="inventory_batch_no" label="大批次号" min-width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="inventory_lots_no" label="小批次号" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="inventory_quantity" label="计划数量" min-width="100" show-overflow-tooltip></el-table-column>
+
             <el-table-column align="center" prop="quality_id" label="质量状态" min-width="100" show-overflow-tooltip :formatter="toQuality"></el-table-column>
           </el-table>
           <span slot="footer" class="dialog-footer">
@@ -183,7 +182,7 @@
               <el-option v-for="item in warehouseList" :key="item.id" :label="item.warehouse_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="供应商" label-width="100px" prop="exphead_custom_id">
+          <el-form-item label="客户" label-width="100px" prop="exphead_custom_id">
             <el-select class="iot-w240" v-model="ruleForm.exphead_custom_id" placeholder="请选择">
               <el-option v-for="item in customList" :key="item.id" :label="item.custom_name" :value="item.id"></el-option>
             </el-select>
@@ -217,7 +216,7 @@
                 <span v-else-if="scope.row.warehouse_slot_type === 2">排列层</span>
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="exphead_custom_id" label="供应商" min-width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="exphead_custom_id" label="客户" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="warehouse_slot_type" label="批次号" min-width="100" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span v-if="scope.row.warehouse_slot_type === 1">层列排</span>
@@ -251,7 +250,8 @@
         </el-checkbox-group>
         <el-table :data="goodsTableData" stripe style="width: 100%" height="150" border>
           <el-table-column align="center" label="序号" width="50">
-            <template slot-scope="scope">{{scope.row.goodsId = +scope.$index + 1}}</template>
+            <template slot-scope="scope">{{scope.row.expbody_list_id}}</template>
+
           </el-table-column>
           <el-table-column align="center" prop="expbody_goods_id" label="物资编码" min-width="150" show-overflow-tooltip :formatter="toGoodsCode"></el-table-column>
           <el-table-column align="center" prop="expbody_goods_id" label="物资名称" min-width="150" show-overflow-tooltip :formatter="toGoodsName"></el-table-column>
@@ -386,13 +386,13 @@ export default {
             trigger: "blur"
           }
         ],
-        exphead_external_code: [
+       /* exphead_external_code: [
           {
             required: true,
             message: "请输入合同号",
             trigger: "blur"
           }
-        ],
+        ],*/
         exphead_date: [
           {
             required: true,
@@ -414,13 +414,13 @@ export default {
             trigger: "blur"
           }
         ],
-        exphead_custom_id: [
+       /* exphead_custom_id: [
           {
             required: true,
-            message: "请选择供应商",
+            message: "请选择客户",
             trigger: "blur"
           }
-        ],
+        ],*/
         exphead_execute_flag: [
           {
             required: true,
@@ -487,7 +487,7 @@ export default {
       let params = {
         MaxResultCount: this.pageSize,
         SkipCount: (this.currentPage - 1) * this.pageSize,
-        expbody_imphead_id: this.ruleForm.id
+        expbody_head_id: this.ruleForm.id
       };
       let data = await getListGoodsApi(params);
       if (data) {
@@ -507,7 +507,7 @@ export default {
         this.warehouseList = data || [];
       }
     },
-    //获取供应商列表
+    //获取客户列表
     async getCustomList() {
       let res = await this.$DropBox.getAllCustoms();
       if (res.items) {
@@ -539,7 +539,7 @@ export default {
     //获取单据类型列表
     async getBillTypeList() {
       let params={
-        bill_type:2   //(1入库；2出库)
+        bill_type: 2   //(1入库；2出库)
       }
       let res = await this.$DropBox.getBillTypeList(params);
       if (res.items) {
@@ -571,7 +571,7 @@ export default {
       this.goodsTableData.forEach(ele=>{
         if(ele.isCreate){
           if(id){
-            ele.expbody_imphead_id = id
+            ele.expbody_head_id = id
           }
           this.pendingCreateGoods.push(ele)
         }else if(ele.isEdit){
@@ -611,6 +611,10 @@ export default {
           this.classifyGoodsData(res2.id);
           res1 = await this.CreateGoods();
         }
+        if(res1==false)
+        {
+          return ;
+        }
         Promise.all([res1,res2]).then((resloved)=>{
           this.$message({
             type: "success",
@@ -628,8 +632,14 @@ export default {
     },
     //物料新建
    async CreateGoods() {
+
       if(this.pendingCreateGoods.length){
-       await addGoodsListApi(this.pendingCreateGoods)
+       await addGoodsListApi(this.pendingCreateGoods);
+      }
+      else
+      {
+        this.$message.error('物料批次明细不能为空！');
+        return false ;
       }
     },
     //物料编辑
@@ -678,8 +688,9 @@ export default {
     //点击选择库存的按钮
     click_submit_inventory(){
       if (this.multipleSelectionInventory.length == 1) {
-        this.dialogInventoryVisible =false;
         this.handleAddGoods();
+
+
       } else {
         //this.text_selectOne  全局定义的提示  在textConfig.js中
         this.$message.error(this.text_selectOne);
@@ -834,7 +845,14 @@ export default {
       this.resetForm();
     },
     click_add_goods() {
-      this.$refs["dialogForm"].validate(async valid => {
+
+
+      this.getInventoryList();
+      this.multipleSelectionInventory = [];
+      this.dialogInventoryVisible = true;
+
+
+     /* this.$refs["dialogForm"].validate(async valid => {
         if (!valid) {
           return;
         }
@@ -845,21 +863,24 @@ export default {
         this.multipleSelectionInventory = [];
         this.dialogInventoryVisible = true;
 
-      });
+      });*/
     },
     handleAddGoods(){
        let data = this.goodsTableData;
        let {
          goods_id,
          inventory_batch_no,
-         quality_id
+         quality_id,
+         inventory_lots_no
        } = this.multipleSelectionInventory[0];
+       let row=this.multipleSelectionInventory[0];
+       let result=0;
         if (data.length === 0) {
           data.push({
             goodsId: +data.length + 1,
-            expbody_imphead_id:this.ruleForm.id,
+            expbody_list_id:(+data.length + 1),
+            expbody_head_id:this.ruleForm.id,
             expbody_bill_bar:this.ruleForm.exphead_code,
-            expbody_imphead_id:this.ruleForm.id,
             expbody_external_listid:this.ruleForm.exphead_external_code,
             isCreate:true,
             isCanEdit:true,
@@ -867,21 +888,44 @@ export default {
             expbody_batch_no:inventory_batch_no,
             expbody_quality_status:quality_id,
             expbody_noused_flag:'1',
+            expbody_lots_no:inventory_lots_no,
+            expbody_binding_quantity:0,
+            expbody_fulfill_quantity:0,
           });
+          this.dialogInventoryVisible =false;
         } else {
-          data.push({
-            goodsId: +data[data.length - 1].goodsId + 1,
-            expbody_imphead_id:this.ruleForm.id,
-            expbody_bill_bar:this.ruleForm.exphead_code,
-            expbody_imphead_id:this.ruleForm.id,
-            expbody_external_listid:this.ruleForm.exphead_external_code,
-            isCreate:true,
-            isCanEdit:true,
-            expbody_goods_id:goods_id,
-            expbody_batch_no:inventory_batch_no,
-            expbody_quality_status:quality_id,
-            expbody_noused_flag:'1',
+          console.log(data,555)
+          console.log(row,666)
+          data.forEach((ele)=>{
+            if(ele.expbody_goods_id == row.goods_id && ele.expbody_batch_no == row.inventory_batch_no && ele.expbody_lots_no == row.inventory_lots_no ){
+              result=1;
+            }
           });
+          if(result==1)
+          {
+            this.$message.error('已存在相同物料，请勿重复添加！');
+            return;
+          }
+          else
+          {
+            data.push({
+              goodsId: +data[data.length - 1].goodsId + 1,
+              expbody_list_id:(+data.length + 1),
+              expbody_head_id:this.ruleForm.id,
+              expbody_bill_bar:this.ruleForm.exphead_code,
+              expbody_external_listid:this.ruleForm.exphead_external_code,
+              isCreate:true,
+              isCanEdit:true,
+              expbody_goods_id:goods_id,
+              expbody_batch_no:inventory_batch_no,
+              expbody_quality_status:quality_id,
+              expbody_noused_flag:'1',
+              expbody_lots_no:inventory_lots_no,
+              expbody_binding_quantity:0,
+              expbody_fulfill_quantity:0,
+            });
+            this.dialogInventoryVisible =false;
+          }
         }
     },
     click_bill_print() {
@@ -975,12 +1019,12 @@ export default {
         this.goodsTableData = this.goodsTableData.filter(ele=>{
           let tem = {};
           rows.forEach((row,index,arr)=>{
-              if(row.goodsId === ele.goodsId){
+            if (row.expbody_list_id === ele.expbody_list_id) {
                 tem = row;
                 arr.splice(index,1);
               }
           })
-          return ele.goodsId !== tem.goodsId
+          return ele.expbody_list_id !== tem.expbody_list_id;
         });
       })
      

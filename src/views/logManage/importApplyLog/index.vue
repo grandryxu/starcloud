@@ -3,21 +3,13 @@
     <div class="iot-form">
       <div class="layout__search">
         <el-form inline label-width="100px" :model="searchForm">
-          <el-form-item label="模块">
-            <!-- <el-select class="iot-w200" v-model="searchForm.OptModule" placeholder="请选择" clearable>
-							<el-option v-for="item in modelList" :key="item.id" :label="item.customtype_name" :value="item.id"></el-option>
-						</el-select> -->
-            <el-input class="iot-w200" placeholder="请输入查询内容" maxlength="50" v-model="searchForm.OptModule" clearable></el-input>
+          <el-form-item label="入库信息">
+            <el-input class="iot-w200" placeholder="请输入查询内容" maxlength="50" v-model="searchForm.import_info" clearable></el-input>
           </el-form-item>
-          <el-form-item label="操作类型">
-            <el-select class="iot-w200" v-model="searchForm.OptAction" placeholder="请选择" clearable>
-              <el-option v-for="item in optTypeList" :key="item.id" :label="item.optAction" :value="item.optAction"></el-option>
-            </el-select>
+          <el-form-item label="入库结果">
+            <el-input class="iot-w200" placeholder="请输入查询内容" maxlength="50" v-model="searchForm.import_result" clearable></el-input>
           </el-form-item>
-          <el-form-item label="查询内容">
-            <el-input class="iot-w200" placeholder="请输入查询内容" maxlength="50" v-model="searchForm.Content" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="操作时间">
+          <el-form-item label="入库时间">
             <el-date-picker v-model="searchForm.CreationTime" type="daterange" range-separator="-" start-placeholder="起始日期" end-placeholder="结束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd"></el-date-picker>
           </el-form-item>
           <el-form-item>
@@ -37,46 +29,14 @@
       <el-table id="out-table" ref="print" :data="tableData" stripe style="width: 100%" border @selection-change="handleSelectionChange" @row-click="clickRow">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
-        <el-table-column align="center" prop="optModule" label="模块" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="optAction" label="操作类型" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="oldVal" label="修改前数据" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="newVal" label="修改后数据" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="optResult" label="操作结果" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="creationTime" label="操作时间" min-width="100" show-overflow-tooltip :formatter="dateFormat"></el-table-column>
-        <el-table-column align="center" prop="optPath" label="接口名称" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="creatorUserId" label="操作用户Id" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="import_info" label="入库信息" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="import_result" label="入库结果" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="import_creat_datetime" label="入库时间" min-width="100" show-overflow-tooltip :formatter="dateFormat"></el-table-column>
       </el-table>
     </div>
     <div class="iot-pagination">
       <el-pagination background layout="prev, pager, next" :total="total" :page-size="pageSize" :current-page.sync="currentPage" @current-change="handleCurrentChange"></el-pagination>
     </div>
-    <el-dialog class="iot-dialog" :title="dialogTitle" :visible.sync="dialogVisible" width="824px" append-to-body>
-      <el-form ref="dialogForm" :model="ruleForm" :inline="true">
-        <div class="iot-form-row">
-          <el-form-item label="模块" label-width="100px" prop="operation_module_name">
-            <el-input class="iot-w240" v-model="ruleForm.operation_module_name" placeholder="请输入客户编号" maxlength="50" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="操作类型" label-width="100px" prop="operation_type_name">
-            <el-input class="iot-w240" v-model="ruleForm.operation_type_name" placeholder="请输入客户名称" maxlength="50" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="修改前数据" label-width="100px" prop="operation_modify_pre_data">
-            <el-input class="iot-w240" v-model="ruleForm.operation_modify_pre_data" placeholder="请输入联系人" maxlength="50" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="修改后数据" label-width="100px" prop="operation_modify_final_data">
-            <el-input class="iot-w240" v-model="ruleForm.operation_modify_final_data" placeholder="请输入联系方式" maxlength="50" disabled></el-input>
-          </el-form-item>
-          <el-form-item label="操作时间" label-width="100px" prop="CreationTime">
-            <el-date-picker class="iot-w240" v-model="ruleForm.CreationTime" type="date" placeholder="选择日期" disabled></el-date-picker>
-          </el-form-item>
-          <el-form-item label="备注" label-width="100px" prop="operation_remark">
-            <el-input class="iot-w240" type="textarea" v-model="ruleForm.operation_remark" placeholder="请输入备注" disabled></el-input>
-          </el-form-item>
-        </div>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="dialogVisible = false">关闭</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -102,16 +62,6 @@ export default {
   data() {
     return {
       modelList: [],
-      optTypeList: [{
-        id: 1,
-        optAction: "新增"
-      }, {
-        id: 2,
-        optAction: "更新"
-      }, {
-        id: 3,
-        optAction: "删除"
-      }],
       multipleSelection: [],
       radio1: "",
       searchForm: {
@@ -122,10 +72,7 @@ export default {
       isEnableList: [{ id: 0, enableName: "正常" }, { id: 1, enableName: "停用" }],
       currentPage: 1,
       pageSize: 10,
-      total: 0,
-      //表单数据
-      ruleForm: {
-      }
+      total: 0
     };
   },
   mounted() {
@@ -173,25 +120,6 @@ export default {
         });
         this.$refs["dialogForm"].resetFields();
       }, 100);
-    },
-    //根据主键获取信息
-    async Get(row) {
-      let params = {
-        id: row.id
-      };
-      let res = await getOneApi(params);
-      console.log('row = ', row);
-      let obj = {
-        id: row.id,
-        operation_module_name: row.operation_module_name,
-        operation_type_name: row.operation_type_name,
-        operation_modify_pre_data: row.operation_modify_pre_data,
-        operation_modify_final_data: row.operation_modify_final_data,
-        operation_search_content: row.operation_search_content,
-        operation_remark: row.operation_remark,
-        CreationTime: this.dateFormatter(row.CreationTime)
-      };
-      this.ruleForm = obj;
     },
     //列表
     async GetAll() {

@@ -95,6 +95,9 @@
             <el-input type="textarea" :rows="4" :maxlength="200" show-word-limit class="iot-w240" v-model="ruleForm.warehouse_remark" clearable></el-input>
           </el-form-item>
         </div>
+        <div class="iot-form-row">
+          <companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
+        </div>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
@@ -108,11 +111,14 @@
 import textConfig from "@/mixins/textConfig.js";
 import singlePictureUpload from "_c/singlePictureUpload";
 import { getListApi, addApi, getOneApi, editApi, deleteListApi } from "./api";
+import Utils from '@/utils/index'
+import Companycontrol from "../../../components/companycontrol";
 export default {
   //全局混入提示文字
   mixins: [textConfig],
   components: {
-    singlePictureUpload
+    singlePictureUpload,
+    Companycontrol,
   },
   props: ["lang"],
 
@@ -154,7 +160,8 @@ export default {
         warehouse_type: "",
         warehouse_slot_type: "",
         warehouse_is_enable: "",
-        warehouse_remark: ""
+        warehouse_remark: "",
+        warehouse_company_id:'',
       },
       //表单验证规则
       rules: {
@@ -195,12 +202,27 @@ export default {
         ]
       },
       deleteList:[],
+      companyId:'',
+      userId:'',
     };
   },
   async mounted() {
     await this.GetAll();
   },
+  created() {
+    if (Utils.getStorage("userInfo")) {
+      this.ruleForm.warehouse_company_id = Utils.getStorage("userInfo").data.result.companyId;
+      this.userId = Utils.getStorage("userInfo").data.result.userId;
+      this.companyId = Utils.getStorage("userInfo").data.result.companyId;
+    }
+  },
   methods: {
+    updateCompanyId(val) {
+      if (val)
+        this.ruleForm.warehouse_company_id = val;
+      else
+        this.ruleForm.warehouse_company_id = Utils.getStorage("userInfo").data.result.companyId;
+    },
     handleSizeChange(val) {
       this.pageSize = val;
       this.currentPage = 1;
@@ -414,8 +436,10 @@ this.$refs.moviesTable.toggleRowSelection(row)
         warehouse_name: res.warehouse_name,
         warehouse_remark: res.warehouse_remark,
         warehouse_slot_type: res.warehouse_slot_type,
-        warehouse_type: res.warehouse_type
+        warehouse_type: res.warehouse_type,
+        warehouse_company_id:res.warehouse_company_id
       };
+      this.companyId=res.warehouse_company_id;
       this.ruleForm = obj;
     },
     //导出表格

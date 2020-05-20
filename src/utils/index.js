@@ -159,39 +159,36 @@ const utils = {
         } else {
             dom.children.forEach(ele => {
                 if (ele.tagName === "LABEL" && ele.innerText) {
-                    // let innerCurLgLibs = this.pullLangLibs(curLg);
-                    // if(this.isChinese(ele.innerText)){
-                    //     innerCurLgLibs = this.pullLangLibs('zh');
-                    // }
-                    let innerCurLgLibs = this.pullLangLibs(this.isLang(ele.innerText))
-                    ele.innerText = this.traverseLang(innerCurLgLibs, tarLgLibs, ele.innerText)
+                    if(ele.children.length){
+                        ele.children.forEach(chil=>{
+                            if (chil.tagName === "SPAN" && chil.innerText){
+                                let innerCurLgLibs = this.pullLangLibs(this.isLang(chil.innerText))
+                                chil.innerText = this.traverseLang(innerCurLgLibs, tarLgLibs, chil.innerText)
+                            }
+                            this.traversePageDom(curLg, tarLg, chil);
+                        })
+                    }else{
+                        let innerCurLgLibs = this.pullLangLibs(this.isLang(ele.innerText))
+                        ele.innerText = this.traverseLang(innerCurLgLibs, tarLgLibs, ele.innerText)
+                    } 
                 } else if (
                     ele.tagName === "BUTTON" &&
                     ele.children[ele.children.length - 1] &&
                     ele.children[ele.children.length - 1].tagName === "SPAN"
                 ) {
-                    // let innerCurLgLibs = this.pullLangLibs(curLg);
-                    // if(this.isChinese(ele.children[ele.children.length - 1].innerText)){
-                    //     innerCurLgLibs = this.pullLangLibs('zh');
-                    // }
                     let innerCurLgLibs = this.pullLangLibs(this.isLang(ele.children[ele.children.length - 1].innerText))
                     ele.children[ele.children.length - 1].innerText = this.traverseLang(innerCurLgLibs, tarLgLibs, ele.children[ele.children.length - 1].innerText)
-                } else if (ele.tagName === "TH" && ele.children[0] && !ele.children[0].children.length) {
-                    // let innerCurLgLibs = this.pullLangLibs(curLg);
-                    // if(this.isChinese(ele.children[0].innerText)){
-                    //     innerCurLgLibs = this.pullLangLibs('zh');
-                    // }
+                } 
+                else if (ele.tagName === "TH" && ele.children[0] && !ele.children[0].children.length) {
                     let innerCurLgLibs = this.pullLangLibs(this.isLang(ele.children[0].innerText))
                     ele.children[0].innerText = this.traverseLang(innerCurLgLibs, tarLgLibs, ele.children[0].innerText)
-                } else if (
+                } 
+                else if (
                     ele.tagName === "INPUT" &&
                     ele.getAttribute("placeholder")
                 ) {
                     let placeholder = ele.getAttribute("placeholder");
                     let words = '';
-                    // if(this.isChinese(placeholder)){
-                    //     curLgLibs = this.pullLangLibs('zh');
-                    // }
                     let curLgLibs = this.pullLangLibs(this.isLang(placeholder))
                     words = this.traverseLang(curLgLibs, tarLgLibs, placeholder)
                     ele.setAttribute("placeholder", words)
@@ -202,13 +199,13 @@ const utils = {
         }
         Store.commit('STORECURRENTLANG', tarLg)
     },
-    //遍历dialog页面dom进行翻译
+    //遍历dialogForm页面dom进行翻译
     traverseDialogDom(curLg, tarLg, dialog) {
         let curLgLibs = this.pullLangLibs(curLg);
         let tarLgLibs = this.pullLangLibs(tarLg);
         if (!dialog.$children.length) {
             return;
-        } else {
+        } else if(dialog.$children.length) {
             dialog.$children.forEach(ele => {
                 let firstInnerCurLgLibs = this.pullLangLibs(curLg);
                 let lastInnerCurLgLibs = this.pullLangLibs(curLg);
@@ -231,7 +228,8 @@ const utils = {
                     words = this.traverseLang(lastInnerCurLgLibs, tarLgLibs, placeholder);
                     ele.$el.lastChild.firstElementChild.firstElementChild.placeholder = words;
 
-                } else if (ele.$el.lastChild.firstElementChild.firstElementChild.firstElementChild.placeholder) {
+                } else if (
+                    ele.$el.lastChild.firstElementChild.firstElementChild.firstElementChild.placeholder) {
                     let placeholder = ele.$el.lastChild.firstElementChild.firstElementChild.firstElementChild.placeholder;
                     let words = '';
                     lastInnerCurLgLibs = this.pullLangLibs(this.isLang(placeholder))
@@ -241,6 +239,19 @@ const utils = {
             })
         }
         Store.commit('STORECURRENTLANG', tarLg)
+    },
+    //翻译dialogHeader
+    traverDialogHeader(header, tarLg){
+        if (!header) {
+            return
+        }
+            let words = header;
+            let zhKey = this.traverseLangLibsByWords(this.pullLangLibs(this.isLang(words)), words);//获取中文字典中的key
+            if (zhKey) {
+                header = this.traverseLangLibsBykey(this.pullLangLibs(tarLg), zhKey)
+            }
+            console.log(header)
+        return header
     },
     //遍历表单验证
     traverseFormValidator(rules, tarLg) {
@@ -282,6 +293,41 @@ const utils = {
         let moment = require("moment");
         return moment(time).format("YYYY-MM-DD hh:mm:ss.SSS");
     },
+    //时间格式化
+     format(date, format) {
+        if (typeof date == 'string') {
+            if (date.indexOf('T') >= 0) {
+                date = date.replace('T', ' ')
+            }
+            date = new Date(Date.parse(date.replace(/-/g, "/")))
+        }
+        var o = {
+            "M+": date.getMonth() + 1,
+            "d+": date.getDate(),
+            "h+": date.getHours(),
+            "m+": date.getMinutes(),
+            "s+": date.getSeconds(),
+            "q+": Math.floor((date.getMonth() + 3) / 3),
+            "S": date.getMilliseconds()
+        };
+        var w = [
+            ['日', '一', '二', '三', '四', '五', '六'],
+            ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+            ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+        ];
+        if (/(y+)/.test(format)) {
+            format = format.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+        }
+        if (/(w+)/.test(format)) {
+            format = format.replace(RegExp.$1, w[RegExp.$1.length - 1][date.getDay()]);
+        }
+        for (var k in o) {
+            if (new RegExp("(" + k + ")").test(format)) {
+                format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+            }
+        }
+        return format;
+    }
 
 }
 

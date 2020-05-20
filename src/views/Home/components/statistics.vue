@@ -1,6 +1,6 @@
 <template>
   <div class="pie">
-      <div id="mainPie" style="width:100%;height:300px;margin-top:2rem;background:#eee;"></div>
+      <div id="mainPie" style="width:100%;height:100%;"></div>
   </div>
 </template>
 
@@ -41,11 +41,11 @@ export default {
       mainPie.setOption({
         title: {
           text: pieData.warehouse_name,
-          left: 20,
-          top:10,     
-            textStyle:{
-                fontSize:12
-            }
+          // left: 20,
+          // top:0,     
+          //   textStyle:{
+          //       fontSize:12
+          //   }
         },
         legend: {
         orient: 'vertical',
@@ -79,8 +79,9 @@ export default {
 
 <style lang="scss" scoped>
 .pie {
-  height: 200px;
-  width: 23%;
+  height: 400px;
+  // width: 23%;
   margin: 1rem;
+  flex:1
 }
 </style>

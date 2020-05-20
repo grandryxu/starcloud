@@ -32,3 +32,10 @@ export const deleteListApi = async function(params){
     let res = await http.post("/api/services/app/PortInfoService/DelteList",params);
     return res;
 }
+
+
+//巷道出入口关联表新增
+export const addtunnelApi = async function(params){
+    let res = await http.post("/api/services/app/TunnelPortService/CreateList",params);
+    return res;
+}

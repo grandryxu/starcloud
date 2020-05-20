@@ -1,3 +1,4 @@
+<!--立库任务管理-->
 <template>
     <div class="iot-list" ref="page">
         <div class="iot-form">
@@ -112,7 +113,7 @@
                                   show-overflow-tooltip></el-table-column>-->
                 <el-table-column align="center" prop="main_execute_flag" label="执行状态" min-width="100"
                                  show-overflow-tooltip :formatter="executeTransform"></el-table-column>
-                <el-table-column align="center" prop="main_creat_datetime" label="下发时间" min-width="100"
+                <el-table-column align="center" prop="creationTime" label="下发时间" min-width="100"
                                  show-overflow-tooltip :formatter="dateTimeTransform"></el-table-column>
             </el-table>
         </div>
@@ -186,38 +187,20 @@
                     <div class="iot-table">
                         <el-table id="out-table" :data="lstableData" stripe style="width: 100%" border>
                             <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
-                            <el-table-column align="center" prop="impstock_stock_code" label="托盘码" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="warehouse.warehouse_name" label="仓库" min-width="100"
-                                             show-overflow-tooltip :formatter="warehouseShow"></el-table-column>
-                            <el-table-column align="center" prop="slot.slot_code" label="库位" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="impstock_quantity" label="托盘数量" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="impstock_execute_flag" label="执行状态" min-width="100"
-                                             show-overflow-tooltip>
+                            <el-table-column align="center" prop="warehouse_name" label="仓库" min-width="100" show-overflow-tooltip :formatter="warehouseShow"></el-table-column>
+                            <el-table-column align="center" prop="slot_code" label="库位" min-width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column align="center" prop="stock_code" label="托盘码" min-width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column align="center" prop="goods_code" label="物料编码" min-width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column align="center" prop="goods_name" label="物料名称" min-width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column align="center" prop="order_quantity" label="数量" min-width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column align="center" prop="execute_flag" label="执行状态" min-width="100" show-overflow-tooltip>
                                 <template slot-scope="scope">
-                                    <span v-if="scope.row.impstock_execute_flag === 0">未生成</span>
-                                    <span v-if="scope.row.impstock_execute_flag === 1">待执行</span>
-                                    <span v-else-if="scope.row.impstock_execute_flag === 2">执行中</span>
-                                    <span v-else-if="scope.row.impstock_execute_flag === 3">已完成</span>
+                                    <span v-if="scope.row.execute_flag === 1">未执行</span>
+                                    <span v-else-if="scope.row.execute_flag === 2">执行中</span>
+                                    <span v-else-if="scope.row.execute_flag === 3">已完成</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column align="center" prop="goods.goods_code" label="物料编码" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="goods.goods_name" label="物料名称" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="creationTime" label="创建时间"
-                                             :formatter="dateTimeTransform" min-width="100"
-                                             show-overflow-tooltip></el-table-column>
-                            <!-- <el-table-column align="center" prop="impstock_is_enable" label="状态" min-width="100" show-overflow-tooltip>
-                               <template slot-scope="scope">
-                                 <span v-if="scope.row.impstock_is_enable === 1">启用</span>
-                                 <span v-else-if="scope.row.impstock_is_enable === 2">禁用</span>
-                               </template>
-                             </el-table-column>-->
-                            <!--<el-table-column align="center" prop="unit_is_enable" label="打印日期" min-width="100" show-overflow-tooltip></el-table-column>
-                            <el-table-column align="center" prop="impstock_remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>-->
+                            <el-table-column align="center" prop="creationTime" label="创建时间" :formatter="dateTimeTransform" min-width="100" show-overflow-tooltip></el-table-column>
                         </el-table>
                     </div>
                 </div>
@@ -383,7 +366,7 @@
                         }
                     ]
                 },
-                ImportOrderId: '',
+                TaskMainId: '',
                 tableData2: [],
                 main_mode: '',
                 dialogTitleA: '手动生成',
@@ -623,11 +606,10 @@
                     SkipCount: (this.currentPage - 1) * this.pageSize,
                     ...this.searchForm
                 };
-                if(params.main_execute_flag==null)
+                 if(params.main_execute_flag==null||params.main_execute_flag=="")
                 {
                 params.main_execute_flag=10;
                 }
-
                 let data = await getListApi(params);
                 if (data) {
                     this.tableData = data.items || [];
@@ -701,7 +683,7 @@
                             }
                         });
                         this.main_mode = row.main_mode;
-                        this.ImportOrderId = row.id;
+                        this.TaskMainId = row.id;
 
                         this.Getlist();
                     }
@@ -729,7 +711,7 @@
                             this.dialogForm.main_execute_flag = ele.modeName;
                         }
                     });
-                    this.ImportOrderId = row.id;
+                    this.TaskMainId = row.id;
                     this.main_mode = row.main_mode;
                     this.Getlist();
                 }
@@ -746,23 +728,14 @@
                 let params = {
                     MaxResultCount: this.pageSize,
                     SkipCount: (this.currentPage - 1) * this.pageSize,
-                    task_id: this.ImportOrderId,
+                    task_id: this.TaskMainId,
                 };
-                if (this.main_mode == '1') {
-
-                } else if (this.main_mode == '2') {
-                } else if (this.main_mode == '3') {
-                } else if (this.main_mode == '4') {
-                } else if (this.main_mode == '5') {
-                } else if (this.main_mode == '6') {
-
+                if (this.main_mode == '1' || this.main_mode == '2' || this.main_mode == '6' || this.main_mode == '7') {
                     let data = await getkyprkListApi(params);
                     if (data) {
                         this.lstableData = data.items || [];
                     }
-                } else if (this.main_mode == '7') {
-                }
-
+                } 
                 /* let data = await getrkListApi(params);
                  if (data) {
                    this.tableData2 = data.items || [];
@@ -1057,7 +1030,7 @@
             //日期时间转换
             dateTimeTransform(row) {
                 let time = row.creationTime;
-                return this.$moment(time).format("YYYY-MM-DD hh:mm:ss");
+                return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
             }
         }
     };

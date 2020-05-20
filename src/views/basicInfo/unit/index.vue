@@ -54,6 +54,7 @@
 							<el-option v-for="item in isEnableList" :key="item.id" :label="item.enableName"	:value="item.id"></el-option>
 						</el-select>
 					</el-form-item>
+					<companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
 				</div>
 			</el-form>
 			<span slot="footer" class="dialog-footer">
@@ -67,6 +68,7 @@
 <script>
 	import textConfig from '@/mixins/textConfig.js'
 	import singlePictureUpload from "_c/singlePictureUpload"
+	import Utils from '@/utils/index'
 	import {
 		getListApi,
 		addApi,
@@ -74,10 +76,12 @@
 		editApi,
 		deleteListApi,
 	} from "./api";
+	import Companycontrol from "../../../components/companycontrol";
 	export default {
 		//全局混入提示文字
 		mixins: [textConfig],
 		components: {
+			Companycontrol,
 			singlePictureUpload
 		},
 		props: ["lang"],
@@ -98,7 +102,8 @@
 				//表单数据
 				ruleForm: {
 					unit_name:"",
-					unit_is_enable:""
+					unit_is_enable:"",
+					unit_company_id:'',
 				},
 				//表单验证规则
 				rules: {
@@ -114,6 +119,8 @@
 					}]
 				},
 				deleteList:[],
+				companyId:'',
+				userId:'',
 			};
 		},
 		 watch: {
@@ -130,6 +137,12 @@
 	})
 		},
 		methods: {
+			updateCompanyId(val) {
+				if (val)
+					this.ruleForm.unit_company_id = val;
+				else
+					this.ruleForm.unit_company_id = Utils.getStorage("userInfo").data.result.companyId;
+			},
 			handleSizeChange(val) {
 				this.pageSize = val;
 				this.currentPage = 1;
@@ -329,8 +342,9 @@
 				let obj = {
 					id:row.id,
 					unit_name:res.unit_name,
-					unit_is_enable:res.unit_is_enable
+					unit_is_enable:res.unit_is_enable,
 				};
+				this.companyId=res.unit_company_id,
 				this.ruleForm = obj;
 			},
 			//导出表格
@@ -340,6 +354,13 @@
             //打印表格
 			printTable(){
 				this.$Common.PrintTable.call(this,'print')
+			}
+		},
+		created() {
+			if (Utils.getStorage("userInfo")) {
+				this.ruleForm.unit_company_id = Utils.getStorage("userInfo").data.result.companyId;
+				this.userId = Utils.getStorage("userInfo").data.result.userId;
+				this.companyId= Utils.getStorage("userInfo").data.result.companyId;
 			}
 		}
 	};

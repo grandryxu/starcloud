@@ -1,6 +1,6 @@
 export default {
   lang: {
-    zh: '中文',
+    zh:'中文',
     en:'English',
     ja:'日語'
   },

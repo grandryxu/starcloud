@@ -63,6 +63,9 @@
             <el-input class="iot-w240" type="textarea" v-model="ruleForm.pack_remark" placeholder="请输入备注" clearable :rows="5" maxlength="200" show-word-limit></el-input>
           </el-form-item>
         </div>
+        <div class="iot-form-row">
+          <companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
+        </div>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
@@ -76,6 +79,7 @@
 import Utils from '@/utils/index'
 import textConfig from '@/mixins/textConfig.js'
 import singlePictureUpload from "_c/singlePictureUpload"
+import Companycontrol from "../../../components/companycontrol";
 import {
   getListApi,
   addApi,
@@ -87,7 +91,8 @@ export default {
   //全局混入提示文字
   mixins: [textConfig],
   components: {
-    singlePictureUpload
+    singlePictureUpload,
+    Companycontrol,
   },
   props: ["lang"],
 
@@ -120,7 +125,8 @@ export default {
         pack_code: "",
         pack_name: "",
         pack_remark: "",
-        pack_picture: ""
+        pack_picture: "",
+        pack_company_id:'',
       },
       //表单验证规则
       rules: {
@@ -139,14 +145,29 @@ export default {
           message: "请先上传垛型图片",
           trigger: "blur"
         }]*/
-      }
+      },
+      companyId:'',
+      userId:'',
     };
   },
   mounted() {
     this.btnInit();
     this.GetAll();
   },
+  created() {
+    if (Utils.getStorage("userInfo")) {
+      this.ruleForm.pack_company_id = Utils.getStorage("userInfo").data.result.companyId;
+      this.userId = Utils.getStorage("userInfo").data.result.userId;
+      this.companyId = Utils.getStorage("userInfo").data.result.companyId;
+    }
+  },
   methods: {
+    updateCompanyId(val) {
+      if (val)
+        this.ruleForm.pack_company_id = val;
+      else
+        this.ruleForm.pack_company_id = Utils.getStorage("userInfo").data.result.companyId;
+    },
     //根据当前用户权限标识初始化按钮状态
     btnInit() {
       this.$Common.DistributePermission.call(this)
@@ -377,8 +398,10 @@ export default {
         pack_name: res.pack_name,
         pack_remark: res.pack_remark,
         pack_picture: res.pack_picture,
-        imageUrl: this.computeImgURL(res.pack_picture)
+        imageUrl: this.computeImgURL(res.pack_picture),
+        pack_company_id:res.pack_company_id,
       };
+      this.companyId=res.pack_company_id;
       this.ruleForm = obj;
       this.imageUrl = obj.imageUrl;
     },

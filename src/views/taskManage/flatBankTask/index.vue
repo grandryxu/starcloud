@@ -5,15 +5,15 @@
                 <el-form inline label-width="100px" :model="searchForm">
                     <div class="iot-form-row">
                         <el-form-item label="状态">
-                            <el-select class="iot-w200" v-model="searchForm.main_execute_flag" placeholder="请选择"
+                            <el-select class="iot-w200" v-model="searchForm.flat_execute_flag" placeholder="请选择"
                                        clearable>
                                 <el-option v-for="item in statusList" :key="item.id" :label="item.modeName"
                                            :value="item.id"></el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="类型">
-                            <el-select class="iot-w200" v-model="searchForm.main_mode" placeholder="请选择" clearable>
-                                <el-option v-for="item in mainmodeList" :key="item.id" :label="item.modeName"
+                            <el-select class="iot-w200" v-model="searchForm.flat_mode" placeholder="请选择" clearable>
+                                <el-option v-for="item in flatmodeList" :key="item.id" :label="item.modeName"
                                            :value="item.id"></el-option>
                             </el-select>
                         </el-form-item>
@@ -29,7 +29,7 @@
                                             type="datetime"></el-date-picker>
                         </el-form-item>
                         <el-form-item label="来源">
-                            <el-select class="iot-w200" v-model="searchForm.main_manual_flag" placeholder="请选择"
+                            <el-select class="iot-w200" v-model="searchForm.flat_manual_flag" placeholder="请选择"
                                        clearable>
                                 <el-option v-for="item in sourceList" :key="item.id" :label="item.modeName"
                                            :value="item.id"></el-option>
@@ -69,19 +69,19 @@
                       @row-dblclick="dbshowdialog">
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
-                <el-table-column align="center" prop="main_no" label="任务号" min-width="100"
+                <el-table-column align="center" prop="flat_no" label="任务号" min-width="100"
                                  show-overflow-tooltip></el-table-column>
-                <el-table-column align="center" prop="main_priority" label="优先级" min-width="100"
+                <el-table-column align="center" prop="flat_priority" label="优先级" min-width="100"
                                  show-overflow-tooltip></el-table-column>
-                <el-table-column align="center" prop="main_mode" label="类型" min-width="100" show-overflow-tooltip>
+                <el-table-column align="center" prop="flat_mode" label="类型" min-width="100" show-overflow-tooltip>
                     <template slot-scope="scope">
-                        <span v-if="scope.row.main_mode === 1">入库</span>
-                        <span v-else-if="scope.row.main_mode === 2">出库</span>
-                        <span v-else-if="scope.row.main_mode === 3">移库</span>
-                        <span v-else-if="scope.row.main_mode === 4">口对口</span>
-                        <span v-else-if="scope.row.main_mode === 5">回流</span>
-                        <span v-else-if="scope.row.main_mode === 6">空托盘入库</span>
-                        <span v-else-if="scope.row.main_mode === 7">空托盘出库</span>
+                        <span v-if="scope.row.flat_mode === 1">入库</span>
+                        <span v-else-if="scope.row.flat_mode === 2">出库</span>
+                        <span v-else-if="scope.row.flat_mode === 3">移库</span>
+                        <span v-else-if="scope.row.flat_mode === 4">口对口</span>
+                        <span v-else-if="scope.row.flat_mode === 5">回流</span>
+                        <span v-else-if="scope.row.flat_mode === 6">空托盘入库</span>
+                        <span v-else-if="scope.row.flat_mode === 7">空托盘出库</span>
                     </template>
                 </el-table-column>
                 <el-table-column align="center" prop="slot1.warehouse.warehouse_name" label="仓库" min-width="100"
@@ -95,14 +95,14 @@
                 ></el-table-column>
                 <el-table-column
                   align="center"
-                  prop="main_port"
+                  prop="flat_port"
                   label="输送口"
                   min-width="100"
                   show-overflow-tooltip
                 ></el-table-column> -->
                 <el-table-column align="center" prop="slot1.slot_code" label="库位编码" min-width="100"
                                  show-overflow-tooltip></el-table-column>
-                <el-table-column align="center" prop="main_stock_code" label="托盘" min-width="100"
+                <el-table-column align="center" prop="flat_stock_code" label="托盘" min-width="100"
                                  show-overflow-tooltip></el-table-column>
                 <!-- <el-table-column align="center" prop="material_name" label="物料名称" min-width="100"
                                   show-overflow-tooltip></el-table-column>
@@ -110,9 +110,9 @@
                                   show-overflow-tooltip></el-table-column>
                  <el-table-column align="center" prop="exporder_quantity" label="数量" min-width="100"
                                   show-overflow-tooltip></el-table-column>-->
-                <el-table-column align="center" prop="main_execute_flag" label="执行状态" min-width="100"
+                <el-table-column align="center" prop="flat_execute_flag" label="执行状态" min-width="100"
                                  show-overflow-tooltip :formatter="executeTransform"></el-table-column>
-                <el-table-column align="center" prop="main_creat_datetime" label="下发时间" min-width="100"
+                <el-table-column align="center" prop="flat_creat_datetime" label="下发时间" min-width="100"
                                  show-overflow-tooltip :formatter="dateTimeTransform"></el-table-column>
             </el-table>
         </div>
@@ -124,15 +124,15 @@
                    append-to-body>
             <el-form inline ref="areaForm" :model="ruleForm">
                 <div class="iot-form-row">
-                    <el-form-item label="状态" label-width="100px" prop="main_mode">
-                        <el-select class="iot-w240" v-model="ruleForm.main_execute_flag" placeholder="请选择" clearable>
+                    <el-form-item label="状态" label-width="100px" prop="flat_mode">
+                        <el-select class="iot-w240" v-model="ruleForm.flat_execute_flag" placeholder="请选择" clearable>
                             <el-option v-for="item in statusList" :key="item.id" :label="item.modeName"
                                        :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="优先级" label-width="100px" prop="main_mode">
-                        <el-select class="iot-w240" v-model="ruleForm.main_priority" placeholder="请选择" clearable>
+                    <el-form-item label="优先级" label-width="100px" prop="flat_mode">
+                        <el-select class="iot-w240" v-model="ruleForm.flat_priority" placeholder="请选择" clearable>
                             <el-option v-for="item in sortList" :key="item.id" :label="item.id"
                                        :value="item.id"></el-option>
                         </el-select>
@@ -153,7 +153,7 @@
                 <div class="iot-form-row">
                     <el-form-item label="托盘号" label-width="100px" prop="material_code">
                         <el-input class="iot-w240" placeholder="请输入托盘号" maxlength="50"
-                                  v-model="dialogForm.main_stock_code" :disabled="true" clearable></el-input>
+                                  v-model="dialogForm.flat_stock_code" :disabled="true" clearable></el-input>
                     </el-form-item>
                     <el-form-item label="库位号" label-width="100px" prop="material_name">
                         <el-input class="iot-w240" placeholder="请输入库位号" maxlength="50" v-model="dialogForm.slot_code"
@@ -162,24 +162,24 @@
                 </div>
                 <div class="iot-form-row">
                     <el-form-item label="任务号" label-width="100px" prop="number">
-                        <el-input class="iot-w240" placeholder="请输入任务号" maxlength="50" v-model="dialogForm.main_no"
+                        <el-input class="iot-w240" placeholder="请输入任务号" maxlength="50" v-model="dialogForm.flat_no"
                                   :disabled="true" clearable></el-input>
                     </el-form-item>
                     <el-form-item label="任务状态" label-width="100px" prop="danwei">
                         <el-input class="iot-w240" placeholder="请输入任务状态" maxlength="50"
-                                  v-model="dialogForm.main_execute_flag" :disabled="true" clearable></el-input>
+                                  v-model="dialogForm.flat_execute_flag" :disabled="true" clearable></el-input>
                     </el-form-item>
                 </div>
                 <div class="iot-form-row">
                     <div style="text-align: center;font-size: 30px;padding: 10px 0px;">
                         <template>
-                            <span v-if="main_mode === 1">入库流水</span>
-                            <span v-else-if="main_mode === 2">出库流水</span>
-                            <span v-else-if="main_mode === 3">移库流水</span>
-                            <span v-else-if="main_mode === 4">口对口流水</span>
-                            <span v-else-if="main_mode === 5">回流流水</span>
-                            <span v-else-if="main_mode === 6">空托盘入库流水</span>
-                            <span v-else-if="main_mode === 7">空托盘出库流水</span>
+                            <span v-if="flat_mode === 1">入库流水</span>
+                            <span v-else-if="flat_mode === 2">出库流水</span>
+                            <span v-else-if="flat_mode === 3">移库流水</span>
+                            <span v-else-if="flat_mode === 4">口对口流水</span>
+                            <span v-else-if="flat_mode === 5">回流流水</span>
+                            <span v-else-if="flat_mode === 6">空托盘入库流水</span>
+                            <span v-else-if="flat_mode === 7">空托盘出库流水</span>
                         </template>
 
                     </div>
@@ -233,20 +233,20 @@
         <el-dialog class="iot-dialog" :title="dialogTitleA" :visible.sync="dialogVisibleA" width="844px" append-to-body>
             <el-form inline ref="dialogFormA" :model="ManualForm" :rules="ManualFormrules">
                 <div class="iot-form-row">
-                    <el-form-item label="任务号" label-width="120px" prop="main_no">
-                        <el-input class="iot-w240" v-model="ManualForm.main_no" placeholder="请输入任务号" maxlength="30"
+                    <el-form-item label="任务号" label-width="120px" prop="flat_no">
+                        <el-input class="iot-w240" v-model="ManualForm.flat_no" placeholder="请输入任务号" maxlength="30"
                                   clearable :disabled="true"></el-input>
                     </el-form-item>
-                    <el-form-item label="优先级" label-width="120px" prop="main_priority">
-                        <el-select class="iot-w240" v-model="ManualForm.main_priority" placeholder="请选择" clearable>
+                    <el-form-item label="优先级" label-width="120px" prop="flat_priority">
+                        <el-select class="iot-w240" v-model="ManualForm.flat_priority" placeholder="请选择" clearable>
                             <el-option v-for="item in sortList" :key="item.id" :label="item.id"
                                        :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="类型" label-width="120px" prop="main_mode">
-                        <el-select class="iot-w240" v-model="ManualForm.main_mode" placeholder="请选择" clearable
-                                   @change="getMainmode">
-                            <el-option v-for="item in mainmodeList" :key="item.id" :label="item.modeName"
+                    <el-form-item label="类型" label-width="120px" prop="flat_mode">
+                        <el-select class="iot-w240" v-model="ManualForm.flat_mode" placeholder="请选择" clearable
+                                   @change="getflatmode">
+                            <el-option v-for="item in flatmodeList" :key="item.id" :label="item.modeName"
                                        :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
@@ -256,20 +256,20 @@
                                        :value="item.id"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="库位编码" label-width="120px" prop="main_slot_code">
-                        <el-input class="iot-w240" v-model="ManualForm.main_slot_code" placeholder="请输入库位编码"
+                    <el-form-item label="库位编码" label-width="120px" prop="flat_slot_code">
+                        <el-input class="iot-w240" v-model="ManualForm.flat_slot_code" placeholder="请输入库位编码"
                                   maxlength="30" clearable></el-input>
                     </el-form-item>
 
-                    <el-form-item v-if="ManualForm.main_mode=='3'" label="移入库位编码" label-width="120px"
-                                  prop="main_inslot_code">
-                        <el-input class="iot-w240" v-model="ManualForm.main_inslot_code" placeholder="请输入移入库位编码"
+                    <el-form-item v-if="ManualForm.flat_mode=='3'" label="移入库位编码" label-width="120px"
+                                  prop="flat_inslot_code">
+                        <el-input class="iot-w240" v-model="ManualForm.flat_inslot_code" placeholder="请输入移入库位编码"
                                   maxlength="30" clearable></el-input>
                     </el-form-item>
 
 
-                    <el-form-item label="托盘" label-width="120px" prop="main_stock_code">
-                        <el-input class="iot-w240" v-model="ManualForm.main_stock_code" placeholder="请输入托盘编码"
+                    <el-form-item label="托盘" label-width="120px" prop="flat_stock_code">
+                        <el-input class="iot-w240" v-model="ManualForm.flat_stock_code" placeholder="请输入托盘编码"
                                   maxlength="50" clearable></el-input>
                     </el-form-item>
 
@@ -334,7 +334,7 @@
                     {id: 7, modeName: "暂停中"},
                     {id: 9, modeName: "已完成"}
                 ],
-                mainmodeList: [
+                flatmodeList: [
                     {id: 1, modeName: "入库"},
                     {id: 2, modeName: "出库"},
                     {id: 3, modeName: "移库"},
@@ -362,8 +362,8 @@
                 singleDialogVisible: false,
                 //表单数据
                 ruleForm: {
-                    main_priority: "",
-                    main_execute_flag: ""
+                    flat_priority: "",
+                    flat_execute_flag: ""
                 },
                 dialogForm: {},
                 //表单验证规则
@@ -385,20 +385,20 @@
                 },
                 ImportOrderId: '',
                 tableData2: [],
-                main_mode: '',
+                flat_mode: '',
                 dialogTitleA: '手动生成',
                 dialogVisibleA: false,
                 ManualForm: {
-                    main_no:"",
-                    main_priority: "",
-                    main_mode: "",
+                    flat_no:"",
+                    flat_priority: "",
+                    flat_mode: "",
                     warehouse_id: "",
-                    main_slot_code: "",
-                    main_inslot_code: "",
-                    main_stock_code: "",
+                    flat_slot_code: "",
+                    flat_inslot_code: "",
+                    flat_stock_code: "",
                 },
                 ManualFormrules: {
-                    main_mode: [
+                    flat_mode: [
                         {
                             required: true,
                             message: "请选择类型",
@@ -412,7 +412,7 @@
                             trigger: "blur"
                         }
                     ],
-                    main_slot_code: [
+                    flat_slot_code: [
                         {
                             required: true,
                             message: "请选择库位编码",
@@ -437,12 +437,12 @@
                     code: 'TaskCode'
                 };
                 let code = await GetEncodingRuleCode(params);
-                this.ManualForm.main_no = code;
+                this.ManualForm.flat_no = code;
             },
             //查询该仓库下的库位是否存在
             async checkExsit() {
                 let params = {
-                    slot_code: this.ManualForm.main_slot_code,
+                    slot_code: this.ManualForm.flat_slot_code,
                     slot_warehouse_id: this.ManualForm.warehouse_id
                 };
                 let res = await GetSlotCodeIdApi(params);
@@ -457,9 +457,9 @@
                         return
                     } else {
 
-                        if (this.ManualForm.main_inslot_code && this.ManualForm.main_mode == '3') {
+                        if (this.ManualForm.flat_inslot_code && this.ManualForm.flat_mode == '3') {
                             let params = {
-                                slot_code: this.ManualForm.main_inslot_code,
+                                slot_code: this.ManualForm.flat_inslot_code,
                                 slot_warehouse_id: this.ManualForm.warehouse_id
                             };
                             let res = await GetSlotCodeIdApi(params);
@@ -483,10 +483,10 @@
                                         let params = {
                                             ...this.ManualForm
                                         };
-                                        params.main_inslot_code=result1;
-                                        params.main_slot_code=result;
-                                        params.main_execute_flag = 1;
-                                        params.main_manual_flag=2;
+                                        params.flat_inslot_code=result1;
+                                        params.flat_slot_code=result;
+                                        params.flat_execute_flag = 1;
+                                        params.flat_manual_flag=2;
                                         let res = await addApi(params);
                                         if (res) {
                                             this.$message({
@@ -513,9 +513,9 @@
                                 let params = {
                                     ...this.ManualForm
                                 };
-                                params.main_slot_code=result;
-                                params.main_execute_flag = 1;
-                                params.main_manual_flag=2;
+                                params.flat_slot_code=result;
+                                params.flat_execute_flag = 1;
+                                params.flat_manual_flag=2;
                                 let res = await addApi(params);
                                 if (res) {
                                     this.$message({
@@ -544,7 +544,7 @@
                         this.dialogVisibleA = false;
                         return;
                     }
-                    if (this.ManualForm.main_slot_code) {
+                    if (this.ManualForm.flat_slot_code) {
                         this.checkExsit();
                     } else {
 
@@ -556,14 +556,14 @@
 
             },
             //获取类型的值
-            getMainmode(val) {
+            getflatmode(val) {
                 if (val === 3) {
-                    this.ManualFormrules.main_stock_code = null;
+                    this.ManualFormrules.flat_stock_code = null;
                     this.ManualFormrules = Object.assign({}, this.ManualFormrules);
                 } else {
                     this.ManualFormrules = Object.assign(
                         {
-                            main_inslot_code: [
+                            flat_inslot_code: [
                                 {
                                     required: true,
                                     message: "请选择移入库位编码",
@@ -623,11 +623,10 @@
                     SkipCount: (this.currentPage - 1) * this.pageSize,
                     ...this.searchForm
                 };
-                if(params.main_execute_flag==null)
+                 if(params.flat_execute_flag==null||params.flat_execute_flag=="")
                 {
-                params.main_execute_flag=10;
+                params.flat_execute_flag=10;
                 }
-
                 let data = await getListApi(params);
                 if (data) {
                     this.tableData = data.items || [];
@@ -687,20 +686,20 @@
                     this.$message.error(this.text_selectOne);
                 } else {
 
-                    if(this.multipleSelection[0].main_manual_flag=='1')
+                    if(this.multipleSelection[0].flat_manual_flag=='1')
                     {
                         this.dialogTitle = '查看'
                         this.dialogVisible = true;
                         let row = this.multipleSelection[0];
-                        this.dialogForm.main_stock_code = row.main_stock_code;
+                        this.dialogForm.flat_stock_code = row.flat_stock_code;
                         this.dialogForm.slot_code = row.slot1.slot_code;
-                        this.dialogForm.main_no = row.main_no;
+                        this.dialogForm.flat_no = row.flat_no;
                         this.statusList.forEach(ele => {
-                            if (row.main_execute_flag === ele.id) {
-                                this.dialogForm.main_execute_flag = ele.modeName;
+                            if (row.flat_execute_flag === ele.id) {
+                                this.dialogForm.flat_execute_flag = ele.modeName;
                             }
                         });
-                        this.main_mode = row.main_mode;
+                        this.flat_mode = row.flat_mode;
                         this.ImportOrderId = row.id;
 
                         this.Getlist();
@@ -717,20 +716,20 @@
             },
             //双击查看
             dbshowdialog(row, event, column) {
-                if(row.main_manual_flag=='1')
+                if(row.flat_manual_flag=='1')
                 {
                     this.dialogVisible = true;
-                    this.dialogForm.main_stock_code = row.main_stock_code;
+                    this.dialogForm.flat_stock_code = row.flat_stock_code;
                     this.dialogForm.slot_code = row.slot1.slot_code;
-                    this.dialogForm.main_no = row.main_no;
+                    this.dialogForm.flat_no = row.flat_no;
 
                     this.statusList.forEach(ele => {
-                        if (row.main_execute_flag === ele.id) {
-                            this.dialogForm.main_execute_flag = ele.modeName;
+                        if (row.flat_execute_flag === ele.id) {
+                            this.dialogForm.flat_execute_flag = ele.modeName;
                         }
                     });
                     this.ImportOrderId = row.id;
-                    this.main_mode = row.main_mode;
+                    this.flat_mode = row.flat_mode;
                     this.Getlist();
                 }
                 else
@@ -748,19 +747,19 @@
                     SkipCount: (this.currentPage - 1) * this.pageSize,
                     task_id: this.ImportOrderId,
                 };
-                if (this.main_mode == '1') {
+                if (this.flat_mode == '1') {
 
-                } else if (this.main_mode == '2') {
-                } else if (this.main_mode == '3') {
-                } else if (this.main_mode == '4') {
-                } else if (this.main_mode == '5') {
-                } else if (this.main_mode == '6') {
+                } else if (this.flat_mode == '2') {
+                } else if (this.flat_mode == '3') {
+                } else if (this.flat_mode == '4') {
+                } else if (this.flat_mode == '5') {
+                } else if (this.flat_mode == '6') {
 
                     let data = await getkyprkListApi(params);
                     if (data) {
                         this.lstableData = data.items || [];
                     }
-                } else if (this.main_mode == '7') {
+                } else if (this.flat_mode == '7') {
                 }
 
                 /* let data = await getrkListApi(params);
@@ -818,8 +817,8 @@
                     this.singleDialogVisible = true;
 
 
-                    this.ruleForm.main_execute_flag = ''
-                    this.ruleForm.main_priority = ''
+                    this.ruleForm.flat_execute_flag = ''
+                    this.ruleForm.flat_priority = ''
 
 
                 }
@@ -853,12 +852,12 @@
 
             },
             empty() {
-                this.ManualForm.main_priority = ''
-                this.ManualForm.main_mode = ''
+                this.ManualForm.flat_priority = ''
+                this.ManualForm.flat_mode = ''
                 this.ManualForm.warehouse_id = ''
-                this.ManualForm.main_slot_code = ''
-                this.ManualForm.main_inslot_code = ''
-                this.ManualForm.main_stock_code = ''
+                this.ManualForm.flat_slot_code = ''
+                this.ManualForm.flat_inslot_code = ''
+                this.ManualForm.flat_stock_code = ''
             },
             //点击执行
             click_modify(val) {
@@ -879,10 +878,10 @@
                         })*/
                         let params = row;
 
-                        if (this.ruleForm.main_execute_flag)
-                            params.main_execute_flag = this.ruleForm.main_execute_flag
-                        if (this.ruleForm.main_priority)
-                            params.main_priority = this.ruleForm.main_priority
+                        if (this.ruleForm.flat_execute_flag)
+                            params.flat_execute_flag = this.ruleForm.flat_execute_flag
+                        if (this.ruleForm.flat_priority)
+                            params.flat_priority = this.ruleForm.flat_priority
                         params.slot1 = null;
                         params.exporder_quantity = null;
                         console.log('-------------kaishi ------------')
@@ -1030,14 +1029,14 @@
                 let res = await getOneApi(params);
                 let obj = {
                     id: row.id,
-                    // main_no:res.main_no,
-                    main_priority: res.main_priority,
-                    // main_mode:main_mode,
-                    // main_slot_code:res.main_slot_code,
-                    // main_stock_code:res.main_stock_code,
-                    main_execute_flag: res.main_execute_flag,
-                    // main_manual_flag:res.main_manual_flag,
-                    // main_port:res.main_port,
+                    // flat_no:res.flat_no,
+                    flat_priority: res.flat_priority,
+                    // flat_mode:flat_mode,
+                    // flat_slot_code:res.flat_slot_code,
+                    // flat_stock_code:res.flat_stock_code,
+                    flat_execute_flag: res.flat_execute_flag,
+                    // flat_manual_flag:res.flat_manual_flag,
+                    // flat_port:res.flat_port,
                     // material_name:res.material_name,
                     // exporder_batch_no:res.exporder_batch_no,
                     // exporder_quantity:res.exporder_quantity,
@@ -1048,7 +1047,7 @@
             executeTransform(row) {
                 let status;
                 this.statusList.forEach(ele => {
-                    if (row.main_execute_flag === ele.id) {
+                    if (row.flat_execute_flag === ele.id) {
                         status = ele.modeName;
                     }
                 });
@@ -1057,7 +1056,7 @@
             //日期时间转换
             dateTimeTransform(row) {
                 let time = row.creationTime;
-                return this.$moment(time).format("YYYY-MM-DD hh:mm:ss");
+                return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
             }
         }
     };

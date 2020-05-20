@@ -1,6 +1,6 @@
 export default {
   lang: {
-    zh: '中文',
+    zh:'中文',
     en:'English',
     ja:'日語'
   },
@@ -97,6 +97,7 @@ export default {
     ImportReportForm: 'ImportReportForm',
     ExportReportForm:'ExportReportForm',
     inventoryReportForm: 'inventoryReportForm',
+    customReport:'customReportForm',
     
     //WareEquipment
     RGVStateManage: 'RGVStateManage',
@@ -441,7 +442,9 @@ export default {
     detailAddress:'detailAddress',
     plInputcompanyName:'plInputcompanyName',
     plInputprincipal:'plInputprincipal',
-    plInputNote:'plInputNote'
+    plInputNote:'plInputNote',
+    Yes:'Yes',
+    No:'No'
   },
    //departmentBasicInfo
    departmentBasicInfo:{
@@ -499,7 +502,8 @@ export default {
     plInputName:'plInputName',
     plInputSort:'plInputSort',
     cloumnNum:'cloumnNum',
-    plInputCloumnNum:'plInputCloumnNum'
+    plInputCloumnNum:'plInputCloumnNum',
+    row_type:'rowType'
   },
    //importWarehouseManage
    importWarehouseManage:{

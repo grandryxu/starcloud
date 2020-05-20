@@ -88,27 +88,48 @@
           label="库位状态"
           min-width="100"
           show-overflow-tooltip
-        ></el-table-column>
+        >
+          <template slot-scope="scope">
+            <span v-if="scope.row.inventory_status === 1">可用</span>
+            <span v-else-if="scope.row.inventory_status === 2">分配</span>
+            <span v-else-if="scope.row.inventory_status === 3">出库</span>
+            <span v-else-if="scope.row.inventory_status === 4">复核</span>
+            <span v-else-if="scope.row.inventory_status === 5">暂存</span>
+            <span v-else-if="scope.row.inventory_status === 6">回流</span>
+            <span v-else-if="scope.row.inventory_status === 7">冻结</span>
+          </template>
+        </el-table-column>
         <el-table-column
           align="center"
           prop="imp_lock"
           label="入库锁定状态"
           min-width="100"
           show-overflow-tooltip
-        ></el-table-column>
+        >
+          <template slot-scope="scope">
+            <span v-if="scope.row.imp_lock===0">正常</span>
+            <span v-else >锁定</span>
+          </template>
+        </el-table-column>
         <el-table-column
           align="center"
           prop="ex_lock"
           label="出库锁定状态"
           min-width="100"
           show-overflow-tooltip
-        ></el-table-column>
+        >
+          <template slot-scope="scope">
+            <span v-if="scope.row.ex_lock===0">正常</span>
+            <span v-else >锁定</span>
+          </template>
+        </el-table-column>
         <el-table-column
           align="center"
           prop="imptime"
           label="入库时间"
           min-width="100"
           show-overflow-tooltip
+          :formatter="dateTimeTransform"
         ></el-table-column>
       </el-table>
     </div>
@@ -199,6 +220,7 @@
                 prop="imptime"
                 label="入库日期"
                 min-width="100"
+                :formatter="dateTimeTransform"
                 show-overflow-tooltip
               ></el-table-column>
               <el-table-column
@@ -276,7 +298,8 @@ export default {
       ruleForm: {
         unit_name: "",
         unit_is_enable: ""
-      }
+      },
+      imptimeName:'',
       //表单验证规则
       // rules: {
       // 	unit_name: [{
@@ -299,6 +322,13 @@ export default {
     this.btnInit();
   },
   methods: {
+    //日期时间转换
+    dateTimeTransform(row) {
+      let time = row.imptime;
+      this.imptimeName=this.$utils.format(time,'yyyy-MM-dd hh:mm:ss')
+      return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
+
+    },
     //根据当前用户权限标识初始化按钮状态
     btnInit() {
       this.$Common.DistributePermission.call(this);
@@ -434,12 +464,32 @@ export default {
     },
     //根据主键获取信息
     async Get(row) {
+
+      let inventory_statusName='';
+      if(row.inventory_status=='1')
+        inventory_statusName='可用';
+      else if(row.inventory_status=='2')
+        inventory_statusName='分配';
+      else if(row.inventory_status=='3')
+        inventory_statusName='出库';
+      else if(row.inventory_status=='4')
+        inventory_statusName='复核';
+      else if(row.inventory_status=='5')
+        inventory_statusName='暂存';
+      else if(row.inventory_status=='6')
+        inventory_statusName='回流';
+      else if(row.inventory_status=='7')
+        inventory_statusName='冻结';
+
       let obj = {
         slot_code: row.slot_code,
         stock_code: row.stock_code,
-        inventory_status: row.inventory_status,
-        imptime: row.imptime
+        inventory_status: inventory_statusName,
+        imptime: this.imptimeName
       };
+
+
+
       this.ruleForm = obj;
       let params = {
         slot_code: row.slotid,

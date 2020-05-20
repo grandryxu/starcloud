@@ -4,10 +4,10 @@
       <div class="layout__search">
         <el-form inline label-width="100px" :model="searchForm">
           <el-form-item label="出库单号">
-            <el-input class="iot-w200" placeholder="请输入出库单号" maxlength="50" v-model="searchForm.expbody_bill_bar" clearable></el-input>
+            <el-input class="iot-w200" placeholder="请输入出库单号" maxlength="50" v-model="searchForm.exporder_bill_bar" clearable></el-input>
           </el-form-item>
           <el-form-item label="合同号">
-            <el-input class="iot-w200" placeholder="请输入合同号" maxlength="50" v-model="searchForm.expbody_external_listid" clearable></el-input>
+            <el-input class="iot-w200" placeholder="请输入合同号" maxlength="50" v-model="searchForm.exporder_external_listid" clearable></el-input>
           </el-form-item>
           <el-form-item label="经销商">
             <el-select class="iot-w200" v-model="searchForm.custom_name" placeholder="请选择" clearable>
@@ -18,12 +18,12 @@
             <el-input class="iot-w200" placeholder v-model="searchForm.warehouse_name"></el-input>
           </el-form-item>-->
           <el-form-item label="单据类型">
-            <el-select class="iot-w200" v-model="searchForm.expbody_type" placeholder="请选择" clearable>
-              <el-option v-for="item in expbodyTypeList" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            <el-select class="iot-w200" v-model="searchForm.exporder_type" placeholder="请选择" clearable>
+              <el-option v-for="item in exporderTypeList" :key="item.value" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="状态">
-            <el-select class="iot-w200" v-model="searchForm.expbody_execute_flag" placeholder="请选择" clearable>
+            <el-select class="iot-w200" v-model="searchForm.exporder_execute_flag" placeholder="请选择" clearable>
               <el-option v-for="item in executeList" :key="item.value" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
@@ -50,37 +50,39 @@
       <el-table id="out-table" ref="print" :data="tableData" stripe style="width: 100%" border @row-dblclick="click_edit" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
-        <el-table-column align="center" prop="expbody_bill_bar" label="出库流水号" min-width="100" show-overflow-tooltip>
+        <el-table-column align="center" prop="exporder_bill_bar" label="出库流水号" min-width="100" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{scope.row.expbody_bill_bar + '-' + scope.$index}}</span>
+            <span>{{scope.row.exporder_bill_bar + '-' + scope.$index}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="expbody_bill_bar" label="出库单号" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_external_listid" label="合同号" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_goods_id" label="物资编码" min-width="100" show-overflow-tooltip :formatter="toGoodsCode"></el-table-column>
-        <el-table-column align="center" prop="expbody_goods_id" label="物资名称" min-width="100" show-overflow-tooltip :formatter="toGoodsName"></el-table-column>
-        <el-table-column align="center" prop="expbody_batch_no" label="批次" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_stock_code" label="托盘" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_slot_code" label="库位" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_bill_bar" label="出库单号" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_external_listid" label="合同号" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_goods_id" label="物资编码" min-width="100" show-overflow-tooltip :formatter="toGoodsCode"></el-table-column>
+        <el-table-column align="center" prop="exporder_goods_id" label="物资名称" min-width="100" show-overflow-tooltip :formatter="toGoodsName"></el-table-column>
+        <el-table-column align="center" prop="exporder_batch_no" label="大批次" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_lots_no" label="小批次" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_stock_code" label="托盘" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="slot.slot_code" label="库位" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column align="center" prop="warehouse_is_enable" label="经销商" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_binding_quantity" label="数量" min-width="100" show-overflow-tooltip></el-table-column>
-        <el-table-column align="center" prop="expbody_code" label="单位名称" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_quantity" label="数量" min-width="100" show-overflow-tooltip></el-table-column>
+          <el-table-column align="center" prop="exporder_return_quantity" label="回流数量" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_code" label="单位名称" min-width="100" show-overflow-tooltip></el-table-column>
         <el-table-column
           align="center"
-          prop="expbody_date"
+          prop="exporder_date"
           label="出库日期"
           min-width="100"
           show-overflow-tooltip
           :formatter="dateTransform"
         ></el-table-column>
-        <el-table-column align="center" prop="expbody_execute_flag" label="执行状态" min-width="100" show-overflow-tooltip>
+        <el-table-column align="center" prop="exporder_execute_flag" label="执行状态" min-width="100" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="scope.row.expbody_execute_flag === 1">未执行</span>
-            <span v-else-if="scope.row.expbody_execute_flag === 2">已执行</span>
-            <span v-else-if="scope.row.expbody_execute_flag === 3">已完成</span>
+            <span v-if="scope.row.exporder_execute_flag === 1">未执行</span>
+            <span v-else-if="scope.row.exporder_execute_flag === 2">执行中</span>
+            <span v-else-if="scope.row.exporder_execute_flag === 3">已完成</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="expbody_remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column align="center" prop="exporder_remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
       </el-table>
     </div>
     <div class="iot-pagination">
@@ -89,30 +91,30 @@
     <el-dialog class="iot-dialog" :title="dialogTitle" :visible.sync="dialogVisible" width="824px" append-to-body>
       <el-form v-if="dialogTitle === '查阅'" inline ref="dialogForm" :model="ruleForm" :rules="rules">
         <div class="iot-form-row">
-          <el-form-item label="物资名称" label-width="100px" prop="expbody_goods_id">
-            <el-select class="iot-w240" v-model="ruleForm.expbody_goods_id" placeholder="请选择" disabled>
+          <el-form-item label="物资名称" label-width="100px" prop="exporder_goods_id">
+            <el-select class="iot-w240" v-model="ruleForm.exporder_goods_id" placeholder="请选择" disabled>
               <el-option v-for="item in goodsList" :key="item.id" :label="item.goods_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="物资编码" label-width="100px" prop="expbody_goods_id">
-            <el-select class="iot-w240" v-model="ruleForm.expbody_goods_id" placeholder="请选择" disabled>
+          <el-form-item label="物资编码" label-width="100px" prop="exporder_goods_id">
+            <el-select class="iot-w240" v-model="ruleForm.exporder_goods_id" placeholder="请选择" disabled>
               <el-option v-for="item in goodsList" :key="item.id" :label="item.goods_code" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
         </div>
         <div class="iot-form-row">
-          <el-form-item label="批次" label-width="100px" prop="expbody_batch_no">
-            <el-input class="iot-w240" v-model="ruleForm.expbody_batch_no" placeholder="请输入批次" maxlength="50" clearable disabled></el-input>
+          <el-form-item label="批次" label-width="100px" prop="exporder_batch_no">
+            <el-input class="iot-w240" v-model="ruleForm.exporder_batch_no" placeholder="请输入批次" maxlength="50" clearable disabled></el-input>
           </el-form-item>
-          <el-form-item label="数量" label-width="100px" prop="expbody_binding_quantity">
-            <el-input class="iot-w240" v-model="ruleForm.expbody_binding_quantity" placeholder="请输入数量" maxlength="20" clearable disabled></el-input>
+          <el-form-item label="数量" label-width="100px" prop="exporder_binding_quantity">
+            <el-input class="iot-w240" v-model="ruleForm.exporder_binding_quantity" placeholder="请输入数量" maxlength="20" clearable disabled></el-input>
           </el-form-item>
         </div>
         <div class="iot-form-row">
-          <el-form-item label="有效期" label-width="100px" prop="expbody_vaildate_date">
-            <el-date-picker class="iot-w240" clearable v-model="ruleForm.expbody_vaildate_date" type="date" placeholder="请选择" disabled></el-date-picker>
+          <el-form-item label="有效期" label-width="100px" prop="exporder_vaildate_date">
+            <el-date-picker class="iot-w240" clearable v-model="ruleForm.exporder_vaildate_date" type="date" placeholder="请选择" disabled></el-date-picker>
           </el-form-item>
-          <el-form-item label="质量状态" label-width="100px" prop="expbody_quality_status">
+          <el-form-item label="质量状态" label-width="100px" prop="exporder_quality_status">
             <el-select class="iot-w240" v-model="ruleForm.exphead_execute_flag" placeholder="请选择" disabled>
               <el-option v-for="item in qualityList" :key="item.value" :label="item.label" :value="item.value"></el-option>
             </el-select>
@@ -126,7 +128,7 @@
             <el-table-column align="center" type="index" label="序号" width="50"></el-table-column>
             <el-table-column align="center" prop="exporder_box_code" label="包装码" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="exporder_quantity" label="数量" min-width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column align="center" prop="expbody_quality_status" label="质量状态" min-width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column align="center" prop="exporder_quality_status" label="质量状态" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column align="center" prop="exporder_remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
           </el-table>
         </div>
@@ -195,20 +197,20 @@
 
       <el-form v-if="dialogTitle === '复核'" inline ref="dialogForm" :model="ruleForm" :rules="rules">
         <div class="iot-form-row">
-          <el-form-item label="物资名称" label-width="100px" prop="expbody_goods_id">
-            <el-select class="iot-w240" v-model="ruleForm.expbody_goods_id" placeholder="请选择" disabled>
+          <el-form-item label="物资名称" label-width="100px" prop="exporder_goods_id">
+            <el-select class="iot-w240" v-model="ruleForm.exporder_goods_id" placeholder="请选择" disabled>
               <el-option v-for="item in goodsList" :key="item.id" :label="item.goods_name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="物资编码" label-width="100px" prop="expbody_goods_id">
-            <el-select class="iot-w240" v-model="ruleForm.expbody_goods_id" placeholder="请选择" disabled>
+          <el-form-item label="物资编码" label-width="100px" prop="exporder_goods_id">
+            <el-select class="iot-w240" v-model="ruleForm.exporder_goods_id" placeholder="请选择" disabled>
               <el-option v-for="item in goodsList" :key="item.id" :label="item.goods_code" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
         </div>
         <div class="iot-form-row">
-          <el-form-item label="数量" label-width="100px" prop="expbody_binding_quantity">
-            <el-input class="iot-w240" v-model="ruleForm.expbody_binding_quantity" placeholder="请输入数量" maxlength="20" clearable></el-input>
+          <el-form-item label="数量" label-width="100px" prop="exporder_binding_quantity">
+            <el-input class="iot-w240" v-model="ruleForm.exporder_binding_quantity" placeholder="请输入数量" maxlength="20" clearable></el-input>
           </el-form-item>
         </div>
       </el-form>
@@ -264,7 +266,7 @@ export default {
       pendingCreateOrders: [],
       pendingEditOrders: [],
       typeList: this.$DropBox.getAllWarehouseType(),
-      expbodyTypeList: [{ value: 1, label: "一般出库" }],
+      exporderTypeList: [{ value: 1, label: "一般出库" }],
       executeList: [
         { value: 1, label: "未执行" },
         { value: 2, label: "执行中" },
@@ -287,17 +289,17 @@ export default {
       currentScanPage: 1,
       //表单数据
       ruleForm: {
-        expbody_goods_id: "",
+        exporder_goods_id: "",
         exphead_execute_flag: "",
-        expbody_batch_no: "",
-        expbody_stock_code: "",
-        expbody_vaildate_date: "",
+        exporder_batch_no: "",
+        exporder_stock_code: "",
+        exporder_vaildate_date: "",
         remark: "",
-        expbody_binding_quantity: ""
+        exporder_binding_quantity: ""
       },
       //表单验证规则
       rules: {
-        expbody_goods_id: [
+        exporder_goods_id: [
           {
             required: true,
             message: "请输入物资名称和物资编码",
@@ -311,28 +313,28 @@ export default {
             trigger: "blur"
           }
         ],
-        expbody_vaildate_date: [
+        exporder_vaildate_date: [
           {
             required: true,
             message: "有效日期",
             trigger: "blur"
           }
         ],
-        expbody_batch_no: [
+        exporder_batch_no: [
           {
             required: true,
             message: "请输入批次",
             trigger: "blur"
           }
         ],
-        expbody_stock_code: [
+        exporder_stock_code: [
           {
             required: true,
             message: "请输入托盘条码",
             trigger: "blur"
           }
         ],
-        expbody_binding_quantity: [
+        exporder_binding_quantity: [
           {
             required: true,
             message: "请输入数量",
@@ -510,14 +512,14 @@ export default {
       if (data.length === 0) {
         data.push({
           scanId: +data.length + 1,
-          exporder_bill_bar: this.ruleForm.expbody_bill_bar,
+          exporder_bill_bar: this.ruleForm.exporder_bill_bar,
           isCreate: true,
           isCanEdit: true
         });
       } else {
         data.push({
           scanId: +data[data.length - 1].scanId + 1,
-          exporder_bill_bar: this.ruleForm.expbody_bill_bar,
+          exporder_bill_bar: this.ruleForm.exporder_bill_bar,
           isCreate: true,
           isCanEdit: true
         });
@@ -724,31 +726,31 @@ export default {
       let res = await getOneApi(params);
       let obj = {
         id: row.id,
-        expbody_code: res.expbody_code,
+        exporder_code: res.exporder_code,
         exphead_execute_flag: res.exphead_execute_flag,
-        expbody_goods_id: res.expbody_goods_id,
-        expbody_batch_no: res.expbody_batch_no,
-        expbody_stock_code: res.expbody_stock_code,
-        expbody_vaildate_date: res.expbody_vaildate_date,
+        exporder_goods_id: res.exporder_goods_id,
+        exporder_batch_no: res.exporder_batch_no,
+        exporder_stock_code: res.exporder_stock_code,
+        exporder_vaildate_date: res.exporder_vaildate_date,
         remark: res.remark,
-        expbody_binding_quantity: res.expbody_binding_quantity,
-        expbody_quality_status: res.expbody_quality_status,
-        expbody_bill_bar: res.expbody_bill_bar
+        exporder_binding_quantity: res.exporder_binding_quantity,
+        exporder_quality_status: res.exporder_quality_status,
+        exporder_bill_bar: res.exporder_bill_bar
       };
       this.ruleForm = obj;
       await this.GetAllOrders();
     },
     //日期时间转换
     dateTransform(row) {
-      let date = row.expbody_date;
-      return this.$moment(date).format("YYYY-MM-DD");
+      let date = row.exporder_date;
+      return this.$moment(date).format("YYYY-MM-DD hh:mm:ss");
     },
     //物资名称
     toGoodsCode(row) {
       console.log(row);
       let goodsCode;
       this.goodsList.forEach(ele => {
-        if (ele.id === row.expbody_goods_id) {
+        if (ele.id === row.exporder_goods_id) {
           goodsCode = ele.goods_code;
         }
       });
@@ -757,7 +759,7 @@ export default {
     toGoodsName(row) {
       let goodsName;
       this.goodsList.forEach(ele => {
-        if (ele.id === row.expbody_goods_id) {
+        if (ele.id === row.exporder_goods_id) {
           goodsName = ele.goods_name;
         }
       });

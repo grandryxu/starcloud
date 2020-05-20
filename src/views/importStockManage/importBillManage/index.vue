@@ -50,7 +50,7 @@
           <el-button type="primary" plain @click="handleCancel">作废</el-button>
           <el-button type="primary" plain @click="click_add">一键走账</el-button>
           <el-button type="primary" plain @click="handleFinish">单据完结</el-button>
-          <el-button type="primary" plain @click="handleMaintask">生成任务</el-button>
+<!--          <el-button type="primary" plain @click="handleMaintask">生成任务</el-button>-->
           <el-button type="primary" plain icon="el-icon-document" @click="exportExcel">导出</el-button>
           <el-button type="primary" plain icon="el-icon-printer" @click="printTable">打印</el-button>
           <el-button type="primary" plain @click="handleBillPrint">单据打印</el-button>
@@ -542,6 +542,7 @@ NoauditListApi,
             imporder_quality_status:imporder_quality_status,
             imporder_goods_id:imporder_goods_id,
             imporder_body_id:imporder_body_id,
+            imporder_warehouse_id:imporder_warehouse_id,
           };
         } else {
           //this.text_selectOne  全局定义的提示  在textConfig.js中
@@ -607,7 +608,7 @@ NoauditListApi,
         let params = {
           MaxResultCount: this.pageSize,
           SkipCount: (this.currentPage - 1) * this.pageSize,
-          impbody_imphead_id: this.ruleForm.id
+          impbody_head_id: this.ruleForm.id
         };
         let data = await getListGoodsApi(params);
         if (data) {
@@ -742,7 +743,7 @@ NoauditListApi,
         this.goodsTableData.forEach(ele => {
           if (ele.isCreate) {
             if (id) {
-              ele.impbody_imphead_id = id;
+              ele.impbody_head_id = id;
             }
             this.pendingCreateGoods.push(ele);
           } else if (ele.isEdit) {
@@ -1006,7 +1007,7 @@ NoauditListApi,
           data.push({
             goodsId: +data.length + 1,
             impbody_list_id:(+data.length + 1),
-            impbody_imphead_id: this.ruleForm.id,
+            impbody_head_id: this.ruleForm.id,
             impbody_bill_bar: this.ruleForm.imphead_code,
             impbody_noused_flag: 1,
             impbody_external_listid: this.ruleForm.imphead_external_code,
@@ -1021,7 +1022,7 @@ NoauditListApi,
           data.push({
             goodsId: +data[data.length - 1].goodsId + 1,
             impbody_list_id:(+data.length + 1),
-            impbody_imphead_id: this.ruleForm.id,
+            impbody_head_id: this.ruleForm.id,
             impbody_bill_bar: this.ruleForm.imphead_code,
             impbody_external_listid: this.ruleForm.imphead_external_code,
             impbody_noused_flag: 1,
@@ -1085,7 +1086,7 @@ NoauditListApi,
         if(validArr.every(ele=>{
           return Object.keys(model).includes(ele)
         }) && Object.keys(temModel).every(key=>{
-          // if(key === 'impbody_imphead_id' || key === 'impbody_remark'){
+          // if(key === 'impbody_head_id' || key === 'impbody_remark'){
           //   model[key] = true;
           // }
           return temModel[key]
@@ -1308,7 +1309,7 @@ NoauditListApi,
           let goodsparams = {
             MaxResultCount: 999,
             SkipCount: 0,
-            impbody_imphead_id: row.id
+            impbody_head_id: row.id
           };
           let data = await getListGoodsApi(goodsparams);
           if (data) {

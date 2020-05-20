@@ -56,10 +56,25 @@
             </div>
           </div>
       </div>
-      <div id="mainLine" style="width:100%;height:400px;border-bottom:1px solid #ddd"></div>
-      <div v-for="(item,index) in pieDataList" :key="index" >
-         <statistics :pieData="item"></statistics>
+
+      <el-col :span="24" style="display:flex;border-bottom:20px solid #eee;padding:20px;position:relative">
+      
+      <div id="mainLine" style="height:400px;width:50%"></div>
+      <div style="height:400px;width:50%;position:relative">
+        <el-form inline label-width="50px" style="position:absolute;z-index:999;top:60px;">
+          <el-form-item label="仓库">
+            <el-select class="iot-w120" v-model="searchForm.id" placeholder="请选择" @change="getWarehouseUseRatio" clearable>
+              <el-option v-for="item in warehouseUseRatioList" :key="item.id" :label="item.warehouse_name" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div v-for="(item,index) in pieDataList" :key="index" >
+          <statistics :pieData="item"></statistics>
+        </div>
       </div>
+    </el-col>
+
+
     </div>
     <!-- <el-row class="iot-home__charts" :gutter="15">
       <el-col :span="12">
@@ -75,7 +90,7 @@
 <script>
 import echarts from "echarts";
 import statistics from './components/statistics'
-import {storeDateStatistics,pieStatistics,GetNowTaskNum,GetNowAlarmNum,GetNowSlotPercent,GetCheckTaskNum} from './api'
+import {storeDateStatistics,pieStatistics,GetNowTaskNum,GetNowAlarmNum,GetNowSlotPercent,GetCheckTaskNum,useRatioPie} from './api'
 import {
   mapMutations
 } from 'vuex'
@@ -112,7 +127,12 @@ export default {
           detailLink:'Inventory-stocking'
         },
       ],
-      pieDataList:[]
+      pieDataList:[],
+      lineDataList:[],
+      warehouseUseRatioList:[],
+      searchForm:{},
+      currentPage:1,
+      pageSize:10
     };
   },
   mounted() {
@@ -235,29 +255,49 @@ export default {
     //   }]
     // };
     // echarts.init(this.$refs.warn).setOption(option2);
-    this.drawMainLine();
-    this.getPieList();
-    this.getAllStatusNum()
+    this.getAllStatusNum();
+    this.getLineList();
+    this.GetUseRatioPie()
   },
   methods: {
     ...mapMutations(['updatePageSize']),
     getConfig() {
     },
+    //利用率列表
+    async GetUseRatioPie() {
+      let params = {
+        MaxResultCount: this.pageSize,
+        SkipCount: (this.currentPage - 1) * this.pageSize,
+        ...this.searchForm
+      };
+      // let data = await useRatioPie(params);
+      let data = await this.$DropBox.getWarehouselist();
+      if (data) {
+        this.warehouseUseRatioList = data || [];
+        this.getPieList(this.warehouseUseRatioList[0].id)
+      }
+    },
+    //获取图表使用率
+    async getWarehouseUseRatio(id){
+      console.log(id)
+      await this.getPieList(id);
+    },
     //统计可视化折线图
     drawMainLine() {
       let mainLine = this.$echarts.init(document.getElementById("mainLine"));
       let startDate = this.$moment(new Date()).format("YYYY-MM-DD");
-      let base = +new Date(2019,9,9);
       let oneDay = 24 * 3600 * 1000;
+      let base = +new Date() -6*oneDay;
       let date = [];
       let data = [Math.random() * 300];
-      for (var i = 1; i < 60; i++) {
-        var now = new Date(base += oneDay);
+      for (var i = 1; i < 15; i++) {
+        var now = new Date(base);
+        base+=oneDay;
         date.push([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-'));
         data.push(Math.round((Math.random() - 0.5) * 20 + data[i - 1]));
       }
       mainLine.setOption({
-        title: { text: "仓库使用率折线图" },
+        title: { text: "库存日期统计" },
         tooltip: {
           show: true,
           trigger: "axis"
@@ -287,18 +327,18 @@ export default {
             axisLabel: {
               show: true,
               interval: "auto",
-              formatter: "{value}%"
+              formatter: "{value}"
             },
             data: [0, 20, 40, 60, 80, 100]
           }
         ],
         dataZoom: [{
-            type: 'inside',
-            start: 0,
-            end: 10
+            type: 'slider',
+            start:0,
+            end: 50,
         }, {
             start: 0,
-            end: 10,
+            end: 50,
             handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
             handleSize: '50%',
             handleStyle: {
@@ -310,23 +350,34 @@ export default {
             }
         }],
         series: [
-          {
-            name: "仓储A存储区A",
-            type: "line",
-            data: [80, 82, 85, 90, 92, 95]
-          },
-          {
-            name: "仓储A存储区B",
-            type: "line",
-            data: [40, 42, 45, 50, 52, 55]
-          }
+         ...this.lineDataList
         ]
       });
     },
+    //获取折线图数据
+    async getLineList(){
+      let res = await storeDateStatistics({days_count:15});
+      if(res.length){
+        res.forEach(ele=>{
+          this.lineDataList.push( {
+            name: ele[0].warehouse.warehouse_name,
+            type: "line",
+            data: ele.reverse().map(e=>e.warehouse_stock)
+          })
+        })
+        this.drawMainLine()
+      }
+    },
     //获取饼状图列表
-    async getPieList(){
-      let res = await pieStatistics();
+    async getPieList(id){
+      let res = await pieStatistics({slot_warehouse_id:id});
       if(res){
+        if(!res.items.length){
+          this.$message({
+            message:'无此仓库数据',
+            type:'warning'
+          })
+        }
         this.pieDataList = res.items;
       }
     },
@@ -341,6 +392,8 @@ export default {
           if(typeof ele == "object"){
             if(index === 2){
               this.storeStatusList[index].count = (ele.not_empty_count/(+ele.not_empty_count + +ele.empty_count)).toFixed(4)*100 + '%';//计算仓库使用率
+            }else{
+              this.storeStatusList[index].count = ele.listCount
             }
           }
         })
@@ -428,7 +481,7 @@ export default {
 }
 
 .iot-home__map {
-  height: 950px;
+  // height: 950px;
   border: 1px solid #e5e5e5;
   border-radius: 4px;
   .wrap {

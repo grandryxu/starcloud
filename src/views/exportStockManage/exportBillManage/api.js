@@ -25,7 +25,7 @@ export const deleteApi = async function(params){
     return res;
 }
 //物料接口
-//列表
+// //列表
 export const getListGoodsApi = async function(params){
     let res = await http.get("/api/services/app/ExportBillbodyService/GetAll",{params});
     return res;
@@ -72,7 +72,7 @@ export const deleteGoodsListApi = async function(params){
 }
 //设定波次号
 export const setWaveNoApi = async function(params){
-    let res = await http.post("/gapi/services/app/ExportBillheadService/EditWaveNo",params);
+    let res = await http.post("/api/services/app/ExportBillheadService/EditWaveNo",params);
     return res;
 }
 //获取库存列表

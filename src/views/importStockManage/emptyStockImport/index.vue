@@ -198,7 +198,7 @@ export default {
     //日期时间转换
     dateTimeTransform(row) {
       let time = row.creationTime;
-      return this.$moment(time).format('YYYY-MM-DD hh:mm:ss')
+      return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss');
     },
     //根据当前用户权限标识初始化按钮状态
     btnInit() {
@@ -315,12 +315,12 @@ export default {
         type: "warning"
       }).then(
         async action => {
-          let idList = [];
+          let stockList = [];
           this.isCanselect = false;
           rows.forEach(ele => {
-            idList.push(ele.id);
+            stockList.push({ id: ele.id, warehouse_id: ele.impstock_warehouse_id});
           });
-          let res = await addMainTaskApi(idList);
+          let res = await addMainTaskApi(stockList);
           if (res) {
             this.$message({
               type: "success",

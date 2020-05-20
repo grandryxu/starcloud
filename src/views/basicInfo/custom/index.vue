@@ -84,6 +84,8 @@
 					<el-form-item label="备注" label-width="100px" prop="custom_remark">
 						<el-input type="textarea" v-model="ruleForm.custom_remark" :rows="5" maxlength="300" show-word-limit placeholder="请输入备注" clearable></el-input>
 					</el-form-item>
+					<companycontrol v-if="userId==1" :companyId="companyId" @updateCompanyId="updateCompanyId($event)"></companycontrol>
+
 				</div>
 			</el-form>
 			<span slot="footer" class="dialog-footer">
@@ -97,6 +99,7 @@
 <script>
 	import textConfig from '@/mixins/textConfig.js';
 	import Utils from "@/utils/index";
+	import Companycontrol from "../../../components/companycontrol";
 	import {
 		getListApi,
 		addApi,
@@ -112,7 +115,9 @@
 		//全局混入提示文字
 		mixins: [textConfig],
 		props: ["lang"],
-
+		components: {
+			Companycontrol,
+		},
         watch: {
             lang: function(lang) {
 			this.$utils.traversePageDom.call(this.$utils,this.$store.state.currentLang,lang,this.$refs.page);
@@ -171,7 +176,8 @@
 					custom_town:"",
 					custom_address:"",
 					custom_remark:"",
-					address:[]
+					address:[],
+					custom_company_id:'',
 				},
 				//表单验证规则
 				rules: {
@@ -209,7 +215,9 @@
 						message: "请选择省市区",
 						trigger: "change"
 					}]*/
-				}
+				},
+				companyId:'',
+				userId:'',
 			};
 		},
 		mounted() {
@@ -217,7 +225,20 @@
 			this.btnInit();
 			this.GetAll();
 		},
+		created() {
+			if (Utils.getStorage("userInfo")) {
+				this.ruleForm.custom_company_id = Utils.getStorage("userInfo").data.result.companyId;
+				this.userId = Utils.getStorage("userInfo").data.result.userId;
+				this.companyId = Utils.getStorage("userInfo").data.result.companyId;
+			}
+		},
 		methods: {
+			updateCompanyId(val) {
+				if (val)
+					this.ruleForm.custom_company_id = val;
+				else
+					this.ruleForm.custom_company_id = Utils.getStorage("userInfo").data.result.companyId;
+			},
 			//根据当前用户权限标识初始化按钮状态，供参考
 			btnInit() {
 				this.$Common.DistributePermission.call(this)
@@ -509,7 +530,9 @@
 					custom_city:res.custom_city,
 					custom_area:res.custom_area,
 					custom_town:res.custom_town,
+					custom_company_id:res.custom_company_id,
 				};
+				this.companyId=res.custom_company_id;
 				this.ruleForm = obj;
 				this.dialogVisible = true;
 			},

@@ -1,4 +1,5 @@
 import http from "@/http";
+//立库任务管理
 //列表
 export const getListApi = async function(params){
     let res = await http.get("/api/services/app/TaskMainInfoService/GetAll",{params});
@@ -40,9 +41,10 @@ export const finishApi = async function(params){
     return res;
 }
 
-//获取空托盘入库流水列表
+//获取流水列表
 export const getkyprkListApi = async function(params){
-    let res = await http.get("/api/services/app/ImportStockService/GetAll",{params});
+    let res = await http.get("/api/services/app/TaskMainInfoService/GetAllDetail",{params});
+    //let res = await http.get("/api/services/app/ImportStockService/GetAll",{params});
     return res;
 }
 

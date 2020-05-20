@@ -584,7 +584,7 @@
 			dateTimeTransform(row) {
 				let time = row.creationTime;
 				//return this.$moment(time).format('YYYY-MM-DD hh:mm:ss')
-				return this.$utils.datetransSecond(time)
+				return this.$utils.format(time,'yyyy-MM-dd hh:mm:ss')
 			},
 			//获取所有权限
 			async getRoleNames() {

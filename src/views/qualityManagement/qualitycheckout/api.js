@@ -24,9 +24,15 @@ export const deleteApi = async function(params){
 
 }
 
-//新增抽检
-export const addCheckApi = async function(params){
-    let res = await http.post("/api/services/app/QualityCheckService/Create",params);
+//获取抽检单号
+export const GetEncodingRuleCode = async function(params){
+    let res = await http.get("/api/services/app/EncodingRuleService/GetEncodingRule",{params});
+    return res;
+}
+
+//获取批次号以及批次号对应的物料信息
+export const getBatchGoods = async function(params){
+    let res= await http.get("/api/services/app/InventoryInfoService/GetBatchGoods",{params});
     return res;
 }
 
@@ -37,9 +43,9 @@ export const getCheckInventory = async function(params){
     return res;
 }
 
-//获取批次号以及批次号对应的物料信息
-export const getBatchGoods = async function(params){
-    let res= await http.get("/api/services/app/QualityCheckService/GetBatchGoods",{params});
+//新增抽检
+export const addCheckApi = async function(params){
+    let res = await http.post("/api/services/app/QualityCheckService/Create",params);
     return res;
 }
 
@@ -79,8 +85,3 @@ export const checkRelease = async function(params){
    return res;
 }
 
-//获取抽检单号
-export const GetEncodingRuleCode = async function(params){
-    let res = await http.get("/api/services/app/EncodingRuleService/GetEncodingRule",{params});
-    return res;
-}

@@ -189,6 +189,7 @@
                 this.scanForm.imporder_quality_status=this.rowlistinfo.imporder_quality_status
                 this.scanForm.imporder_goods_id= this.rowlistinfo.imporder_goods_id
                 this.scanForm.imporder_body_id=this.rowlistinfo.imporder_body_id
+                this.scanForm.imporder_warehouse_id=this.rowlistinfo.imporder_warehouse_id
             },
             click_submit_Scan(){
                 this.$refs['scanForm'].validate((valid) => {
