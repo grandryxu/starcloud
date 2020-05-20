@@ -128,6 +128,10 @@ namespace XMX.WMS.AreaInfo.Dto
         /// 备注
         /// </summary>
         public string area_remark { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

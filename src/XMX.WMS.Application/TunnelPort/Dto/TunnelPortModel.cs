@@ -59,6 +59,11 @@ namespace XMX.WMS.TunnelPort.Dto
     [AutoMapFrom(typeof(TunnelPort))]
     public class TunnelPortDto : EntityDto<Guid>
     {
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
+
         #region 关联
         /// <summary>
         /// 所属公司

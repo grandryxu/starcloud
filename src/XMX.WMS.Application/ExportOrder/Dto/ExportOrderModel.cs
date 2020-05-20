@@ -19,6 +19,11 @@ namespace XMX.WMS.ExportOrder.Dto
         /// 批次
         /// </summary>
         public Guid? exporder_body_id { get; set; }
+        /// <summary>
+        /// 托盘号码
+        /// </summary>
+        public string exporder_stock_code { get; set; }
+
     }
     #endregion
 
@@ -390,7 +395,14 @@ namespace XMX.WMS.ExportOrder.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled exporder_is_enable { get; set; }
-
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
+        /// <summary>
+        /// 回流数量
+        /// </summary>
+        public decimal exporder_return_quantity { get; set; }
         #endregion
 
         #region 关联

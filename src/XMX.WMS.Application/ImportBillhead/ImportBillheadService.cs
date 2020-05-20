@@ -9,12 +9,12 @@ using System.Collections.Generic;
 using Abp.UI;
 using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
-using XMX.WMS.Authorization.Users;
 using Abp.Authorization;
 using XMX.WMS.Authorization;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ImportBillhead
 {
@@ -23,22 +23,21 @@ namespace XMX.WMS.ImportBillhead
     {
         private readonly IRepository<EncodingRule.EncodingRule, Guid> _erRepository;
         private readonly IRepository<ImportBillbody.ImportBillbody, Guid> _ibRepository;
-        private readonly UserManager _userManager;
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public ImportBillheadService(IRepository<ImportBillhead, Guid> repository,
             IRepository<ImportBillbody.ImportBillbody, Guid> ibRepository,
-            IRepository<EncodingRule.EncodingRule, Guid> erRepository,
-            UserManager userManager) : base(repository)
+            IRepository<EncodingRule.EncodingRule, Guid> erRepository) : base(repository)
         {
             _ibRepository = ibRepository;
             _erRepository = erRepository;
-            _userManager = userManager;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.ImportBillhead.ImportBillheadService.",
                 OptModule = "入库单据管理"
             };
@@ -52,7 +51,8 @@ namespace XMX.WMS.ImportBillhead
         [AbpAuthorize(PermissionNames.ImportBillManage_Get)]
         protected override IQueryable<ImportBillhead> CreateFilteredQuery(ImportBillheadPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.imphead_company_id == UserCompanyId)
                     .WhereIf(!input.imphead_code.IsNullOrWhiteSpace(), x => x.imphead_code.Contains(input.imphead_code))
                     .WhereIf(!input.imphead_external_code.IsNullOrWhiteSpace(), x => x.imphead_external_code.Contains(input.imphead_external_code))
                     .WhereIf(input.imphead_custom_id.HasValue, x => x.imphead_custom_id == input.imphead_custom_id)
@@ -84,7 +84,7 @@ namespace XMX.WMS.ImportBillhead
         public override async Task<ImportBillheadDto> Create(ImportBillheadCreatedDto input)
         {
             ImportBillheadDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -106,14 +106,12 @@ namespace XMX.WMS.ImportBillhead
                     EncodingRule.EncodingRuleService er = new EncodingRule.EncodingRuleService(_erRepository, Repository);
                     input.head.imphead_code = er.GetEncodingRule("RKCode");
                 }
-                //公司ID
-                User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-                input.head.imphead_company_id = loginuser.CompanyId;
+                input.head.imphead_company_id = UserCompanyId;
                 Task<ImportBillheadDto> taskDto = base.Create(input.head);
                 if (input.createList != null && input.createList.Count > 0 && !InsertBody(taskDto.Result, input.createList))
                     throw new UserFriendlyException("新增批次信息失败！");
                 ImportBillheadDto dto = taskDto.Result;
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "CreateImportBill", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "CreateImportBill", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return taskDto;
@@ -133,10 +131,10 @@ namespace XMX.WMS.ImportBillhead
         [AbpAuthorize(PermissionNames.ImportBillManage_Update)]
         public override async Task<ImportBillheadDto> Update(ImportBillheadUpdatedDto input)
         {
-            ImportBillhead oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            ImportBillhead oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ImportBillheadDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -158,9 +156,7 @@ namespace XMX.WMS.ImportBillhead
                     EncodingRule.EncodingRuleService er = new EncodingRule.EncodingRuleService(_erRepository, Repository);
                     input.head.imphead_code = er.GetEncodingRule("RKCode");
                 }
-                //公司ID
-                User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-                input.head.imphead_company_id = loginuser.CompanyId;
+                input.head.imphead_company_id = UserCompanyId;
                 Task<ImportBillheadDto> taskDto = base.Update(input.head);
                 if (input.createList != null && input.createList.Count > 0 && !InsertBody(taskDto.Result, input.createList))
                     throw new UserFriendlyException("新增批次信息失败！");
@@ -188,14 +184,14 @@ namespace XMX.WMS.ImportBillhead
             List<ImportBillhead> list = new List<ImportBillhead>();
             foreach (Guid headid in inputList.ToArray<Guid>())
             {
-                ImportBillhead importBillhead = Repository.FirstOrDefault(x => x.Id == headid);
+                ImportBillhead importBillhead = Repository.Get(headid);
                 importBillhead.imphead_audit_flag = AuditFlag.已审核;
                 List<ImportBillbody.ImportBillbody> importBillbody = _ibRepository.GetAll().Where(x => x.ImportBillhead.Id == headid).ToList();
                 foreach (ImportBillbody.ImportBillbody billbody in importBillbody)
                 {
                     billbody.impbody_audit_flag = AuditFlag.已审核;
                     billbody.impbody_audit_datetime = DateTime.Now;
-                    billbody.impbody_audit_uid = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result.Id.ToString();
+                    billbody.impbody_audit_uid = AbpSession.UserId.ToString();
                     _ibRepository.Update(billbody);
                 }
                 list.Add(Repository.Update(importBillhead));
@@ -213,7 +209,7 @@ namespace XMX.WMS.ImportBillhead
             List<ImportBillhead> list = new List<ImportBillhead>();
             foreach (Guid headid in inputList.ToArray<Guid>())
             {
-                ImportBillhead importBillhead = Repository.FirstOrDefault(x => x.Id == headid);
+                ImportBillhead importBillhead = Repository.Get(headid);
                 bool exist = _ibRepository.GetAll().Where(x => x.ImportBillhead.Id == headid && x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                 if (exist)
                     throw new UserFriendlyException("入库单号" + importBillhead.imphead_code + "的单据已经有执行的明细不可以弃审!");               
@@ -222,7 +218,7 @@ namespace XMX.WMS.ImportBillhead
                 {
                     billbody.impbody_audit_flag = AuditFlag.未审核;
                     billbody.impbody_audit_datetime = DateTime.Now;
-                    billbody.impbody_audit_uid = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result.Id.ToString();
+                    billbody.impbody_audit_uid = AbpSession.UserId.ToString();
                     _ibRepository.Update(billbody);
                 }
                 importBillhead.imphead_audit_flag = AuditFlag.未审核;
@@ -230,6 +226,7 @@ namespace XMX.WMS.ImportBillhead
             }
             return new ListResultDto<ImportBillhead>(list);
         }
+
         /// <summary>
         /// 删除
         /// </summary>
@@ -241,7 +238,7 @@ namespace XMX.WMS.ImportBillhead
             bool flag = Repository.GetAll().Where(x => x.Id == input.Id).Where(x => x.imphead_execute_flag != ExecuteFlag.未执行).Any();
             if (flag)
                 throw new UserFriendlyException("数据状态异常，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -304,7 +301,7 @@ namespace XMX.WMS.ImportBillhead
                     body.impbody_warehouse_id = head.imphead_warehouse_id;
                     body.impbody_company_id = head.imphead_company_id;
                     body.impbody_bill_bar = head.imphead_code + bodyDto.impbody_list_id;
-                    body.impbody_imphead_id = head.Id;
+                    body.impbody_head_id = head.Id;
                     _ibRepository.Insert(body);
                 }
                 return true;
@@ -326,7 +323,7 @@ namespace XMX.WMS.ImportBillhead
                 ImportBillbody.ImportBillbody body;
                 foreach (ImportBillbody.Dto.ImportBillbodyUpdatedDto bodyDto in updateList)
                 {
-                    body = _ibRepository.FirstOrDefault(x => x.Id == bodyDto.Id);
+                    body = _ibRepository.Get(bodyDto.Id);
                     body.impbody_list_id = bodyDto.impbody_list_id;
                     body.impbody_batch_no = bodyDto.impbody_batch_no;
                     body.impbody_lots_no = bodyDto.impbody_lots_no;

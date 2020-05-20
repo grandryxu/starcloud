@@ -15,21 +15,24 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.PlatFormInfo
 {
     [AbpAuthorize(PermissionNames.PlatFormBasicInfo)]
     public class PlatFormInfoService : AsyncCrudAppService<PlatFormInfo, PlatFormInfoDto, Guid, PlatFormInfoPagedRequest, PlatFormInfoCreatedDto, PlatFormInfoUpdatedDto>, IPlatFormInfoService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public PlatFormInfoService(IRepository<PlatFormInfo, Guid> repository) : base(repository)
         {
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.PlatFormInfo.PlatFormInfoService.",
                 OptModule = "月台基础信息"
             };
@@ -44,11 +47,12 @@ namespace XMX.WMS.PlatFormInfo
         protected override IQueryable<PlatFormInfo> CreateFilteredQuery(PlatFormInfoPagedRequest input)
         {
             return Repository.GetAllIncluding(s => s.Warehouse)
-                .WhereIf(!input.platform_code.IsNullOrWhiteSpace(), x => x.platform_code.Contains(input.platform_code))
-                .WhereIf(!input.platform_name.IsNullOrWhiteSpace(), x => x.platform_name.Contains(input.platform_name))
-                .WhereIf(input.warehouse_id.HasValue, x => x.platform_warehouse_id == input.warehouse_id)
-                .WhereIf(input.platform_state.HasValue, x => x.platform_state == input.platform_state)
-                .OrderByDescending(x => x.CreationTime);
+                    .WhereIf(AbpSession.UserId != 1, x => x.platform_company_id == UserCompanyId)
+                    .WhereIf(!input.platform_code.IsNullOrWhiteSpace(), x => x.platform_code.Contains(input.platform_code))
+                    .WhereIf(!input.platform_name.IsNullOrWhiteSpace(), x => x.platform_name.Contains(input.platform_name))
+                    .WhereIf(input.warehouse_id.HasValue, x => x.platform_warehouse_id == input.warehouse_id)
+                    .WhereIf(input.platform_state.HasValue, x => x.platform_state == input.platform_state)
+                    .OrderByDescending(x => x.CreationTime);
         }
 
         /// <summary>
@@ -69,12 +73,13 @@ namespace XMX.WMS.PlatFormInfo
         [AbpAuthorize(PermissionNames.PlatFormBasicInfo_Add)]
         public override async Task<PlatFormInfoDto> Create(PlatFormInfoCreatedDto input)
         {
-            var is_recode = Repository.GetAll().Where(x => x.platform_code == input.platform_code).Where(x => x.IsDeleted == false).Any();
-            var is_rename = Repository.GetAll().Where(x => x.platform_name == input.platform_name).Where(x => x.IsDeleted == false).Any();
+            var is_recode = Repository.GetAll().Where(x => x.platform_code == input.platform_code).Any();
+            var is_rename = Repository.GetAll().Where(x => x.platform_name == input.platform_name).Any();
             if (is_recode || is_rename)
                 throw new UserFriendlyException("月台编号或月台名称已存在！");
+            input.platform_company_id = UserCompanyId;
             PlatFormInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -89,19 +94,18 @@ namespace XMX.WMS.PlatFormInfo
         public override async Task<PlatFormInfoDto> Update(PlatFormInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename_or_recode = query.Where(x => x.platform_code == input.platform_code || x.platform_name == input.platform_name).Where(x => x.IsDeleted == false).Any();
+            var is_rename_or_recode = query.Where(x => x.platform_code == input.platform_code || x.platform_name == input.platform_name).Any();
             if (is_rename_or_recode)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("月台编号或月台名称已存在！");
             }
-                
-            PlatFormInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            PlatFormInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             PlatFormInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -117,11 +121,10 @@ namespace XMX.WMS.PlatFormInfo
         {
             dynamic jsonValues = idList;
             JArray jsonInput = jsonValues.idList;
-
             List<Guid> list = jsonInput.ToObject<List<Guid>>();
             if (null == list)
                 throw new UserFriendlyException("参数解析异常，请联系管理员！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "CreateDropAll", WMSOptLogInfo.WMSOptLogInfo.DELETE, "批量删除", "批量删除", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "CreateDropAll", WMSOptLogInfo.WMSOptLogInfo.DELETE, "批量删除", "批量删除", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return Repository.DeleteAsync(x => x.Id.IsIn(list.ToArray<Guid>()));
@@ -135,7 +138,7 @@ namespace XMX.WMS.PlatFormInfo
         [AbpAuthorize(PermissionNames.PlatFormBasicInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

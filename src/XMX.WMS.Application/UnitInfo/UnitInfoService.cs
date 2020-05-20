@@ -8,13 +8,13 @@ using Abp.Extensions;
 using Abp.UI;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using Abp.Application.Services.Dto;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.UnitInfo
 {
@@ -22,24 +22,22 @@ namespace XMX.WMS.UnitInfo
     public class UnitInfoService : AsyncCrudAppService<UnitInfo, UnitInfoDto, Guid, UnitInfoPagedRequest, UnitInfoCreatedDto, UnitInfoUpdatedDto>, IUnitInfoService
     {
         private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _goodsInfoRepository;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public UnitInfoService(IRepository<UnitInfo, Guid> repository, IRepository<GoodsInfo.GoodsInfo, Guid> goodsInfoRepository) : base(repository)
         {
             _goodsInfoRepository = goodsInfoRepository;
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.UnitInfo.UnitInfoService.",
                 OptModule = "物料计量单位"
             };
         }
-
-
-
-
 
         /// <summary>
         /// 按照条件查询
@@ -49,7 +47,8 @@ namespace XMX.WMS.UnitInfo
         [AbpAuthorize(PermissionNames.MaterialMeasureUnit_Get)]
         protected override IQueryable<UnitInfo> CreateFilteredQuery(UnitInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.unit_company_id == UserCompanyId)
                 .WhereIf(!input.unit_name.IsNullOrWhiteSpace(), x => x.unit_name.Contains(input.unit_name))
                 .WhereIf(input.unit_is_enable.HasValue, x => x.unit_is_enable == input.unit_is_enable)
                 ;
@@ -73,11 +72,12 @@ namespace XMX.WMS.UnitInfo
         [AbpAuthorize(PermissionNames.MaterialMeasureUnit_Add)]
         public override async Task<UnitInfoDto> Create(UnitInfoCreatedDto input)
         {
-            var is_rename = Repository.GetAll().Where(x => x.unit_name == input.unit_name).Where(x => !x.IsDeleted).Any();
+            var is_rename = Repository.GetAll().Where(x => x.unit_name == input.unit_name).Any();
             if (is_rename)
                 throw new UserFriendlyException("单位名称已存在！");
+            input.unit_company_id = UserCompanyId;
             UnitInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -92,7 +92,7 @@ namespace XMX.WMS.UnitInfo
         public override async Task<UnitInfoDto> Update(UnitInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename = query.Where(x => x.unit_name == input.unit_name).Where(x => !x.IsDeleted).Any();
+            var is_rename = query.Where(x => x.unit_name == input.unit_name).Any();
             if (is_rename)
                 throw new UserFriendlyException("单位名称已存在！");
             var edit = Repository.GetAll().Where(x => x.Id == input.Id && x.unit_is_enable!=input.unit_is_enable).Any();
@@ -102,10 +102,10 @@ namespace XMX.WMS.UnitInfo
                 if (used)
                     throw new UserFriendlyException("在物料基本信息中存在已被关联物料计量单位,无法禁用");
             }
-            UnitInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            UnitInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             UnitInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -126,6 +126,7 @@ namespace XMX.WMS.UnitInfo
                 throw new UserFriendlyException("在物料基本信息中存在已被关联物料计量单位，请核实后再删除！");
             return Repository.DeleteAsync(x => x.Id.IsIn(idList.ToArray<Guid>()));
         }
+
         /// <summary>
         /// 删除
         /// </summary>
@@ -134,7 +135,7 @@ namespace XMX.WMS.UnitInfo
         [AbpAuthorize(PermissionNames.MaterialMeasureUnit_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

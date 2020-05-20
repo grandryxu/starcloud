@@ -166,6 +166,10 @@ namespace XMX.WMS.StrategyMonitor.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled monitor_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

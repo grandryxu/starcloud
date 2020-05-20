@@ -7,14 +7,16 @@ using Abp.Linq.Extensions;
 using Abp.Extensions;
 using Abp.Application.Services.Dto;
 using System.Threading.Tasks;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.TunnelInfo
 {
     public class TunnelInfoService : AsyncCrudAppService<TunnelInfo, TunnelInfoDto, Guid, TunnelInfoPagedRequest, TunnelInfoCreatedDto, TunnelInfoUpdatedDto>, ITunnelInfoService
     {
+        private readonly Guid UserCompanyId;
         public TunnelInfoService(IRepository<TunnelInfo, Guid> repository) : base(repository)
         {
-
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -24,7 +26,8 @@ namespace XMX.WMS.TunnelInfo
         /// <returns>分页数据列表</returns>
         protected override IQueryable<TunnelInfo> CreateFilteredQuery(TunnelInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.tunnel_company_id == UserCompanyId)
                 .WhereIf(!input.tunnel_name.IsNullOrWhiteSpace(), x => x.tunnel_name.Contains(input.tunnel_name))
                 ;
         }

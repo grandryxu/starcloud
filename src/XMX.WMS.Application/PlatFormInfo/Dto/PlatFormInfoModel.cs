@@ -144,6 +144,10 @@ namespace XMX.WMS.PlatFormInfo.Dto
         /// 月台状态
         /// </summary>
         public PlatformState platform_state { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

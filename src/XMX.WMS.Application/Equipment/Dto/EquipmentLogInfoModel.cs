@@ -175,6 +175,10 @@ namespace XMX.WMS.Equipment.Dto
         /// 设备执行状态
         /// </summary>
         public EquipmentExecutionState equipment_execution_state { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
     }
     #endregion

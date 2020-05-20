@@ -12,14 +12,14 @@ using Abp.UI;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
 using Abp.Application.Services.Dto;
-using XMX.WMS.Authorization.Users;
+using XMX.WMS.Base.Session;
+using XMX.WMS.Base.Dto;
 
 namespace XMX.WMS.StockTasking
 {
     [AbpAuthorize(PermissionNames.InventoryStockingManage)]
     public class StockTaskingService : AsyncCrudAppService<StockTasking, StockTaskingDto, Guid, StockTaskingPagedRequest, StockTaskingCreatedDto, StockTaskingUpdatedDto>, IStockTaskingService
     {
-        private readonly UserManager _userManager;
         private readonly IRepository<StockTaskingDetail.StockTaskingDetail, Guid> _dRepository;
         private readonly IRepository<ExportBillhead.ExportBillhead, Guid> _ehRepository;
         private readonly IRepository<ExportBillbody.ExportBillbody, Guid> _ebRepository;
@@ -28,6 +28,7 @@ namespace XMX.WMS.StockTasking
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iRepository;
         private readonly IRepository<EncodingRule.EncodingRule, Guid> _erRepository;
         private readonly IRepository<SlotInfo.SlotInfo, Guid> _sRepository;
+        private readonly Guid UserCompanyId;
         public StockTaskingService(IRepository<StockTasking, Guid> repository,
                                 IRepository<StockTaskingDetail.StockTaskingDetail, Guid> dRepository,
                                 IRepository<ExportBillhead.ExportBillhead, Guid> ehRepository,
@@ -36,8 +37,7 @@ namespace XMX.WMS.StockTasking
                                 IRepository<TaskMainInfo.TaskMainInfo, Guid> tRepository,
                                 IRepository<InventoryInfo.InventoryInfo, Guid> iRepository,
                                 IRepository<EncodingRule.EncodingRule, Guid> erRepository,
-                                IRepository<SlotInfo.SlotInfo, Guid> sRepository,
-                                UserManager userManager) : base(repository)
+                                IRepository<SlotInfo.SlotInfo, Guid> sRepository) : base(repository)
         {
             _dRepository = dRepository;
             _ehRepository = ehRepository;
@@ -47,7 +47,7 @@ namespace XMX.WMS.StockTasking
             _iRepository = iRepository;
             _erRepository = erRepository;
             _sRepository = sRepository;
-            _userManager = userManager;
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -57,7 +57,8 @@ namespace XMX.WMS.StockTasking
         /// <returns>分页数据列表</returns>
         protected override IQueryable<StockTasking> CreateFilteredQuery(StockTaskingPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.task_company_id == UserCompanyId)
                     .WhereIf(!input.stock_code.IsNullOrWhiteSpace(), x => x.task_code.Contains(input.stock_code))
                     .WhereIf(input.warehouse_id.HasValue, x => x.task_warehouse_id == input.warehouse_id)
                     .WhereIf(input.stock_state.HasValue, x => x.task_state == input.stock_state)
@@ -71,11 +72,11 @@ namespace XMX.WMS.StockTasking
         /// 获取盘点任务数
         /// </summary>
         /// <returns></returns>
-        public int GetNowTaskNum()
+        public GetNumDto GetNowTaskNum()
         {
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            return Repository.GetAllIncluding(x => x.Warehouse).Where(x => x.Warehouse.warehouse_company_id == loginuser.CompanyId)
+            int count = Repository.GetAllIncluding(x => x.Warehouse).Where(x => x.Warehouse.warehouse_company_id == UserCompanyId)
                                       .Where(x => x.task_state != StockTaskingState.盘点结束).Count();
+            return new GetNumDto { listCount = count };
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace XMX.WMS.StockTasking
         public bool CreateTask(List<Guid> idList)
         {
             // 获取盘点单
-            List<StockTasking> stockList = Repository.GetAllIncluding().Where(x => x.Id.IsIn(idList.ToArray())).ToList();
+            List<StockTasking> stockList = Repository.GetAll().Where(x => x.Id.IsIn(idList.ToArray())).ToList();
             if(stockList != null && stockList.Count > 0)
             {
                 foreach (StockTasking stock in stockList)
@@ -112,10 +113,11 @@ namespace XMX.WMS.StockTasking
                     // 盘点出库
                     head.exphead_bill_id = new Guid("e3d2ff43-33b4-475f-38fc-08d7e4cebc51");
                     head.exphead_warehouse_id = stock.task_warehouse_id;
+                    head.exphead_company_id = UserCompanyId;
                     //head.exphead_custom_id = 上下游;
                     head = _ehRepository.Insert(head);
                     // 获取盘点单明细
-                    List<StockTaskingDetail.StockTaskingDetail> detailList = _dRepository.GetAllIncluding().Where(x => x.stock_tasking_id == stock.Id).ToList();
+                    List<StockTaskingDetail.StockTaskingDetail> detailList = _dRepository.GetAll().Where(x => x.stock_tasking_id == stock.Id).ToList();
                     List<InventoryBatchDto> batchList = detailList.GroupBy(x => new { x.task_batch_no, x.task_goods_id })
                                                                   .Select(group => new InventoryBatchDto(group.Key.task_batch_no, group.Key.task_goods_id.Value)).ToList();
                     int i = 1;
@@ -128,8 +130,9 @@ namespace XMX.WMS.StockTasking
                         body.expbody_plan_quantity = 0;
                         body.expbody_execute_flag = ExecuteFlag.执行中;
                         body.expbody_noused_flag = NousedFlag.正常;
-                        body.expbody_imphead_id = head.Id;
+                        body.expbody_head_id = head.Id;
                         body.expbody_goods_id = batch.goods_id;
+                        body.expbody_company_id = head.exphead_company_id;
                         _ebRepository.Insert(body);
                         List<StockTaskingDetail.StockTaskingDetail> details = detailList.Where(x => x.task_batch_no == batch.batch_no)
                                                                                         .Where(x => x.task_goods_id == batch.goods_id).ToList();
@@ -139,7 +142,8 @@ namespace XMX.WMS.StockTasking
                             if (task != null)
                             {
                                 task = new TaskMainInfo.TaskMainInfo();
-                                string main_no = GetEncodingRule("TaskCode");
+                                EncodingRule.EncodingRuleService er = new EncodingRule.EncodingRuleService(_erRepository, _tRepository);
+                                string main_no = er.GetEncodingRule("TaskCode");
                                 // 任务号5位
                                 task.main_no = main_no;
                                 // 优先级
@@ -153,14 +157,15 @@ namespace XMX.WMS.StockTasking
                                 // 手自标志(1自动；2手动)                                                                                                                                               
                                 task.main_manual_flag = TaskManualFlag.自动;
                                 task.main_execute_flag = TaskExecuteFlag.待执行;
+                                task.main_company_id = head.exphead_company_id;
                                 task = _tRepository.Insert(task);
                                 // 修改库位状态
-                                SlotInfo.SlotInfo slot = _sRepository.FirstOrDefault(x => x.Id == detail.task_slot_id);
+                                SlotInfo.SlotInfo slot = _sRepository.Get(detail.task_slot_id.Value);
                                 slot.slot_stock_status = SlotStock.出库中;
                                 _sRepository.Update(slot);
                                 InventoryInfo.InventoryInfo inventory = _iRepository.FirstOrDefault(x => x.inventory_slot_code == detail.task_slot_id && x.inventory_stock_code == detail.task_stock_code && x.inventory_status == InventoryStatus.可用);
                                 // 库存状态修改
-                                inventory.inventory_status = InventoryStatus.分配;
+                                inventory.inventory_status = InventoryStatus.出库;
                                 _iRepository.Update(inventory);
                             }
                             // 流水修改
@@ -174,6 +179,7 @@ namespace XMX.WMS.StockTasking
                             order.task_id = task.Id;
                             order.exporder_slot_code = detail.task_slot_id;
                             order.exporder_body_id = body.Id;
+                            order.exporder_company_id = head.exphead_company_id;
                             _eoRepository.Insert(order);
                         }
                         i++;
@@ -182,44 +188,6 @@ namespace XMX.WMS.StockTasking
                 return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// 获取编号
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        private string GetEncodingRule(string code)
-        {
-            string erCode = null;
-            EncodingRule.EncodingRule er = _erRepository.FirstOrDefaultAsync(x => x.code_code == code).Result;
-            if (er != null)
-            {
-                //前缀
-                erCode = er.code_prefix;
-                //日期类型 1无；2年月日；3年月日小时分钟秒
-                if (er.code_date_type != DateType.无)
-                {
-                    erCode += DateTime.Now.Year + DateTime.Now.Month + DateTime.Now.Day;
-                    if (er.code_date_type == DateType.年月日小时分钟秒)
-                        erCode += DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
-                }
-                // 后缀序列长度
-                int code_suffix_length = er.code_suffix_length;
-                // 上次序列号
-                int code_record = er.code_record;
-                int new_code_record = code_record + 1;
-                // 生成的后缀
-                string codeEnd = new_code_record.ToString();
-                if (codeEnd.Length > code_suffix_length)
-                    codeEnd = codeEnd.Substring(codeEnd.Length - code_suffix_length);
-                codeEnd = codeEnd.PadLeft(code_suffix_length, '0');
-                erCode += codeEnd;
-                //修改序列号
-                er.code_record = new_code_record;
-                _erRepository.Update(er);
-            }
-            return erCode;
         }
 
         /// <summary>

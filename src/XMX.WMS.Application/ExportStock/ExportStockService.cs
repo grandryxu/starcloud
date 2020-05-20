@@ -14,20 +14,24 @@ using Abp.UI;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ExportStock
 {
     [AbpAuthorize(PermissionNames.EmptyStockExport)]
     public class ExportStockService : AsyncCrudAppService<ExportStock, ExportStockDto, Guid, ExportStockPagedRequest, ExportStockCreatedDto, ExportStockUpdatedDto>, IExportStockService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public ExportStockService(IRepository<ExportStock, Guid> repository) : base(repository)
         {
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.ExportStock.ExportStockService.",
                 OptModule = "空托盘出库流水"
             };
@@ -42,8 +46,9 @@ namespace XMX.WMS.ExportStock
         protected override IQueryable<ExportStock> CreateFilteredQuery(ExportStockPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.Slot, x => x.Warehouse, x => x.Goods)
-                .WhereIf(!input.expstock_batch_no.IsNullOrWhiteSpace(), x => x.expstock_batch_no.Contains(input.expstock_batch_no))
-                ;
+                    .WhereIf(AbpSession.UserId != 1, x => x.expstock_company_id == UserCompanyId)
+                    .WhereIf(!input.expstock_batch_no.IsNullOrWhiteSpace(), x => x.expstock_batch_no.Contains(input.expstock_batch_no))
+                    ;
         }
 
         /// <summary>
@@ -65,8 +70,9 @@ namespace XMX.WMS.ExportStock
         [AbpAuthorize(PermissionNames.EmptyStockExport_Add)]
         public override async Task<ExportStockDto> Create(ExportStockCreatedDto input)
         {
+            input.expstock_company_id = UserCompanyId;
             ExportStockDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -80,10 +86,10 @@ namespace XMX.WMS.ExportStock
         [AbpAuthorize(PermissionNames.EmptyStockExport_Update)]
         public override async Task<ExportStockDto> Update(ExportStockUpdatedDto input)
         {
-            ExportStock oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            ExportStock oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ExportStockDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -100,7 +106,7 @@ namespace XMX.WMS.ExportStock
             var flag = Repository.GetAll().Where(x => x.Id == input.Id).Where(x => x.expstock_execute_flag != ExecuteFlag.未执行).Any();
             if (flag)
                 throw new UserFriendlyException("数据状态异常，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

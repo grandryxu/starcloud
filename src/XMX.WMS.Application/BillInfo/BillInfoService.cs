@@ -13,20 +13,24 @@ using Abp.Authorization;
 using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.BillInfo
 {
     [AbpAuthorize(PermissionNames.BillTypeInfo)]
     public class BillInfoService : AsyncCrudAppService<BillInfo, BillInfoDto, Guid, BillInfoPagedRequest, BillInfoCreatedDto, BillInfoUpdatedDto>, IBillInfoService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public BillInfoService(IRepository<BillInfo, Guid> repository) : base(repository)
         {
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.BillInfo.BillInfoService.",
                 OptModule = "单据类型信息"
             };
@@ -40,10 +44,11 @@ namespace XMX.WMS.BillInfo
         [AbpAuthorize(PermissionNames.BillTypeInfo_Get)]
         protected override IQueryable<BillInfo> CreateFilteredQuery(BillInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.bill_name.IsNullOrWhiteSpace(), x => x.bill_name.Contains(input.bill_name))
-                .WhereIf(input.bill_type.HasValue, x => x.bill_type == input.bill_type)
-                ;
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.bill_company_id == UserCompanyId)
+                    .WhereIf(!input.bill_name.IsNullOrWhiteSpace(), x => x.bill_name.Contains(input.bill_name))
+                    .WhereIf(input.bill_type.HasValue, x => x.bill_type == input.bill_type)
+                    ;
         }
 
         /// <summary>
@@ -68,8 +73,9 @@ namespace XMX.WMS.BillInfo
             var isrename = Repository.GetAll().Where(x => x.bill_name == input.bill_name).Any();
             if (!isrename)
             {
+                input.bill_company_id = UserCompanyId;
                 BillInfoDto dto = await base.Create(input);
-                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
@@ -92,17 +98,17 @@ namespace XMX.WMS.BillInfo
             var isrename = query.Where(x => x.bill_name == input.bill_name).Any();
             if (!isrename)
             {
-                BillInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+                BillInfo oldEntity = Repository.Get(input.Id);
                 string oldval = JsonConvert.SerializeObject(oldEntity);
                 BillInfoDto dto = await base.Update(input);
-                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
             }
             else
             {
-                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new Abp.UI.UserFriendlyException("单据类型名称！");
@@ -133,13 +139,11 @@ namespace XMX.WMS.BillInfo
         [AbpAuthorize(PermissionNames.BillTypeInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
         }
-
-
 
     }
 }

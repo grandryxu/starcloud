@@ -1,7 +1,4 @@
 ﻿using Abp.Application.Services.Dto;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using XMX.WMS.Base.Dto;
 using System;
 using Abp.AutoMapper;
@@ -48,7 +45,6 @@ namespace XMX.WMS.ExportBillSyncLog.Dto
     }
     #endregion
 
-
     #region 修改UpdateDto
     [AutoMapTo(typeof(ExportBillSyncLog))]
     public class ExportBillSyncLogUpdatedDto : BaseUpdateDto
@@ -57,7 +53,6 @@ namespace XMX.WMS.ExportBillSyncLog.Dto
 
     }
     #endregion
-
 
     #region 查询输出dto
     [AutoMapFrom(typeof(ExportBillSyncLog))]
@@ -76,6 +71,10 @@ namespace XMX.WMS.ExportBillSyncLog.Dto
         /// 出库结果
         /// </summary>
         public string expbill_result { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
     }
     #endregion
 }

@@ -25,7 +25,7 @@ namespace XMX.WMS.StockTaskingDetail
         /// <returns>分页数据列表</returns>
         protected override IQueryable<StockTaskingDetail> CreateFilteredQuery(StockTaskingDetailPagedRequest input)
         {
-            return Repository.GetAllIncluding();
+            return Repository.GetAll();
         }
 
         /// <summary>

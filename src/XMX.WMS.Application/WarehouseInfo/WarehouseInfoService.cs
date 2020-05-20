@@ -4,40 +4,37 @@ using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Extensions;
 using Abp.Linq.Extensions;
-using Abp.Runtime.Session;
 using Abp.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XMX.WMS.Authorization;
-using XMX.WMS.Authorization.Users;
 using XMX.WMS.WarehouseInfo.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.WarehouseInfo
 {
     [AbpAuthorize(PermissionNames.WarehouseBaseInfo)]
     public class WarehouseInfoService : AsyncCrudAppService<WarehouseInfo, WarehouseInfoDto, Guid, WarehouseInfoPagedRequest, WarehouseInfoCreatedDto, WarehouseInfoUpdatedDto>, IWarehouseInfoService
     {
-        private readonly UserManager _userManager;
         private readonly IRepository<AreaInfo.AreaInfo, Guid> _areaRepository;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public WarehouseInfoService(IRepository<WarehouseInfo, Guid> repository, 
-                                    IRepository<AreaInfo.AreaInfo, Guid> ibRepository,
-                                    UserManager userManager) : base(repository)
+                                    IRepository<AreaInfo.AreaInfo, Guid> ibRepository) : base(repository)
         {
             _areaRepository = ibRepository;
-            _userManager = userManager;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.WarehouseInfo.WarehouseInfoService.",
                 OptModule = "仓库基础信息"
             };
@@ -46,12 +43,14 @@ namespace XMX.WMS.WarehouseInfo
         /// <summary>
         /// 获取仓库区域列表
         /// </summary>
-        /// <param name="WarehouseInfoSerchRequest"></param>
+        /// <param name="input"></param>
         /// <returns></returns>
         public List<object> GetWarehouseAreaList(WarehouseInfoPagedRequest input)
         {
             //仓库列表
-            var olist = Repository.GetAll().Select(item => new { item.Id, item.warehouse_code, item.warehouse_name })
+            var olist = Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.warehouse_company_id == UserCompanyId)
+                .Select(item => new { item.Id, item.warehouse_code, item.warehouse_name })
                 .WhereIf(!input.warehouse_code.IsNullOrWhiteSpace(), x => x.warehouse_code == input.warehouse_code);
             var relist = new List<object>();
             foreach (var item in olist)
@@ -76,11 +75,12 @@ namespace XMX.WMS.WarehouseInfo
         [AbpAuthorize(PermissionNames.WarehoueInfo_Get)]
         protected override IQueryable<WarehouseInfo> CreateFilteredQuery(WarehouseInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.warehouse_name.Contains(input.warehouse_name))
-                .WhereIf(input.warehouse_type.HasValue, x => x.warehouse_type == input.warehouse_type)
-                  .WhereIf(!input.warehouse_code.IsNullOrWhiteSpace(), x => x.warehouse_code.Contains(input.warehouse_code))
-                ;
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.warehouse_company_id == UserCompanyId)
+                    .WhereIf(!input.warehouse_name.IsNullOrWhiteSpace(), x => x.warehouse_name.Contains(input.warehouse_name))
+                    .WhereIf(input.warehouse_type.HasValue, x => x.warehouse_type == input.warehouse_type)
+                    .WhereIf(!input.warehouse_code.IsNullOrWhiteSpace(), x => x.warehouse_code.Contains(input.warehouse_code))
+                    ;
         }
 
         /// <summary>
@@ -105,10 +105,9 @@ namespace XMX.WMS.WarehouseInfo
             var isrecode = Repository.GetAll().Where(x => x.warehouse_code == input.warehouse_code).Any();
             if (!isrename && !isrecode)
             {
-                User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-                input.warehouse_company_id = loginuser.CompanyId;
+                input.warehouse_company_id = UserCompanyId;
                 WarehouseInfoDto dto = await base.Create(input);
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
@@ -117,15 +116,15 @@ namespace XMX.WMS.WarehouseInfo
             {
                 if (isrename && isrecode)
                 {
-                    throw new Abp.UI.UserFriendlyException("仓库名、仓库编码重复！");
+                    throw new UserFriendlyException("仓库名、仓库编码重复！");
                 }
                 else if (isrename)
                 {
-                    throw new Abp.UI.UserFriendlyException("仓库名重复！");
+                    throw new UserFriendlyException("仓库名重复！");
                 }
                 else
                 {
-                    throw new Abp.UI.UserFriendlyException("仓库编码重复！");
+                    throw new UserFriendlyException("仓库编码重复！");
                 }
             }
         }
@@ -151,10 +150,10 @@ namespace XMX.WMS.WarehouseInfo
             }
             else
             {
-                WarehouseInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+                WarehouseInfo oldEntity = Repository.Get(input.Id);
                 string oldval = JsonConvert.SerializeObject(oldEntity);
                 WarehouseInfoDto dto = await base.Update(input);
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
@@ -167,8 +166,7 @@ namespace XMX.WMS.WarehouseInfo
         /// <returns></returns>
         public List<WarehouseListDto> GetWarehousList()
         {
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            var list = Repository.GetAll().Where(x => x.warehouse_company_id == loginuser.CompanyId).Select(item => new { item.Id, item.warehouse_name }).ToList();
+            var list = Repository.GetAll().Where(x => x.warehouse_company_id == UserCompanyId).Select(item => new { item.Id, item.warehouse_name }).ToList();
             var relist = new List<WarehouseListDto>();
             foreach (var item in list)
             {
@@ -201,7 +199,7 @@ namespace XMX.WMS.WarehouseInfo
         [AbpAuthorize(PermissionNames.WarehoueInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

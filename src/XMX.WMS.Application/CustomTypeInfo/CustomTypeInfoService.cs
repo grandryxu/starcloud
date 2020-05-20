@@ -15,13 +15,15 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.CustomTypeInfo
 {
     [AbpAuthorize(PermissionNames.CustomerCategoryInfo)]
     public class CustomTypeInfoService : AsyncCrudAppService<CustomTypeInfo, CustomTypeInfoDto, Guid, CustomTypeInfoPagedRequest, CustomTypeInfoCreatedDto, CustomTypeInfoUpdatedDto>, ICustomTypeInfoService
     {
-        private readonly IRepository<CustomInfo.CustomInfo, Guid> _customInfoRepository;
+        private readonly IRepository<CustomInfo.CustomInfo, Guid> _customInfoRepository; 
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -29,9 +31,11 @@ namespace XMX.WMS.CustomTypeInfo
         public CustomTypeInfoService(IRepository<CustomTypeInfo, Guid> repository, IRepository<CustomInfo.CustomInfo, Guid> customInfoRepository) : base(repository)
         {
             _customInfoRepository = customInfoRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
             LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.CustomTypeInfo.CustomTypeInfoService.",
                 OptModule = "客户类别信息"
             };
@@ -45,9 +49,10 @@ namespace XMX.WMS.CustomTypeInfo
         [AbpAuthorize(PermissionNames.CustomTypeInfo_Get)]
         protected override IQueryable<CustomTypeInfo> CreateFilteredQuery(CustomTypeInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.customtype_name.IsNullOrWhiteSpace(), x => x.customtype_name.Contains(input.customtype_name))
-                .WhereIf(!input.customtype_code.IsNullOrWhiteSpace(), x => x.customtype_code.Contains(input.customtype_code));
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.customtype_company_id == UserCompanyId)
+                    .WhereIf(!input.customtype_name.IsNullOrWhiteSpace(), x => x.customtype_name.Contains(input.customtype_name))
+                    .WhereIf(!input.customtype_code.IsNullOrWhiteSpace(), x => x.customtype_code.Contains(input.customtype_code));
         }
 
         /// <summary>
@@ -60,6 +65,7 @@ namespace XMX.WMS.CustomTypeInfo
         {
             return base.Get(input);
         }
+
         /// <summary>
         /// 新增
         /// </summary>
@@ -68,16 +74,18 @@ namespace XMX.WMS.CustomTypeInfo
         [AbpAuthorize(PermissionNames.CustomTypeInfo_Add)]
         public override async Task<CustomTypeInfoDto> Create(CustomTypeInfoCreatedDto input)
         {
-            var is_recode = Repository.GetAll().Where(x => x.customtype_code == input.customtype_code).Where(x => !x.IsDeleted).Any();
-            var is_rename = Repository.GetAll().Where(x => x.customtype_name == input.customtype_name).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.customtype_code == input.customtype_code).Any();
+            var is_rename = Repository.GetAll().Where(x => x.customtype_name == input.customtype_name).Any();
             if (is_recode || is_rename)
                 throw new UserFriendlyException("编号或名称已存在！");
+            input.customtype_company_id = UserCompanyId;
             CustomTypeInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 修改更新
         /// </summary>
@@ -87,19 +95,19 @@ namespace XMX.WMS.CustomTypeInfo
         public override async Task<CustomTypeInfoDto> Update(CustomTypeInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename_or_recode = query.Where(x => x.customtype_code == input.customtype_code || x.customtype_name == input.customtype_name).Where(x => !x.IsDeleted).Any();
+            var is_rename_or_recode = query.Where(x => x.customtype_code == input.customtype_code || x.customtype_name == input.customtype_name).Any();
             if (is_rename_or_recode)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("编号或名称已存在！");
             }
 
-            CustomTypeInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            CustomTypeInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             CustomTypeInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -133,7 +141,7 @@ namespace XMX.WMS.CustomTypeInfo
         [AbpAuthorize(PermissionNames.CustomTypeInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

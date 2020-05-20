@@ -201,6 +201,10 @@ namespace XMX.WMS.StockTasking.Dto
         /// 最后盘点时间
         /// </summary>
         public DateTime task_operate_time { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

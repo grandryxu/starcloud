@@ -197,6 +197,10 @@ namespace XMX.WMS.StockTaskingDetail.Dto
         /// 批号
         /// </summary>
         public string task_batch_no { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

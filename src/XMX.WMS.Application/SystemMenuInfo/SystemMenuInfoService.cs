@@ -32,16 +32,6 @@ namespace XMX.WMS.SystemMenuInfo
                 .WhereIf(!input.function_name.IsNullOrWhiteSpace(), x => x.menu_function_name.Contains(input.function_name))
                 .WhereIf(!input.menu_url.IsNullOrWhiteSpace(), x => x.menu_url.Contains(input.menu_url));
         }
-        /*
-        public override async Task<SystemMenuInfoDto> Update(SystemMenuInfoUpdatedDto input)
-        {
-            var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename_or_recode = query.Where(x => x.menu_function_name == input.menu_function_name || x.menu_url == input.menu_url).Where(x => !x.IsDeleted).Any();
-            if (is_rename_or_recode)
-                throw new UserFriendlyException("功能名称或链接地址已存在！");
-            return await base.Update(input);
-        }
-        */
 
         /// <summary>
         /// 获取树形系统模块数据

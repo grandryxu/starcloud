@@ -13,7 +13,7 @@ using Abp.Authorization;
 using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using Newtonsoft.Json;
-using XMX.WMS.Authorization.Users;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.GoodsInfo
 {
@@ -27,8 +27,7 @@ namespace XMX.WMS.GoodsInfo
         private readonly IRepository<ExportBillbody.ExportBillbody, Guid> _ebRepository;
         private readonly IRepository<ExportOrder.ExportOrder, Guid> _eoRepository;
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iiRepository;
-        public UserManager _userManager { get; set; }
-        public User loginuser { get; set; }
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -48,10 +47,11 @@ namespace XMX.WMS.GoodsInfo
             _ebRepository = ebRepository;
             _eoRepository = eoRepository;
             _iiRepository = iiRepository;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.GoodsInfo.GoodsInfoService.",
                 OptModule = "物料基础信息"
             };
@@ -75,23 +75,20 @@ namespace XMX.WMS.GoodsInfo
         /// <returns></returns>
         public List<WarehousematerialsInfoDto> GetWarehousematerials(Guid guid)
         {
-            if (loginuser == null)
-                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            var list = (from a in Repository.GetAll().WhereIf(loginuser.Id != 1, x => x.goods_company_id == loginuser.CompanyId)
+            var list = (from a in Repository.GetAll()
+                                    .Where(x => !x.Id.ToString().Equals("00000000-0000-0000-0000-000000000001"))    
+                                    .WhereIf(AbpSession.UserId != 1, x => x.goods_company_id == UserCompanyId)
                         join b in _areaInfo.GetAll() on new { Id = a.Area.Id } equals new { Id = b.Id }
                         join c in _warehouseInfo.GetAll() on new { Id = b.Warehouse.Id } equals new { Id = c.Id }
                         where
                           c.Id == guid
-                        select new
+                        select new WarehousematerialsInfoDto
                         {
-                            a.Id,
-                            a.goods_code,
-                            a.goods_name,
+                            Id = a.Id,
+                            goods_code = a.goods_code,
+                            goods_name = a.goods_name,
                         }).ToList();
-            var relist = new List<WarehousematerialsInfoDto>();
-            foreach (var item in list)
-                relist.Add(new WarehousematerialsInfoDto { Id = item.Id, goods_code = item.goods_code, goods_name = item.goods_name });
-            return relist;
+            return list;
         }
 
 
@@ -103,10 +100,9 @@ namespace XMX.WMS.GoodsInfo
         [AbpAuthorize(PermissionNames.MaterialBasisInfo_Get)]
         protected override IQueryable<GoodsInfo> CreateFilteredQuery(GoodsInfoPagedRequest input)
         {
-            if (loginuser == null)
-                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            return Repository.GetAllIncluding()
-                .WhereIf(loginuser.Id!=1,x => x.goods_company_id == loginuser.CompanyId)
+            return Repository.GetAll()
+                .Where(x => !x.Id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
+                .WhereIf(AbpSession.UserId != 1,x => x.goods_company_id == UserCompanyId)
                 .WhereIf(!input.goods_code.IsNullOrWhiteSpace(), x => x.goods_code.Contains(input.goods_code))
                 .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => x.goods_name.Contains(input.goods_name))
                 .WhereIf(!input.goods_area_id.IsNullOrWhiteSpace(), x => x.goods_area_id.ToString().Contains(input.goods_area_id))
@@ -122,13 +118,12 @@ namespace XMX.WMS.GoodsInfo
         /// <returns></returns>
         public List<GoodsInfoListDto> GetGoodsInfoList()
         {
-            var list = Repository.GetAll().Select(item => new { item.Id, item.goods_code, item.goods_name }).ToList();
-            var relist = new List<GoodsInfoListDto>();
-            foreach (var item in list)
-            {
-                relist.Add(new GoodsInfoListDto { Id = item.Id, goods_code = item.goods_code, goods_name = item.goods_name });
-            }
-            return relist;
+            var list = Repository.GetAll().Where(x => !x.Id.ToString().Equals("00000000-0000-0000-0000-000000000001"))
+                                    .Select(item => new GoodsInfoListDto {
+                                        Id = item.Id,
+                                        goods_code = item.goods_code,
+                                        goods_name = item.goods_name }).ToList();
+            return list;
         }
 
         /// <summary>
@@ -140,7 +135,7 @@ namespace XMX.WMS.GoodsInfo
         {
             if (input.idList != null && input.idList.Count > 0)
             {
-                List<GoodsInfo> goodsInfoList = Repository.GetAllIncluding().Where(x => x.Id.IsIn(input.idList.ToArray<Guid>())).ToList();
+                List<GoodsInfo> goodsInfoList = Repository.GetAll().Where(x => x.Id.IsIn(input.idList.ToArray<Guid>())).ToList();
                 if (goodsInfoList != null && goodsInfoList.Count > 0)
                 {
                     foreach (GoodsInfo goodsInfoRow in goodsInfoList)
@@ -173,14 +168,13 @@ namespace XMX.WMS.GoodsInfo
         [AbpAuthorize(PermissionNames.MaterialBasisInfo_Add)]
         public override async Task<GoodsInfoDto> Create(GoodsInfoCreatedDto input)
         {
-            var is_recode = Repository.GetAll().Where(x => x.goods_code == input.goods_code).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.goods_company_id == UserCompanyId)
+                                               .Where(x => x.goods_code == input.goods_code).Any();
             if (is_recode)
                 throw new UserFriendlyException("物料编码已存在！");
-            if(loginuser == null)
-                loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            input.goods_company_id = loginuser.CompanyId;
+            input.goods_company_id = UserCompanyId;
             GoodsInfoDto dto= await base.Create(input);
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -194,19 +188,20 @@ namespace XMX.WMS.GoodsInfo
         [AbpAuthorize(PermissionNames.MaterialBasisInfo_Update)]
         public override async Task<GoodsInfoDto> Update(GoodsInfoUpdatedDto input)
         {
-            var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_recode = query.Where(x => x.goods_code == input.goods_code).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.goods_company_id == UserCompanyId)
+                                            .Where(x => x.goods_code == input.goods_code)
+                                            .Where(x => x.Id != input.Id).Any();
             if (is_recode)
             {
-                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("物料编码已存在！");
             }   
-            GoodsInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            GoodsInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             GoodsInfoDto dto = await base.Update(input);
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -219,12 +214,11 @@ namespace XMX.WMS.GoodsInfo
         /// <returns></returns>
         public async Task<GoodsInfoDto> UpdateExternal(GoodsInfoUpdatedDto input)
         {
-            var query = Repository.GetAll().Where(x => x.goods_external_id != input.goods_external_id);
-           
-            input.Id = Repository.FirstOrDefault(x => x.goods_external_id == input.goods_external_id).Id;
-            var is_recode = query.Where(x => x.goods_code == input.goods_code).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.goods_external_id != input.goods_external_id)
+                                               .Where(x => x.goods_code == input.goods_code).Any();
             if (is_recode)
                 throw new UserFriendlyException("物料编码已存在！");
+            //input.Id = Repository.FirstOrDefault(x => x.goods_external_id == input.goods_external_id).Id;
             return await base.Update(input);
         }
 
@@ -248,13 +242,12 @@ namespace XMX.WMS.GoodsInfo
                 throw new UserFriendlyException("参数解析异常，请联系管理员！");
             foreach (var item in idList)
             {
-                var name = Repository.FirstOrDefault(x => x.Id == item).goods_name;
-               
-                var rkis_recode = _ibRepository.GetAll().Where(x => x.impbody_goods_id == item).Where(x => !x.IsDeleted).Any();
-                var rklsis_recode = _ioRepository.GetAll().Where(x => x.imporder_goods_id == item).Where(x => !x.IsDeleted).Any();
-                var ckis_recode = _ebRepository.GetAll().Where(x => x.expbody_goods_id == item).Where(x => !x.IsDeleted).Any();
-                var cklsis_recode = _eoRepository.GetAllIncluding(x => x.ExportBillbody).Where(x => x.ExportBillbody.expbody_goods_id == item).Where(x => !x.IsDeleted).Any();
-                var kcis_recode = _iiRepository.GetAll().Where(x => x.inventory_goods_id == item).Where(x => !x.IsDeleted).Any();
+                var name = Repository.Get(item).goods_name;
+                var rkis_recode = _ibRepository.GetAll().Where(x => x.impbody_goods_id == item).Any();
+                var rklsis_recode = _ioRepository.GetAll().Where(x => x.imporder_goods_id == item).Any();
+                var ckis_recode = _ebRepository.GetAll().Where(x => x.expbody_goods_id == item).Any();
+                var cklsis_recode = _eoRepository.GetAll().Where(x => x.exporder_goods_id == item).Any();
+                var kcis_recode = _iiRepository.GetAll().Where(x => x.inventory_goods_id == item).Any();
 
 
                 if (rkis_recode || rklsis_recode || ckis_recode || cklsis_recode || kcis_recode)
@@ -294,16 +287,16 @@ namespace XMX.WMS.GoodsInfo
         [AbpAuthorize(PermissionNames.MaterialBasisInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            var code =  Repository.FirstOrDefault(x => x.Id == input.Id).Id;
-            var rkis_recode = _ibRepository.GetAll().Where(x => x.impbody_goods_id == input.Id).Where(x => !x.IsDeleted).Any();
-            var rklsis_recode = _ioRepository.GetAll().Where(x => x.imporder_goods_id == input.Id).Where(x => !x.IsDeleted).Any();
-            var ckis_recode = _ebRepository.GetAll().Where(x => x.expbody_goods_id == input.Id).Where(x => !x.IsDeleted).Any();
-            var cklsis_recode = _eoRepository.GetAllIncluding(x => x.ExportBillbody).Where(x => x.ExportBillbody.expbody_goods_id == input.Id).Where(x => !x.IsDeleted).Any();
-            var kcis_recode = _iiRepository.GetAll().Where(x => x.inventory_goods_id == input.Id).Where(x => !x.IsDeleted).Any();
+            //var code =  Repository.Get(input.Id).Id;
+            var rkis_recode = _ibRepository.GetAll().Where(x => x.impbody_goods_id == input.Id).Any();
+            var rklsis_recode = _ioRepository.GetAll().Where(x => x.imporder_goods_id == input.Id).Any();
+            var ckis_recode = _ebRepository.GetAll().Where(x => x.expbody_goods_id == input.Id).Any();
+            var cklsis_recode = _eoRepository.GetAll().Where(x => x.exporder_goods_id == input.Id).Any();
+            var kcis_recode = _iiRepository.GetAll().Where(x => x.inventory_goods_id == input.Id).Any();
 
             if (rkis_recode || rklsis_recode || ckis_recode || cklsis_recode || kcis_recode)
                 throw new UserFriendlyException("物料编码在在使用，不能删除！");
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

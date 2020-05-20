@@ -19,7 +19,7 @@ namespace XMX.WMS.TaskMainInfo
         /// </summary>
         public int main_priority { get; set; }
         /// <summary>
-        /// 任务方式(1入库；2出库；3移库；4口对口)
+        /// 任务方式(1入库；2出库；3移库；4口对口；5回流；6空托盘入库；7空托盘出库)
         /// </summary>
         public TaskType main_mode { get; set; }
         /// <summary>
@@ -31,7 +31,7 @@ namespace XMX.WMS.TaskMainInfo
         /// </summary>
         public string main_malfunction { get; set; }
         /// <summary>
-        /// 执行标志(1待执行；2输送机；3堆垛机；4RGV；5AGV；7暂停中；9已完成)
+        /// 执行标志(1待执行；2输送机；3堆垛机；4RGV；5AGV；7暂停中；9已完成；10非完成)
         /// </summary>
         public TaskExecuteFlag main_execute_flag { get; set; }
         /// 手自标志(1自动；2手动)
@@ -40,6 +40,12 @@ namespace XMX.WMS.TaskMainInfo
         #endregion
 
         #region 关联
+        /// <summary>
+        /// 公司
+        /// </summary>
+        public virtual Guid? main_company_id { get; set; }
+        [ForeignKey("main_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
         /// <summary>
         /// 库位
         /// </summary>

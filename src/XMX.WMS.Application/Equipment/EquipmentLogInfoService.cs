@@ -27,7 +27,7 @@ namespace XMX.WMS.Equipment
         /// <returns>分页数据列表</returns>
         protected override IQueryable<EquipmentLogInfo> CreateFilteredQuery(EquipmentLogInfoPagedRequest input)
         {
-            var query = Repository.GetAllIncluding()
+            var query = Repository.GetAll()
                 .WhereIf(!input.equipment_code.IsNullOrWhiteSpace(), x => x.equipment_code.Contains(input.equipment_code))
                 .WhereIf(input.equipment_type.HasValue, x => x.equipment_type == input.equipment_type)
                 .WhereIf(!input.equipment_name.IsNullOrWhiteSpace(), x => x.equipment_name.Contains(input.equipment_name))

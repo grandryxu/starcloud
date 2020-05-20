@@ -73,4 +73,12 @@ namespace XMX.WMS.Base.Dto
             }
         }
     }
+
+    public class GetNumDto
+    { 
+        /// <summary>
+        /// 统计数据条数
+        /// </summary>
+        public int listCount { get; set; }
+    }
 }

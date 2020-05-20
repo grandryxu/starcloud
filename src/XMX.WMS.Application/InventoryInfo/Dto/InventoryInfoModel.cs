@@ -269,6 +269,10 @@ namespace XMX.WMS.InventoryInfo.Dto
 
         #region 关联
         /// <summary>
+        /// 公司
+        /// </summary>
+        public virtual Guid? inventory_company_id { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
         public virtual Guid inventory_goods_id { get; set; }
@@ -372,6 +376,10 @@ namespace XMX.WMS.InventoryInfo.Dto
 
         #region 关联
         /// <summary>
+        /// 公司
+        /// </summary>
+        public virtual Guid? inventory_company_id { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
         public virtual Guid inventory_goods_id { get; set; }
@@ -460,9 +468,19 @@ namespace XMX.WMS.InventoryInfo.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled inventory_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联
+        /// <summary>
+        /// 公司
+        /// </summary>
+        public virtual Guid? inventory_company_id { get; set; }
+        [ForeignKey("inventory_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
         /// <summary>
         /// 物料代码
         /// </summary>
@@ -767,9 +785,13 @@ namespace XMX.WMS.InventoryInfo.Dto
         /// </summary>
         public decimal inventory_quantity { get; set; }
         /// <summary>
-        /// 批次
+        /// 大批次
         /// </summary>
         public string inventory_batch_no { get; set; }
+        /// <summary>
+        /// 小批次
+        /// </summary>
+        public string inventory_lots_no { get; set; }
         #endregion
 
         /// <summary>
@@ -801,7 +823,7 @@ namespace XMX.WMS.InventoryInfo.Dto
         /// <param name="goods_unit"></param>
         /// <param name="quality_name"></param>
         /// <param name="inventory_quantity"></param>
-        public InventoryStatistics(Guid? goods_id, string goods_code, string goods_name, string goods_standard, string goods_unit, Guid? quality_id, string quality_name, string inventory_batch_no, decimal inventory_quantity)
+        public InventoryStatistics(Guid? goods_id, string goods_code, string goods_name, string goods_standard, string goods_unit, Guid? quality_id, string quality_name, string inventory_batch_no, string inventory_lots_no, decimal inventory_quantity)
         {
             this.goods_id = goods_id;
             this.goods_code = goods_code;
@@ -811,7 +833,9 @@ namespace XMX.WMS.InventoryInfo.Dto
             this.quality_id = quality_id;
             this.quality_name = quality_name;
             this.inventory_batch_no = inventory_batch_no;
+            this.inventory_lots_no = inventory_lots_no;
             this.inventory_quantity = inventory_quantity;
+            
         }
     }
     #endregion
@@ -870,6 +894,38 @@ namespace XMX.WMS.InventoryInfo.Dto
             this.inOut_quantity = inOut_quantity;
             this.bill_type = bill_type;
         }
+    }
+    #endregion
+
+    #region 查询inventory 输出批次，物料Dto
+    public class BatchGoodsDto
+    {
+        #region 属性
+        /// <summary>
+        /// 物料ID
+        /// </summary>
+        public Guid goods_id { get; set; }
+        /// <summary>
+        /// 批次号
+        /// </summary>
+        public string inventory_batch_no { get; set; }
+        /// <summary>
+        /// 物料号
+        /// </summary>
+        public string goods_code { get; set; }
+        /// <summary>
+        /// 物料名
+        /// </summary>
+        public string goods_name { get; set; }
+        /// <summary>
+        /// 物料的原质量状态
+        /// </summary>
+        public string quality_status { get; set; }
+        /// <summary>
+        /// 质量状态对应的id
+        /// </summary>
+        public Guid? quality_status_id { get; set; }
+        #endregion
     }
     #endregion
 }

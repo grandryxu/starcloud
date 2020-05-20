@@ -24,23 +24,6 @@ namespace XMX.WMS.WarehouseStock.Dto
     [AutoMapTo(typeof(WarehouseStock))]
     public class WarehouseStockCreatedDto : BaseCreateDto
     {
-        #region 属性
-        /// <summary>
-        /// 库存数量
-        /// </summary>
-        public decimal warehouse_stock { get; set; }
-        /// <summary>
-        /// 库存日期
-        /// </summary>
-        public string warehouse_date { get; set; }
-        #endregion
-
-        #region 关联
-        /// <summary>
-        /// 所属仓库
-        /// </summary>
-        public virtual Guid warehouse_id { get; set; }
-        #endregion
     }
     #endregion
 
@@ -48,23 +31,6 @@ namespace XMX.WMS.WarehouseStock.Dto
     [AutoMapTo(typeof(WarehouseStock))]
     public class WarehouseStockUpdatedDto : BaseUpdateDto
     {
-        #region 属性
-        /// <summary>
-        /// 库存数量
-        /// </summary>
-        public decimal warehouse_stock { get; set; }
-        /// <summary>
-        /// 库存日期
-        /// </summary>
-        public string warehouse_date { get; set; }
-        #endregion
-
-        #region 关联
-        /// <summary>
-        /// 所属仓库
-        /// </summary>
-        public virtual Guid warehouse_id { get; set; }
-        #endregion
     }
     #endregion
 
@@ -81,6 +47,10 @@ namespace XMX.WMS.WarehouseStock.Dto
         /// 库存日期
         /// </summary>
         public string warehouse_date { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

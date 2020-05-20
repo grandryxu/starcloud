@@ -14,7 +14,6 @@ using XMX.WMS.Authorization.Users;
 using XMX.WMS.Roles.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace XMX.WMS.Roles
 {

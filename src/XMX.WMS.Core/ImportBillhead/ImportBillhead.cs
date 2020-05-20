@@ -50,9 +50,9 @@ namespace XMX.WMS.ImportBillhead
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled imphead_is_enable { get; set; }
-        /// <summary>
-        /// 分表后缀
-        /// </summary>
+        ///// <summary>
+        ///// 分表后缀
+        ///// </summary>
         //public string imphead_datestr { get; set; }
         #endregion
 

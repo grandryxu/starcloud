@@ -141,6 +141,10 @@ namespace XMX.WMS.MoveModelMenu.Dto
         /// 备注
         /// </summary>
         public string menu_remark { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

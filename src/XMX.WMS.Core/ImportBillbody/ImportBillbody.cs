@@ -124,8 +124,8 @@ namespace XMX.WMS.ImportBillbody
         /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid? impbody_imphead_id  { get; set; }
-        [ForeignKey("impbody_imphead_id")]
+        public virtual Guid? impbody_head_id  { get; set; }
+        [ForeignKey("impbody_head_id")]
         public virtual ImportBillhead.ImportBillhead ImportBillhead { get; set; }
         /// <summary>
         /// 物料ID

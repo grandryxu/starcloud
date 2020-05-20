@@ -248,5 +248,9 @@ namespace XMX.WMS.EntityFrameworkCore
         /// RGV任务管理
         /// </summary>
         public virtual DbSet<RGVTask.RGVTask> RGVTask { get; set; }
+        /// <summary>
+        /// 自定义报表
+        /// </summary>
+        public virtual DbSet<ReportTemp.ReportTemp> ReportTemp { get; set; }
     }
 }

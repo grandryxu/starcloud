@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using XMX.WMS.Authorization;
-using XMX.WMS.Authorization.Users;
 using Abp.UI;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ImportBillbody
 {
@@ -20,15 +20,14 @@ namespace XMX.WMS.ImportBillbody
     {
         private readonly IRepository<ImportOrder.ImportOrder, Guid> _ioRepository;
         private readonly IRepository<ImportBillhead.ImportBillhead, Guid> _ihRepository;
-        private readonly UserManager _userManager;
+        private readonly Guid UserCompanyId;
         public ImportBillbodyService(IRepository<ImportBillbody, Guid> repository,
             IRepository<ImportOrder.ImportOrder, Guid> ioRepository,
-            IRepository<ImportBillhead.ImportBillhead, Guid> ihRepository,
-            UserManager userManager) : base(repository)
+            IRepository<ImportBillhead.ImportBillhead, Guid> ihRepository) : base(repository)
         {
             _ioRepository = ioRepository;
             _ihRepository = ihRepository;
-            _userManager = userManager;
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -40,8 +39,9 @@ namespace XMX.WMS.ImportBillbody
         protected override IQueryable<ImportBillbody> CreateFilteredQuery(ImportBillbodyPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.GoodsInfo, x => x.GoodsInfo.Unit)
-                .WhereIf(!input.impbody_bill_bar.IsNullOrWhiteSpace(), x => x.impbody_bill_bar.Contains(input.impbody_bill_bar))
-                .WhereIf(input.impbody_imphead_id.HasValue, x => x.impbody_imphead_id == input.impbody_imphead_id);
+                    .WhereIf(AbpSession.UserId != 1, x => x.impbody_company_id == UserCompanyId)
+                    .WhereIf(!input.impbody_bill_bar.IsNullOrWhiteSpace(), x => x.impbody_bill_bar.Contains(input.impbody_bill_bar))
+                    .WhereIf(input.impbody_head_id.HasValue, x => x.impbody_head_id == input.impbody_head_id);
         }
 
         /// <summary>
@@ -74,9 +74,7 @@ namespace XMX.WMS.ImportBillbody
         [AbpAuthorize(PermissionNames.ImportBillBodyManage_Add)]
         public override async Task<ImportBillbodyDto> Create(ImportBillbodyCreatedDto input)
         {
-            //公司ID
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            input.impbody_company_id = loginuser.CompanyId;
+            input.impbody_company_id = UserCompanyId;
             return await base.Create(input);
         }
 
@@ -90,13 +88,11 @@ namespace XMX.WMS.ImportBillbody
         {
             try
             {
-                //公司ID
-                User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-                input.body.impbody_company_id = loginuser.CompanyId;
+                input.body.impbody_company_id = UserCompanyId;
                 if (input.createList != null && input.createList.Count > 0)
                 {
                     input.body.impbody_execute_flag = ExecuteFlag.执行中;
-                    ImportBillhead.ImportBillhead head = _ihRepository.FirstOrDefault(x => x.Id == input.body.impbody_imphead_id);
+                    ImportBillhead.ImportBillhead head = _ihRepository.Get(input.body.impbody_head_id.Value);
                     if (head.imphead_execute_flag == ExecuteFlag.未执行)
                     {
                         head.imphead_execute_flag = ExecuteFlag.执行中;
@@ -138,7 +134,7 @@ namespace XMX.WMS.ImportBillbody
             {
                 if (input.body.impbody_execute_flag == ExecuteFlag.未执行)
                     input.body.impbody_execute_flag = ExecuteFlag.执行中;
-                ImportBillhead.ImportBillhead head = _ihRepository.FirstOrDefault(x => x.Id == input.body.impbody_imphead_id);
+                ImportBillhead.ImportBillhead head = _ihRepository.Get(input.body.impbody_head_id.Value);
                 if (head.imphead_execute_flag == ExecuteFlag.未执行)
                 {
                     head.imphead_execute_flag = ExecuteFlag.执行中;
@@ -150,20 +146,20 @@ namespace XMX.WMS.ImportBillbody
                 if (input.updateList == null || input.updateList.Count == 0)
                 {
                     //body下的其他流水都删除了
-                    var orderFlag = _ioRepository.GetAllIncluding().Where(x => x.imporder_body_id == input.body.Id)
-                                                                   .Where(x => x.imporder_noused_flag == NousedFlag.正常).Any();
+                    var orderFlag = _ioRepository.GetAll().Where(x => x.imporder_body_id == input.body.Id)
+                                                          .Where(x => x.imporder_noused_flag == NousedFlag.正常).Any();
                     if (!orderFlag)
                     {
                         //无正常的流水，修改体状态
-                        ImportBillbody body = Repository.FirstOrDefault(x => x.Id == input.body.Id);
+                        ImportBillbody body = Repository.Get(input.body.Id);
                         body.impbody_execute_flag = ExecuteFlag.未执行;
                         Repository.Update(body);
-                        var bodyFlag = Repository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
-                                                                   .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
+                        var bodyFlag = Repository.GetAll().Where(x => x.impbody_head_id == body.impbody_head_id)
+                                                          .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                         if (!bodyFlag)
                         {
                             //无执行中的体，修改头状态
-                            ImportBillhead.ImportBillhead head = _ihRepository.FirstOrDefault(x => x.Id == body.impbody_imphead_id);
+                            ImportBillhead.ImportBillhead head = _ihRepository.Get(body.impbody_head_id.Value);
                             head.imphead_execute_flag = ExecuteFlag.未执行;
                             _ihRepository.Update(head);
                         }
@@ -272,7 +268,7 @@ namespace XMX.WMS.ImportBillbody
                 ImportOrder.ImportOrder order;
                 foreach (ImportOrder.Dto.ImportOrderUpdatedDto orderDto in updateList)
                 {
-                    order = _ioRepository.FirstOrDefault(x => x.Id == orderDto.Id);
+                    order = _ioRepository.Get(orderDto.Id);
                     order.imporder_batch_no = orderDto.imporder_batch_no;
                     order.imporder_lots_no = orderDto.imporder_lots_no;
                     order.imporder_product_date = orderDto.imporder_product_date;
@@ -336,6 +332,7 @@ namespace XMX.WMS.ImportBillbody
             List<ImportBillbodyDto> list = new List<ImportBillbodyDto>();
             foreach (ImportBillbodyCreatedDto input in inputList) 
             {
+                input.impbody_company_id = UserCompanyId;
                 list.Add(await base.Create(input));
             }
             return new ListResultDto<ImportBillbodyDto>(list);

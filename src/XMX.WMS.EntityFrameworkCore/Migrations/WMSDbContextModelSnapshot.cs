@@ -897,35 +897,39 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<DateTime>("agv_creat_datetime");
-
-                    b.Property<string>("agv_creat_uid");
-
                     b.Property<int>("agv_execute_flag");
 
-                    b.Property<string>("agv_id");
+                    b.Property<Guid?>("agv_inslot_code");
 
                     b.Property<string>("agv_malfunction");
 
                     b.Property<int>("agv_manual_flag");
 
-                    b.Property<string>("agv_modify_datetime");
+                    b.Property<string>("agv_no");
 
-                    b.Property<string>("agv_modify_uid");
+                    b.Property<Guid?>("agv_platform_id");
 
-                    b.Property<int>("agv_no");
+                    b.Property<Guid?>("agv_port_id");
 
-                    b.Property<string>("agv_platform_id");
-
-                    b.Property<string>("agv_port_id");
-
-                    b.Property<string>("agv_port_id2");
+                    b.Property<Guid?>("agv_port_id2");
 
                     b.Property<int>("agv_priority");
+
+                    b.Property<Guid?>("agv_slot_code");
 
                     b.Property<string>("agv_stock_code");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("agv_inslot_code");
+
+                    b.HasIndex("agv_platform_id");
+
+                    b.HasIndex("agv_port_id");
+
+                    b.HasIndex("agv_port_id2");
+
+                    b.HasIndex("agv_slot_code");
 
                     b.ToTable("AGVTask");
                 });
@@ -1655,7 +1659,7 @@ namespace XMX.WMS.Migrations
 
                     b.Property<Guid?>("expbody_goods_id");
 
-                    b.Property<Guid?>("expbody_imphead_id");
+                    b.Property<Guid?>("expbody_head_id");
 
                     b.Property<int>("expbody_is_enable");
 
@@ -1693,7 +1697,7 @@ namespace XMX.WMS.Migrations
 
                     b.HasIndex("expbody_goods_id");
 
-                    b.HasIndex("expbody_imphead_id");
+                    b.HasIndex("expbody_head_id");
 
                     b.HasIndex("expbody_quality_status");
 
@@ -2061,33 +2065,45 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<DateTime>("flat_creat_datetime");
-
-                    b.Property<string>("flat_creat_uid");
+                    b.Property<Guid?>("flat_company_id");
 
                     b.Property<int>("flat_execute_flag");
 
-                    b.Property<string>("flat_id");
+                    b.Property<Guid?>("flat_inslot_code");
+
+                    b.Property<string>("flat_malfunction");
 
                     b.Property<int>("flat_manual_flag");
 
                     b.Property<int>("flat_mode");
 
-                    b.Property<string>("flat_modify_datetime");
+                    b.Property<string>("flat_no");
 
-                    b.Property<string>("flat_modify_uid");
+                    b.Property<Guid?>("flat_platform_id");
 
-                    b.Property<int>("flat_no");
+                    b.Property<Guid?>("flat_port_id");
 
-                    b.Property<string>("flat_platform_id");
+                    b.Property<Guid?>("flat_port_id2");
 
                     b.Property<int>("flat_priority");
 
-                    b.Property<string>("flat_slot_code");
+                    b.Property<Guid?>("flat_slot_code");
 
                     b.Property<string>("flat_stock_code");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("flat_company_id");
+
+                    b.HasIndex("flat_inslot_code");
+
+                    b.HasIndex("flat_platform_id");
+
+                    b.HasIndex("flat_port_id");
+
+                    b.HasIndex("flat_port_id2");
+
+                    b.HasIndex("flat_slot_code");
 
                     b.ToTable("FlatBankTask");
                 });
@@ -2347,7 +2363,7 @@ namespace XMX.WMS.Migrations
 
                     b.Property<Guid?>("impbody_goods_id");
 
-                    b.Property<Guid?>("impbody_imphead_id");
+                    b.Property<Guid?>("impbody_head_id");
 
                     b.Property<int>("impbody_is_enable");
 
@@ -2391,7 +2407,7 @@ namespace XMX.WMS.Migrations
 
                     b.HasIndex("impbody_goods_id");
 
-                    b.HasIndex("impbody_imphead_id");
+                    b.HasIndex("impbody_head_id");
 
                     b.HasIndex("impbody_quality_status");
 
@@ -2655,6 +2671,8 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("inventory_box_code");
 
+                    b.Property<Guid?>("inventory_company_id");
+
                     b.Property<DateTime>("inventory_date");
 
                     b.Property<Guid>("inventory_goods_id");
@@ -2662,8 +2680,6 @@ namespace XMX.WMS.Migrations
                     b.Property<int>("inventory_is_enable");
 
                     b.Property<string>("inventory_lots_no");
-
-                    b.Property<Guid?>("inventory_port_id");
 
                     b.Property<DateTime>("inventory_product_date");
 
@@ -2687,19 +2703,15 @@ namespace XMX.WMS.Migrations
 
                     b.Property<DateTime>("inventory_vaildate_date");
 
-                    b.Property<Guid>("inventory_warehouse_id");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("inventory_goods_id");
+                    b.HasIndex("inventory_company_id");
 
-                    b.HasIndex("inventory_port_id");
+                    b.HasIndex("inventory_goods_id");
 
                     b.HasIndex("inventory_quality_status");
 
                     b.HasIndex("inventory_slot_code");
-
-                    b.HasIndex("inventory_warehouse_id");
 
                     b.ToTable("InventoryInfo");
                 });
@@ -2889,41 +2901,45 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<int>("main_execute_flag");
+                    b.Property<Guid?>("picking_company_id");
 
-                    b.Property<Guid?>("main_inslot_code");
+                    b.Property<int>("picking_execute_flag");
 
-                    b.Property<string>("main_malfunction");
+                    b.Property<Guid?>("picking_inslot_code");
 
-                    b.Property<int>("main_manual_flag");
+                    b.Property<string>("picking_malfunction");
 
-                    b.Property<int>("main_mode");
+                    b.Property<int>("picking_manual_flag");
 
-                    b.Property<string>("main_no");
+                    b.Property<int>("picking_mode");
 
-                    b.Property<Guid?>("main_platform_id");
+                    b.Property<string>("picking_no");
 
-                    b.Property<Guid?>("main_port_id");
+                    b.Property<Guid?>("picking_platform_id");
 
-                    b.Property<Guid?>("main_port_id2");
+                    b.Property<Guid?>("picking_port_id");
 
-                    b.Property<int>("main_priority");
+                    b.Property<Guid?>("picking_port_id2");
 
-                    b.Property<Guid>("main_slot_code");
+                    b.Property<int>("picking_priority");
 
-                    b.Property<string>("main_stock_code");
+                    b.Property<Guid?>("picking_slot_code");
+
+                    b.Property<string>("picking_stock_code");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("main_inslot_code");
+                    b.HasIndex("picking_company_id");
 
-                    b.HasIndex("main_platform_id");
+                    b.HasIndex("picking_inslot_code");
 
-                    b.HasIndex("main_port_id");
+                    b.HasIndex("picking_platform_id");
 
-                    b.HasIndex("main_port_id2");
+                    b.HasIndex("picking_port_id");
 
-                    b.HasIndex("main_slot_code");
+                    b.HasIndex("picking_port_id2");
+
+                    b.HasIndex("picking_slot_code");
 
                     b.ToTable("PickingTask");
                 });
@@ -3029,45 +3045,47 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<string>("bill_type");
-
                     b.Property<string>("check_batch_no");
 
-                    b.Property<string>("check_bill");
+                    b.Property<string>("check_bill_bar");
 
-                    b.Property<string>("check_goods_code");
+                    b.Property<int>("check_bill_status");
 
-                    b.Property<string>("check_goods_name");
+                    b.Property<Guid?>("check_checked_quality");
 
-                    b.Property<Guid?>("check_inventory_id");
+                    b.Property<string>("check_code");
+
+                    b.Property<Guid?>("check_company_id");
+
+                    b.Property<string>("check_export_bill");
+
+                    b.Property<Guid?>("check_goods_id");
 
                     b.Property<decimal>("check_num");
 
-                    b.Property<int>("check_released");
+                    b.Property<Guid?>("check_origin_quality");
+
+                    b.Property<int>("check_released_status");
+
+                    b.Property<string>("check_remark");
 
                     b.Property<DateTime>("check_time");
 
-                    b.Property<string>("checked_quality_status");
+                    b.Property<int>("check_type");
 
-                    b.Property<Guid>("checked_quality_status_id");
-
-                    b.Property<int>("exist_out_bill");
-
-                    b.Property<Guid?>("inventory_warehouse_id");
-
-                    b.Property<string>("origin_quality_status");
-
-                    b.Property<string>("quality_check_export_code");
-
-                    b.Property<string>("remark");
-
-                    b.Property<decimal>("stock_num");
+                    b.Property<Guid?>("check_warehouse_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("check_inventory_id");
+                    b.HasIndex("check_checked_quality");
 
-                    b.HasIndex("inventory_warehouse_id");
+                    b.HasIndex("check_company_id");
+
+                    b.HasIndex("check_goods_id");
+
+                    b.HasIndex("check_origin_quality");
+
+                    b.HasIndex("check_warehouse_id");
 
                     b.ToTable("QualityCheck");
                 });
@@ -3091,7 +3109,7 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<string>("check_bill_code");
+                    b.Property<decimal>("check_quantity");
 
                     b.Property<string>("inventory_batch_no");
 
@@ -3101,27 +3119,19 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("inventory_lots_no");
 
-                    b.Property<DateTime>("inventory_product_date");
-
-                    b.Property<string>("inventory_product_lineid");
-
                     b.Property<decimal>("inventory_quantity");
 
-                    b.Property<string>("inventory_slot_code");
-
-                    b.Property<int>("inventory_status");
+                    b.Property<Guid?>("inventory_slot_code");
 
                     b.Property<string>("inventory_stock_code");
 
-                    b.Property<int>("inventory_stock_status");
-
-                    b.Property<Guid?>("quality_check_id");
-
-                    b.Property<decimal>("stock_check_quantity");
+                    b.Property<Guid>("quality_check_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("inventory_goods_id");
+
+                    b.HasIndex("inventory_slot_code");
 
                     b.HasIndex("quality_check_id");
 
@@ -3217,37 +3227,85 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<DateTime>("rgv_creat_datetime");
-
-                    b.Property<string>("rgv_creat_uid");
-
                     b.Property<int>("rgv_execute_flag");
 
-                    b.Property<string>("rgv_id");
+                    b.Property<Guid?>("rgv_inslot_code");
 
                     b.Property<string>("rgv_malfunction");
 
                     b.Property<int>("rgv_manual_flag");
 
-                    b.Property<string>("rgv_modify_datetime");
+                    b.Property<string>("rgv_no");
 
-                    b.Property<string>("rgv_modify_uid");
+                    b.Property<Guid?>("rgv_platform_id");
 
-                    b.Property<int>("rgv_no");
+                    b.Property<Guid?>("rgv_port_id");
 
-                    b.Property<string>("rgv_platform_id");
-
-                    b.Property<string>("rgv_port_id");
-
-                    b.Property<string>("rgv_port_id2");
+                    b.Property<Guid?>("rgv_port_id2");
 
                     b.Property<int>("rgv_priority");
+
+                    b.Property<Guid?>("rgv_slot_code");
 
                     b.Property<string>("rgv_stock_code");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("rgv_inslot_code");
+
+                    b.HasIndex("rgv_platform_id");
+
+                    b.HasIndex("rgv_port_id");
+
+                    b.HasIndex("rgv_port_id2");
+
+                    b.HasIndex("rgv_slot_code");
+
                     b.ToTable("RGVTask");
+                });
+
+            modelBuilder.Entity("XMX.WMS.ReportTemp.ReportTemp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<long?>("DeleterUserId");
+
+                    b.Property<DateTime?>("DeletionTime");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("EnCode");
+
+                    b.Property<int?>("EnabledMark");
+
+                    b.Property<string>("FullName");
+
+                    b.Property<bool>("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime");
+
+                    b.Property<long?>("LastModifierUserId");
+
+                    b.Property<string>("ParamJson");
+
+                    b.Property<int?>("SortCode");
+
+                    b.Property<string>("TempCategory");
+
+                    b.Property<string>("TempId");
+
+                    b.Property<string>("TempStyle");
+
+                    b.Property<string>("TempType");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReportTemp");
                 });
 
             modelBuilder.Entity("XMX.WMS.RowInfo.RowInfo", b =>
@@ -3269,8 +3327,6 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<Guid?>("row_area_id");
-
                     b.Property<Guid?>("row_company_id");
 
                     b.Property<int>("row_end_column");
@@ -3278,8 +3334,6 @@ namespace XMX.WMS.Migrations
                     b.Property<int>("row_end_layer");
 
                     b.Property<int>("row_inout_type");
-
-                    b.Property<int>("row_is_enable");
 
                     b.Property<int>("row_movealbe_status");
 
@@ -3293,11 +3347,11 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("row_remark");
 
-                    b.Property<Guid?>("row_size_id");
-
                     b.Property<int>("row_start_column");
 
-                    b.Property<string>("row_start_layer");
+                    b.Property<int>("row_start_layer");
+
+                    b.Property<int>("row_status");
 
                     b.Property<int>("row_type");
 
@@ -3305,13 +3359,9 @@ namespace XMX.WMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("row_area_id");
-
                     b.HasIndex("row_company_id");
 
                     b.HasIndex("row_out_id");
-
-                    b.HasIndex("row_size_id");
 
                     b.HasIndex("row_warehouse_id");
 
@@ -3359,6 +3409,8 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("slot_name");
 
+                    b.Property<Guid?>("slot_out_id");
+
                     b.Property<int>("slot_row");
 
                     b.Property<Guid?>("slot_row_id");
@@ -3376,6 +3428,8 @@ namespace XMX.WMS.Migrations
                     b.HasIndex("slot_area_id");
 
                     b.HasIndex("slot_company_id");
+
+                    b.HasIndex("slot_out_id");
 
                     b.HasIndex("slot_row_id");
 
@@ -3407,8 +3461,6 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<Guid?>("size_company_id");
-
                     b.Property<decimal>("size_height");
 
                     b.Property<int>("size_is_enable");
@@ -3419,15 +3471,9 @@ namespace XMX.WMS.Migrations
 
                     b.Property<string>("size_remark");
 
-                    b.Property<Guid?>("size_warehouse_id");
-
                     b.Property<decimal>("size_width");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("size_company_id");
-
-                    b.HasIndex("size_warehouse_id");
 
                     b.ToTable("SlotSize");
                 });
@@ -3735,6 +3781,8 @@ namespace XMX.WMS.Migrations
 
                     b.Property<long?>("LastModifierUserId");
 
+                    b.Property<Guid?>("main_company_id");
+
                     b.Property<int>("main_execute_flag");
 
                     b.Property<Guid?>("main_inslot_code");
@@ -3760,6 +3808,8 @@ namespace XMX.WMS.Migrations
                     b.Property<string>("main_stock_code");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("main_company_id");
 
                     b.HasIndex("main_inslot_code");
 
@@ -3887,6 +3937,8 @@ namespace XMX.WMS.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CompanyId");
 
                     b.Property<DateTime>("CreationTime");
 
@@ -4111,6 +4163,29 @@ namespace XMX.WMS.Migrations
                         .HasForeignKey("ParentId");
                 });
 
+            modelBuilder.Entity("XMX.WMS.AGVTask.AGVTask", b =>
+                {
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot2")
+                        .WithMany()
+                        .HasForeignKey("agv_inslot_code");
+
+                    b.HasOne("XMX.WMS.PlatFormInfo.PlatFormInfo", "PlatForm")
+                        .WithMany()
+                        .HasForeignKey("agv_platform_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port1")
+                        .WithMany()
+                        .HasForeignKey("agv_port_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port2")
+                        .WithMany()
+                        .HasForeignKey("agv_port_id2");
+
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot1")
+                        .WithMany()
+                        .HasForeignKey("agv_slot_code");
+                });
+
             modelBuilder.Entity("XMX.WMS.Alarm.Alarm", b =>
                 {
                     b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
@@ -4267,7 +4342,7 @@ namespace XMX.WMS.Migrations
 
                     b.HasOne("XMX.WMS.ExportBillhead.ExportBillhead", "ExportBillhead")
                         .WithMany()
-                        .HasForeignKey("expbody_imphead_id");
+                        .HasForeignKey("expbody_head_id");
 
                     b.HasOne("XMX.WMS.QualityInfo.QualityInfo", "Quality")
                         .WithMany()
@@ -4398,6 +4473,33 @@ namespace XMX.WMS.Migrations
                         .HasForeignKey("expstock_warehouse_id");
                 });
 
+            modelBuilder.Entity("XMX.WMS.FlatBankTask.FlatBankTask", b =>
+                {
+                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "company")
+                        .WithMany()
+                        .HasForeignKey("flat_company_id");
+
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot2")
+                        .WithMany()
+                        .HasForeignKey("flat_inslot_code");
+
+                    b.HasOne("XMX.WMS.PlatFormInfo.PlatFormInfo", "PlatForm")
+                        .WithMany()
+                        .HasForeignKey("flat_platform_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port1")
+                        .WithMany()
+                        .HasForeignKey("flat_port_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port2")
+                        .WithMany()
+                        .HasForeignKey("flat_port_id2");
+
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot1")
+                        .WithMany()
+                        .HasForeignKey("flat_slot_code");
+                });
+
             modelBuilder.Entity("XMX.WMS.GoodsInfo.GoodsInfo", b =>
                 {
                     b.HasOne("XMX.WMS.AreaInfo.AreaInfo", "Area")
@@ -4472,7 +4574,7 @@ namespace XMX.WMS.Migrations
 
                     b.HasOne("XMX.WMS.ImportBillhead.ImportBillhead", "ImportBillhead")
                         .WithMany()
-                        .HasForeignKey("impbody_imphead_id");
+                        .HasForeignKey("impbody_head_id");
 
                     b.HasOne("XMX.WMS.QualityInfo.QualityInfo", "QualityInfo")
                         .WithMany()
@@ -4574,14 +4676,14 @@ namespace XMX.WMS.Migrations
 
             modelBuilder.Entity("XMX.WMS.InventoryInfo.InventoryInfo", b =>
                 {
+                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
+                        .WithMany()
+                        .HasForeignKey("inventory_company_id");
+
                     b.HasOne("XMX.WMS.GoodsInfo.GoodsInfo", "Goods")
                         .WithMany()
                         .HasForeignKey("inventory_goods_id")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port")
-                        .WithMany()
-                        .HasForeignKey("inventory_port_id");
 
                     b.HasOne("XMX.WMS.QualityInfo.QualityInfo", "Quality")
                         .WithMany()
@@ -4591,11 +4693,6 @@ namespace XMX.WMS.Migrations
                     b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot")
                         .WithMany()
                         .HasForeignKey("inventory_slot_code")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("XMX.WMS.WarehouseInfo.WarehouseInfo", "Warehouse")
-                        .WithMany()
-                        .HasForeignKey("inventory_warehouse_id")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -4634,26 +4731,29 @@ namespace XMX.WMS.Migrations
 
             modelBuilder.Entity("XMX.WMS.PickingTask.PickingTask", b =>
                 {
+                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "company")
+                        .WithMany()
+                        .HasForeignKey("picking_company_id");
+
                     b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot2")
                         .WithMany()
-                        .HasForeignKey("main_inslot_code");
+                        .HasForeignKey("picking_inslot_code");
 
                     b.HasOne("XMX.WMS.PlatFormInfo.PlatFormInfo", "PlatForm")
                         .WithMany()
-                        .HasForeignKey("main_platform_id");
+                        .HasForeignKey("picking_platform_id");
 
                     b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port1")
                         .WithMany()
-                        .HasForeignKey("main_port_id");
+                        .HasForeignKey("picking_port_id");
 
                     b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port2")
                         .WithMany()
-                        .HasForeignKey("main_port_id2");
+                        .HasForeignKey("picking_port_id2");
 
                     b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot1")
                         .WithMany()
-                        .HasForeignKey("main_slot_code")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("picking_slot_code");
                 });
 
             modelBuilder.Entity("XMX.WMS.PlatFormInfo.PlatFormInfo", b =>
@@ -4680,13 +4780,25 @@ namespace XMX.WMS.Migrations
 
             modelBuilder.Entity("XMX.WMS.QualityCheck.QualityCheck", b =>
                 {
-                    b.HasOne("XMX.WMS.InventoryInfo.InventoryInfo", "check_inventory_info")
+                    b.HasOne("XMX.WMS.QualityInfo.QualityInfo", "Quality2")
                         .WithMany()
-                        .HasForeignKey("check_inventory_id");
+                        .HasForeignKey("check_checked_quality");
+
+                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
+                        .WithMany()
+                        .HasForeignKey("check_company_id");
+
+                    b.HasOne("XMX.WMS.GoodsInfo.GoodsInfo", "Goods")
+                        .WithMany()
+                        .HasForeignKey("check_goods_id");
+
+                    b.HasOne("XMX.WMS.QualityInfo.QualityInfo", "Quality1")
+                        .WithMany()
+                        .HasForeignKey("check_origin_quality");
 
                     b.HasOne("XMX.WMS.WarehouseInfo.WarehouseInfo", "Warehouse")
                         .WithMany()
-                        .HasForeignKey("inventory_warehouse_id");
+                        .HasForeignKey("check_warehouse_id");
                 });
 
             modelBuilder.Entity("XMX.WMS.QualityCheckDetail.QualityCheckDetail", b =>
@@ -4695,9 +4807,14 @@ namespace XMX.WMS.Migrations
                         .WithMany()
                         .HasForeignKey("inventory_goods_id");
 
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot")
+                        .WithMany()
+                        .HasForeignKey("inventory_slot_code");
+
                     b.HasOne("XMX.WMS.QualityCheck.QualityCheck", "qualityCheck")
                         .WithMany()
-                        .HasForeignKey("quality_check_id");
+                        .HasForeignKey("quality_check_id")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("XMX.WMS.QualityInfo.QualityInfo", b =>
@@ -4714,12 +4831,31 @@ namespace XMX.WMS.Migrations
                         .HasForeignKey("quare_quality_id");
                 });
 
+            modelBuilder.Entity("XMX.WMS.RGVTask.RGVTask", b =>
+                {
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot2")
+                        .WithMany()
+                        .HasForeignKey("rgv_inslot_code");
+
+                    b.HasOne("XMX.WMS.PlatFormInfo.PlatFormInfo", "PlatForm")
+                        .WithMany()
+                        .HasForeignKey("rgv_platform_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port1")
+                        .WithMany()
+                        .HasForeignKey("rgv_port_id");
+
+                    b.HasOne("XMX.WMS.PortInfo.PortInfo", "Port2")
+                        .WithMany()
+                        .HasForeignKey("rgv_port_id2");
+
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot1")
+                        .WithMany()
+                        .HasForeignKey("rgv_slot_code");
+                });
+
             modelBuilder.Entity("XMX.WMS.RowInfo.RowInfo", b =>
                 {
-                    b.HasOne("XMX.WMS.AreaInfo.AreaInfo", "Area")
-                        .WithMany()
-                        .HasForeignKey("row_area_id");
-
                     b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
                         .WithMany()
                         .HasForeignKey("row_company_id");
@@ -4727,10 +4863,6 @@ namespace XMX.WMS.Migrations
                     b.HasOne("XMX.WMS.RowInfo.RowInfo", "Row")
                         .WithMany()
                         .HasForeignKey("row_out_id");
-
-                    b.HasOne("XMX.WMS.SlotSize.SlotSize", "Size")
-                        .WithMany()
-                        .HasForeignKey("row_size_id");
 
                     b.HasOne("XMX.WMS.WarehouseInfo.WarehouseInfo", "Warehouse")
                         .WithMany()
@@ -4747,6 +4879,10 @@ namespace XMX.WMS.Migrations
                         .WithMany()
                         .HasForeignKey("slot_company_id");
 
+                    b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "OutSlot")
+                        .WithMany()
+                        .HasForeignKey("slot_out_id");
+
                     b.HasOne("XMX.WMS.RowInfo.RowInfo", "Row")
                         .WithMany()
                         .HasForeignKey("slot_row_id");
@@ -4762,17 +4898,6 @@ namespace XMX.WMS.Migrations
                     b.HasOne("XMX.WMS.WarehouseInfo.WarehouseInfo", "Warehouse")
                         .WithMany()
                         .HasForeignKey("slot_warehouse_id");
-                });
-
-            modelBuilder.Entity("XMX.WMS.SlotSize.SlotSize", b =>
-                {
-                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
-                        .WithMany()
-                        .HasForeignKey("size_company_id");
-
-                    b.HasOne("XMX.WMS.WarehouseInfo.WarehouseInfo", "Warehouse")
-                        .WithMany()
-                        .HasForeignKey("size_warehouse_id");
                 });
 
             modelBuilder.Entity("XMX.WMS.StockTasking.StockTasking", b =>
@@ -4839,6 +4964,10 @@ namespace XMX.WMS.Migrations
 
             modelBuilder.Entity("XMX.WMS.TaskMainInfo.TaskMainInfo", b =>
                 {
+                    b.HasOne("XMX.WMS.CompanyInfo.CompanyInfo", "Company")
+                        .WithMany()
+                        .HasForeignKey("main_company_id");
+
                     b.HasOne("XMX.WMS.SlotInfo.SlotInfo", "Slot2")
                         .WithMany()
                         .HasForeignKey("main_inslot_code");

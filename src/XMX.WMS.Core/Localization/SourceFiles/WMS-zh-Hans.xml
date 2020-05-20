@@ -93,6 +93,9 @@
     <text name="EditTenant">编辑租户</text>
     <text name="CustomInfo_List">客户信息列表</text>
     <text name="CustomInfo_Get">获取单个客户信息</text>
+    
+    <!-- AGVTaskService -->
+    <text name="AGVTask_NoSlot">当前库位不存在，请重新输入</text>
   </texts>
 </localizationDictionary>
 

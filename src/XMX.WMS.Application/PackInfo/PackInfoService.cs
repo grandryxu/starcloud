@@ -17,6 +17,7 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.PackInfo
 {
@@ -24,6 +25,7 @@ namespace XMX.WMS.PackInfo
     public class PackInfoService : AsyncCrudAppService<PackInfo, PackInfoDto, Guid, PackInfoPagedRequest, PackInfoCreatedDto, PackInfoUpdatedDto>, IPackInfoService
     {
         private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _goodsInfoRepository;
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -31,10 +33,11 @@ namespace XMX.WMS.PackInfo
             IRepository<GoodsInfo.GoodsInfo, Guid> goodsInfoRepository) : base(repository)
         {
             _goodsInfoRepository = goodsInfoRepository;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.PackInfo.PackInfoService.",
                 OptModule = "垛形基础信息"
             };
@@ -50,7 +53,7 @@ namespace XMX.WMS.PackInfo
             if (file.Length <= 0)
                 return "文件异常";
             string filename = Guid.NewGuid().ToString() + file.FileName;
-            DirectoryInfo info = System.IO.Directory.CreateDirectory(Path.Combine("wwwroot", "packInfo"));
+            DirectoryInfo info = Directory.CreateDirectory(Path.Combine("wwwroot", "packInfo"));
             var filePath = Path.Combine(info.FullName, filename);
             using (var stream = File.Create(filePath))
                 await file.CopyToAsync(stream);
@@ -65,10 +68,11 @@ namespace XMX.WMS.PackInfo
         [AbpAuthorize(PermissionNames.PackBasicInfo_Get)]
         protected override IQueryable<PackInfo> CreateFilteredQuery(PackInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.pack_code.IsNullOrWhiteSpace(), x => x.pack_code.Contains(input.pack_code))
-                .WhereIf(!input.pack_name.IsNullOrWhiteSpace(), x => x.pack_name.Contains(input.pack_name))
-                ;
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.pack_company_id == UserCompanyId)
+                    .WhereIf(!input.pack_code.IsNullOrWhiteSpace(), x => x.pack_code.Contains(input.pack_code))
+                    .WhereIf(!input.pack_name.IsNullOrWhiteSpace(), x => x.pack_name.Contains(input.pack_name))
+                    ;
         }
 
         /// <summary>
@@ -89,12 +93,13 @@ namespace XMX.WMS.PackInfo
         [AbpAuthorize(PermissionNames.PackBasicInfo_Add)]
         public override async Task<PackInfoDto> Create(PackInfoCreatedDto input)
         {
-            var is_recode = Repository.GetAll().Where(x => x.pack_code == input.pack_code).Where(x => !x.IsDeleted).Any();
-            var is_rename = Repository.GetAll().Where(x => x.pack_name == input.pack_name).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.pack_code == input.pack_code).Any();
+            var is_rename = Repository.GetAll().Where(x => x.pack_name == input.pack_name).Any();
             if (is_recode || is_rename)
                 throw new UserFriendlyException("垛型编号或垛型名称已存在！");
+            input.pack_company_id = UserCompanyId;
             PackInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -109,19 +114,18 @@ namespace XMX.WMS.PackInfo
         public override async Task<PackInfoDto> Update(PackInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename_or_recode = query.Where(x => x.pack_code == input.pack_code || x.pack_name == input.pack_name).Where(x => !x.IsDeleted).Any();
+            var is_rename_or_recode = query.Where(x => x.pack_code == input.pack_code || x.pack_name == input.pack_name).Any();
             if (is_rename_or_recode)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("垛型编号或垛型名称已存在！");
             }
-                
-            PackInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            PackInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             PackInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -156,7 +160,7 @@ namespace XMX.WMS.PackInfo
             //    Logger.ErrorFormat("垛型信息批量删除异常：{0}", ex.Message);
             //    throw new UserFriendlyException("物料信息关联的垛型中存在非法数据！这通常是由于部分物料信息非正常添加导致的。");
             //}
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "CreateDropAll", WMSOptLogInfo.WMSOptLogInfo.DELETE, "批量删除", "批量删除", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "CreateDropAll", WMSOptLogInfo.WMSOptLogInfo.DELETE, "批量删除", "批量删除", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return Repository.DeleteAsync(x => x.Id.IsIn(list.ToArray<Guid>()));
@@ -170,7 +174,7 @@ namespace XMX.WMS.PackInfo
         [AbpAuthorize(PermissionNames.PackBasicInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

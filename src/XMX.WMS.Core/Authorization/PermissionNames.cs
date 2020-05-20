@@ -121,6 +121,7 @@
         public const string InOutdBasicInfo_Delete = "BasicInfoManage.InOutdBasicInfo.Delete";
         public const string InOutdBasicInfo_Export = "BasicInfoManage.InOutdBasicInfo.Export";
         public const string InOutdBasicInfo_Print = "BasicInfoManage.InOutdBasicInfo.Print";
+        public const string InOutdBasicInfo_SetTunnel = "BasicInfoManage.InOutdBasicInfo.SetTunnel";
         #endregion
 
         #region 月台基础信息
@@ -280,6 +281,7 @@
         public const string ImportBillBodyManage_AnalogScan = "ImportWarehouseManage.ImportBillBodyManage.AnalogScan";
         //作废按钮
         public const string ImportBillBodyManage_Cancle = "ImportWarehouseManage.ImportBillBodyManage.Cancle";
+        public const string ImportBillBodyManage_Task = "ImportWarehouseManage.ImportBillBodyManage.Task";
 
 
         //空托盘入库流水
@@ -440,6 +442,10 @@
         public const string InventoryReportForm = "warehouseReport-storageReport";
         public const string InventoryReportForm_Export = "WarehouseReport.InventoryReportForm.Export";
         public const string InventoryReportForm_Print = "WarehouseReport.InventoryReportForm.Print";
+        //自定义报表
+        public const string CustomReportForm = "warehouseReport-customReport";
+        public const string CustomReportForm_Export = "WarehouseReport.CustomReportForm.Export";
+        public const string CustomReportForm_Print = "WarehouseReport.CustomReportForm.Print";
         #endregion
 
         #region 任务管理中心

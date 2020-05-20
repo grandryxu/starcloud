@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 using Abp.Authorization;
 using XMX.WMS.Authorization;
 using Abp.Application.Services.Dto;
-using XMX.WMS.Authorization.Users;
 using AutoMapper;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ExportBillhead
 {
@@ -24,6 +24,7 @@ namespace XMX.WMS.ExportBillhead
     {
         private readonly IRepository<EncodingRule.EncodingRule, Guid> _erRepository;
         private readonly IRepository<ExportBillbody.ExportBillbody, Guid> _ebRepository;
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -33,10 +34,11 @@ namespace XMX.WMS.ExportBillhead
         {
             _erRepository = erRepository;
             _ebRepository = ebRepository;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.ExportBillhead.ExportBillheadService.",
                 OptModule = "出库单据管理"
             };
@@ -49,7 +51,8 @@ namespace XMX.WMS.ExportBillhead
         [AbpAuthorize(PermissionNames.ExportBillManage_Get)]
         protected override IQueryable<ExportBillhead> CreateFilteredQuery(ExportBillheadPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.exphead_company_id == UserCompanyId)
                     .WhereIf(!input.exphead_code.IsNullOrWhiteSpace(), x => x.exphead_code.Contains(input.exphead_code))
                     .WhereIf(!input.exphead_external_code.IsNullOrWhiteSpace(), x => x.exphead_external_code.Contains(input.exphead_external_code))
                     .WhereIf(input.exphead_custom_id.HasValue, x => x.exphead_custom_id == input.exphead_custom_id)
@@ -86,8 +89,9 @@ namespace XMX.WMS.ExportBillhead
                 EncodingRule.EncodingRuleService er = new EncodingRule.EncodingRuleService(_erRepository, Repository);
                 input.exphead_code = er.GetEncodingRule("CKCode");
             }
+            input.exphead_company_id = UserCompanyId;
             ExportBillheadDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -104,11 +108,12 @@ namespace XMX.WMS.ExportBillhead
             var flag = Repository.GetAll().Where(x => x.exphead_code == input.head.exphead_code).Any();
             if (flag)
                 throw new UserFriendlyException("编码规则已存在！");
+            input.head.exphead_company_id = UserCompanyId;
             Task<ExportBillheadDto> taskDto = base.Create(input.head);
             if (input.createList != null && input.createList.Count > 0 && !InsertBody(taskDto.Result, input.createList))
                 throw new UserFriendlyException("新增批次信息失败！");
             ExportBillheadDto dto = taskDto.Result;
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "CreateExportBill", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "CreateExportBill", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return taskDto;
@@ -127,10 +132,10 @@ namespace XMX.WMS.ExportBillhead
             {
                 throw new UserFriendlyException("编码规则已存在！");
             }
-            ExportBillhead oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            ExportBillhead oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ExportBillheadDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -171,7 +176,7 @@ namespace XMX.WMS.ExportBillhead
             {
                 throw new UserFriendlyException("数据状态异常，无法删除！");
             }  
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -230,7 +235,9 @@ namespace XMX.WMS.ExportBillhead
                     body.expbody_is_enable = bodyDto.expbody_is_enable;
                     body.expbody_goods_id = bodyDto.expbody_goods_id;
                     body.expbody_bill_bar = head.exphead_code;
-                    body.expbody_imphead_id = head.Id;
+                    body.expbody_company_id = head.exphead_company_id;
+                    body.expbody_quality_status = bodyDto.expbody_quality_status;
+                    body.expbody_head_id = head.Id;
                     _ebRepository.Insert(body);
                 }
                 return true;
@@ -252,7 +259,7 @@ namespace XMX.WMS.ExportBillhead
                 ExportBillbody.ExportBillbody body;
                 foreach (ExportBillbody.Dto.ExportBillbodyUpdatedDto bodyDto in updateList)
                 {
-                    body = _ebRepository.FirstOrDefault(x => x.Id == bodyDto.Id);
+                    body = _ebRepository.Get(bodyDto.Id);
                     body.expbody_list_id = bodyDto.expbody_list_id;
                     body.expbody_external_listid = bodyDto.expbody_external_listid;
                     body.expbody_batch_no = bodyDto.expbody_batch_no;
@@ -276,6 +283,7 @@ namespace XMX.WMS.ExportBillhead
                     body.expbody_upload_datetime = bodyDto.expbody_upload_datetime;
                     body.expbody_is_enable = bodyDto.expbody_is_enable;
                     body.expbody_goods_id = bodyDto.expbody_goods_id;
+                    body.expbody_quality_status = bodyDto.expbody_quality_status;
                     _ebRepository.Update(body);
                 }
                 return true;
@@ -313,7 +321,7 @@ namespace XMX.WMS.ExportBillhead
         {
             if (idList != null && idList.Count > 0)
             {
-                List<ExportBillhead> inputList = Repository.GetAllIncluding().Where(x => x.Id.IsIn(idList.ToArray<Guid>())).ToList();
+                List<ExportBillhead> inputList = Repository.GetAll().Where(x => x.Id.IsIn(idList.ToArray<Guid>())).ToList();
                 if (inputList != null && inputList.Count > 0) {
                     EncodingRule.EncodingRuleService er = new EncodingRule.EncodingRuleService(_erRepository, Repository);
                     string erCode = er.GetEncodingRule("WaveCode");

@@ -14,21 +14,24 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.PortInfo
 {
     [AbpAuthorize(PermissionNames.InOutdBasicInfo)]
     public class PortInfoService : AsyncCrudAppService<PortInfo, PortInfoDto, Guid, PortInfoPagedRequest, PortInfoCreatedDto, PortInfoUpdatedDto>, IPortInfoService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public PortInfoService(IRepository<PortInfo, Guid> repository) : base(repository)
         {
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.PortInfo.PortInfoService.",
                 OptModule = "出入口基础信息"
             };
@@ -42,11 +45,12 @@ namespace XMX.WMS.PortInfo
         [AbpAuthorize(PermissionNames.InOutdBasicInfo_Get)]
         protected override IQueryable<PortInfo> CreateFilteredQuery(PortInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.port_code.IsNullOrWhiteSpace(), x => x.port_code.Contains(input.port_code))
-                .WhereIf(!input.port_name.IsNullOrWhiteSpace(), x => x.port_name.Contains(input.port_name))
-                .WhereIf(input.port_type.HasValue, x => x.port_type == input.port_type)
-                ;
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.port_company_id == UserCompanyId)
+                    .WhereIf(!input.port_code.IsNullOrWhiteSpace(), x => x.port_code.Contains(input.port_code))
+                    .WhereIf(!input.port_name.IsNullOrWhiteSpace(), x => x.port_name.Contains(input.port_name))
+                    .WhereIf(input.port_type.HasValue, x => x.port_type == input.port_type)
+                    ;
         }
 
         /// <summary>
@@ -67,12 +71,13 @@ namespace XMX.WMS.PortInfo
         [AbpAuthorize(PermissionNames.InOutdBasicInfo_Add)]
         public override async Task<PortInfoDto> Create(PortInfoCreatedDto input)
         {
-            var is_recode = Repository.GetAll().Where(x => x.port_code == input.port_code).Where(x => !x.IsDeleted).Any();
-            var is_rename = Repository.GetAll().Where(x => x.port_name == input.port_name).Where(x => !x.IsDeleted).Any();
+            var is_recode = Repository.GetAll().Where(x => x.port_code == input.port_code).Any();
+            var is_rename = Repository.GetAll().Where(x => x.port_name == input.port_name).Any();
             if (is_recode || is_rename)
                 throw new UserFriendlyException("编号或名称已存在！");
+            input.port_company_id = UserCompanyId;
             PortInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -87,19 +92,18 @@ namespace XMX.WMS.PortInfo
         public override async Task<PortInfoDto> Update(PortInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename_or_recode = query.Where(x => x.port_code == input.port_code || x.port_name == input.port_name).Where(x => !x.IsDeleted).Any();
+            var is_rename_or_recode = query.Where(x => x.port_code == input.port_code || x.port_name == input.port_name).Any();
             if (is_rename_or_recode)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("编号或名称已存在！");
             }
-               
-            PortInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            PortInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             PortInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -129,7 +133,7 @@ namespace XMX.WMS.PortInfo
         [AbpAuthorize(PermissionNames.InOutdBasicInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

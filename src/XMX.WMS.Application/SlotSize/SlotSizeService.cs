@@ -23,7 +23,7 @@ namespace XMX.WMS.SlotSize
         /// <returns>分页数据列表</returns>
         protected override IQueryable<SlotSize> CreateFilteredQuery(SlotSizePagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
                 .WhereIf(!input.size_name.IsNullOrWhiteSpace(), x => x.size_name.Contains(input.size_name))
                 ;
         }

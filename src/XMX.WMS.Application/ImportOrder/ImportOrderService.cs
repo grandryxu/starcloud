@@ -9,12 +9,12 @@ using Abp.Application.Services.Dto;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Abp.UI;
-using XMX.WMS.Authorization.Users;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ImportOrder
 {
@@ -28,7 +28,7 @@ namespace XMX.WMS.ImportOrder
         private readonly IRepository<ExportStock.ExportStock, Guid> _esRepository;
         private readonly IRepository<TaskMainInfo.TaskMainInfo, Guid> _tRepository;
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iRepository;
-        private readonly UserManager _userManager;
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -39,10 +39,8 @@ namespace XMX.WMS.ImportOrder
             IRepository<ExportStock.ExportStock, Guid> esRepository,
             IRepository<TaskMainInfo.TaskMainInfo, Guid> tRepository,
             IRepository<ImportStock.ImportStock, Guid> isRepository,
-            IRepository<InventoryInfo.InventoryInfo, Guid> iRepository,
-        UserManager userManager) : base(repository)
+            IRepository<InventoryInfo.InventoryInfo, Guid> iRepository) : base(repository)
         {
-            _userManager = userManager;
             _ibRepository = ibRepository;
             _ihRepository = ihRepository;
             _tRepository = tRepository;
@@ -50,10 +48,11 @@ namespace XMX.WMS.ImportOrder
             _esRepository = esRepository;
             _iRepository = iRepository;
             _isRepository = isRepository;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.ImportOrder.ImportOrderService.",
                 OptModule = "入库流水管理"
             };
@@ -68,13 +67,14 @@ namespace XMX.WMS.ImportOrder
         protected override IQueryable<ImportOrder> CreateFilteredQuery(ImportOrderPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.Goods, x => x.Slot, x => x.ImportBillbody, x => x.ImportBillbody.ImportBillhead)
-                 .WhereIf(!input.imphead_code.IsNullOrWhiteSpace(), x => x.ImportBillbody.ImportBillhead.imphead_code.Contains(input.imphead_code))
-                 .WhereIf(!input.imporder_batch_no.IsNullOrWhiteSpace(), x => x.imporder_batch_no.Contains(input.imporder_batch_no))
-                 .WhereIf(!input.imporder_lots_no.IsNullOrWhiteSpace(), x => x.imporder_lots_no.Contains(input.imporder_lots_no))
-                 .WhereIf(!input.imporder_stock_code.IsNullOrWhiteSpace(), x => x.imporder_stock_code.Contains(input.imporder_stock_code))
-                 .WhereIf(!input.imporder_slot_code.IsNullOrWhiteSpace(), x => x.Slot.slot_code.Contains(input.imporder_slot_code))
-                 .WhereIf(input.imporder_execute_flag != null, x => x.imporder_execute_flag == input.imporder_execute_flag)
-              .Where(x => x.imporder_noused_flag == NousedFlag.正常);
+                     .WhereIf(AbpSession.UserId != 1, x => x.imporder_company_id == UserCompanyId)
+                     .WhereIf(!input.imphead_code.IsNullOrWhiteSpace(), x => x.ImportBillbody.ImportBillhead.imphead_code.Contains(input.imphead_code))
+                     .WhereIf(!input.imporder_batch_no.IsNullOrWhiteSpace(), x => x.imporder_batch_no.Contains(input.imporder_batch_no))
+                     .WhereIf(!input.imporder_lots_no.IsNullOrWhiteSpace(), x => x.imporder_lots_no.Contains(input.imporder_lots_no))
+                     .WhereIf(!input.imporder_stock_code.IsNullOrWhiteSpace(), x => x.imporder_stock_code.Contains(input.imporder_stock_code))
+                     .WhereIf(!input.imporder_slot_code.IsNullOrWhiteSpace(), x => x.Slot.slot_code.Contains(input.imporder_slot_code))
+                     .WhereIf(input.imporder_execute_flag != null, x => x.imporder_execute_flag == input.imporder_execute_flag)
+                     .Where(x => x.imporder_noused_flag == NousedFlag.正常);
             //.WhereIf(!input.startDate.IsNullOrWhiteSpace(), x => Convert.ToDateTime(input.startDate + " 00:00:00") <= )
             //    .WhereIf(!input.endDate.IsNullOrWhiteSpace(), x => x.imphead_date <= Convert.ToDateTime(input.endDate + " 23:59:59"));
         }
@@ -106,11 +106,9 @@ namespace XMX.WMS.ImportOrder
                 throw new UserFriendlyException("单据已完成！");
 
             CheckDuplicateStock(input.imporder_stock_code);
-            //公司ID
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
             //更新单据信息
-            ImportBillbody.ImportBillbody body = _ibRepository.FirstOrDefault(x => x.Id == input.imporder_body_id);
-            ImportBillhead.ImportBillhead head = _ihRepository.FirstOrDefault(x => x.Id == body.impbody_imphead_id);
+            ImportBillbody.ImportBillbody body = _ibRepository.Get(input.imporder_body_id.Value);
+            ImportBillhead.ImportBillhead head = _ihRepository.Get(body.impbody_head_id.Value);
             body.impbody_binding_quantity += input.imporder_quantity;
             if (body.impbody_binding_quantity > body.impbody_plan_quantity)
             {
@@ -123,11 +121,11 @@ namespace XMX.WMS.ImportOrder
                 head.imphead_execute_flag = ExecuteFlag.执行中;
                 _ihRepository.Update(head);
             }
-            input.imporder_company_id = loginuser.CompanyId;
+            input.imporder_company_id = UserCompanyId;
             input.imporder_execute_flag = ExecuteFlag.未执行;
             input.imporder_noused_flag = NousedFlag.正常;
             ImportOrderDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -141,33 +139,27 @@ namespace XMX.WMS.ImportOrder
         private void CheckDuplicateStock(string stockCode)
         {
             //任务表中是否存在非完成状态该托盘号码的任务
-            var taskexist = _tRepository.GetAllIncluding()
-                                        .Where(x => x.main_stock_code == stockCode && x.main_execute_flag != TaskExecuteFlag.已完成).Any();
+            var taskexist = _tRepository.GetAll().Where(x => x.main_stock_code == stockCode && x.main_execute_flag != TaskExecuteFlag.已完成).Any();
             if (taskexist)
                 throw new UserFriendlyException("任务表存在该托盘号码的任务！");
             //入库流水表是否存在
-            var imporderexist = Repository.GetAllIncluding()
-                                             .Where(x => x.imporder_stock_code == stockCode && x.imporder_execute_flag != ExecuteFlag.已完成 && x.IsDeleted == false && x.imporder_noused_flag == NousedFlag.正常).Any();
+            var imporderexist = Repository.GetAll().Where(x => x.imporder_stock_code == stockCode && x.imporder_execute_flag != ExecuteFlag.已完成 && x.imporder_noused_flag == NousedFlag.正常).Any();
             if (imporderexist)
                 throw new UserFriendlyException("入库流水表中存在该托盘号码未完成的流水信息！");
             //出库流水表是否存在
-            var exporderexist = _eoRepository.GetAllIncluding()
-                                             .Where(x => x.exporder_stock_code == stockCode && x.exporder_execute_flag != ExecuteFlag.已完成 && x.IsDeleted == false && x.exporder_noused_flag == NousedFlag.正常).Any();
+            var exporderexist = _eoRepository.GetAll().Where(x => x.exporder_stock_code == stockCode && x.exporder_execute_flag != ExecuteFlag.已完成 && x.exporder_noused_flag == NousedFlag.正常).Any();
             if (exporderexist)
                 throw new UserFriendlyException("出库流水表中存在该托盘号码未完成的流水信息！");
             //托盘入库流水表是否存在
-            var impstockexist = _isRepository.GetAllIncluding()
-                                          .Where(x => x.impstock_stock_code == stockCode && x.impstock_execute_flag != ExecuteFlag.已完成 && x.IsDeleted == false && x.impstock_noused_flag == NousedFlag.正常).Any();
+            var impstockexist = _isRepository.GetAll().Where(x => x.impstock_stock_code == stockCode && x.impstock_execute_flag != ExecuteFlag.已完成 && x.impstock_noused_flag == NousedFlag.正常).Any();
             if (impstockexist)
                 throw new UserFriendlyException("入库托盘流水表中存在该托盘号码未完成的流水信息！");
             //托盘出库流水表是否存在
-            var expstockexist = _esRepository.GetAllIncluding()
-                                             .Where(x => x.expstock_stock_code == stockCode && x.expstock_execute_flag != ExecuteFlag.已完成 && x.IsDeleted == false && x.expstock_noused_flag == NousedFlag.正常).Any();
+            var expstockexist = _esRepository.GetAll().Where(x => x.expstock_stock_code == stockCode && x.expstock_execute_flag != ExecuteFlag.已完成 && x.expstock_noused_flag == NousedFlag.正常).Any();
             if (expstockexist)
                 throw new UserFriendlyException("出库托盘流水表中存在该托盘号码未完成的流水信息！");
             //库存表是否存在
-            var inverexist = _iRepository.GetAllIncluding()
-                                        .Where(x => x.inventory_stock_code == stockCode && x.IsDeleted == false).Any();
+            var inverexist = _iRepository.GetAll().Where(x => x.inventory_stock_code == stockCode).Any();
             if (inverexist)
                 throw new UserFriendlyException("托盘已存在库存中！");
         }
@@ -182,7 +174,7 @@ namespace XMX.WMS.ImportOrder
         {
             if (input.imporder_noused_flag == NousedFlag.作废)
             {
-                ImportBillbody.ImportBillbody body = _ibRepository.FirstOrDefault(x => x.Id == input.imporder_body_id);
+                ImportBillbody.ImportBillbody body = _ibRepository.Get(input.imporder_body_id.Value);
                 body.impbody_binding_quantity = body.impbody_binding_quantity - input.imporder_quantity;
                 if (body.impbody_binding_quantity <= 0)
                 {
@@ -193,27 +185,27 @@ namespace XMX.WMS.ImportOrder
                 var bodyFlag = false;
                 if (body.impbody_execute_flag == ExecuteFlag.未执行)
                 {
-                    bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
+                    bodyFlag = _ibRepository.GetAll().Where(x => x.impbody_head_id == body.impbody_head_id)
                                                                   .Where(x => x.Id != body.Id)
                                                                  .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                 }
                 else
                 {
-                    bodyFlag = _ibRepository.GetAllIncluding().Where(x => x.impbody_imphead_id == body.impbody_imphead_id)
+                    bodyFlag = _ibRepository.GetAll().Where(x => x.impbody_head_id == body.impbody_head_id)
                                                                      .Where(x => x.impbody_execute_flag != ExecuteFlag.未执行).Any();
                 }
                 if (!bodyFlag)
                 {
                     //无执行中的体，修改头状态
-                    ImportBillhead.ImportBillhead head = _ihRepository.FirstOrDefault(x => x.Id == body.impbody_imphead_id);
+                    ImportBillhead.ImportBillhead head = _ihRepository.Get(body.impbody_head_id.Value);
                     head.imphead_execute_flag = ExecuteFlag.未执行;
                     _ihRepository.Update(head);
                 }
             }
-            ImportOrder oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            ImportOrder oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ImportOrderDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -230,7 +222,7 @@ namespace XMX.WMS.ImportOrder
             var flag = Repository.GetAll().Where(x => x.Id == input.Id).Where(x => x.imporder_execute_flag != ExecuteFlag.未执行).Any();
             if (flag)
                 throw new UserFriendlyException("数据状态异常，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -263,9 +255,10 @@ namespace XMX.WMS.ImportOrder
             List<ImportOrderDto> list = new List<ImportOrderDto>();
             foreach (ImportOrderCreatedDto input in inputList)
             {
+                input.imporder_company_id = UserCompanyId;
                 list.Add(await base.Create(input));
             }
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "CreateList", WMSOptLogInfo.WMSOptLogInfo.ADD, "", "批量新增", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "CreateList", WMSOptLogInfo.WMSOptLogInfo.ADD, "", "批量新增", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return new ListResultDto<ImportOrderDto>(list);
@@ -284,7 +277,7 @@ namespace XMX.WMS.ImportOrder
             {
                 list.Add(await base.Update(input));
             }
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "UpdateList", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "批量更新", "批量更新", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "UpdateList", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "批量更新", "批量更新", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return new ListResultDto<ImportOrderDto>(list);

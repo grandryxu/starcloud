@@ -55,7 +55,6 @@ namespace XMX.WMS.ExportBillhead.Dto
         /// <summary>
         /// 波次号
         /// </summary>
-        [Required]
         [StringLength(BaseVerification.column50)]
         public string exphead_wave_no { get; set; }
         /// <summary>
@@ -151,7 +150,6 @@ namespace XMX.WMS.ExportBillhead.Dto
         /// <summary>
         /// 波次号
         /// </summary>
-        [Required]
         [StringLength(BaseVerification.column50)]
         public string exphead_wave_no { get; set; }
         /// <summary>
@@ -304,6 +302,10 @@ namespace XMX.WMS.ExportBillhead.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled exphead_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

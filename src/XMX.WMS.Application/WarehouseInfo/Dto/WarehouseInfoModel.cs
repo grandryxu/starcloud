@@ -148,6 +148,10 @@ namespace XMX.WMS.WarehouseInfo.Dto
         /// 备注
         /// </summary>
         public string warehouse_remark { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

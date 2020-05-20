@@ -224,6 +224,10 @@ namespace XMX.WMS.ImportStock.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled impstock_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联
@@ -278,7 +282,6 @@ namespace XMX.WMS.ImportStock.Dto
         /// 托盘号码
         /// </summary>
         public string impstock_stock_code { get; set; }
-
-        #endregion
     }
+    #endregion
 }

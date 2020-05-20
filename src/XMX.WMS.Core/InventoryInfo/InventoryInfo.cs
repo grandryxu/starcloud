@@ -74,6 +74,12 @@ namespace XMX.WMS.InventoryInfo
 
         #region 关联
         /// <summary>
+        /// 公司
+        /// </summary>
+        public virtual Guid? inventory_company_id { get; set; }
+        [ForeignKey("inventory_company_id")]
+        public virtual CompanyInfo.CompanyInfo Company { get; set; }
+        /// <summary>
         /// 物料代码
         /// </summary>
         public virtual Guid inventory_goods_id { get; set; }

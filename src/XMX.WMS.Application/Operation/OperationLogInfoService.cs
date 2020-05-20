@@ -29,7 +29,7 @@ namespace XMX.WMS.Operation
         /// <returns>分页数据列表</returns>
         protected override IQueryable<OperationLogInfo> CreateFilteredQuery(OperationLogInfoPagedRequest input)
         {
-            var query = Repository.GetAllIncluding()
+            var query = Repository.GetAll()
                 .WhereIf(!input.operation_type_name.IsNullOrWhiteSpace(), x => x.operation_type_name.Contains(input.operation_type_name))
                 .WhereIf(!input.operation_module_name.IsNullOrWhiteSpace(), x => x.operation_module_name.Contains(input.operation_module_name))
                 .WhereIf(!input.operation_search_content.IsNullOrWhiteSpace(), x => x.operation_search_content.Contains(input.operation_search_content));

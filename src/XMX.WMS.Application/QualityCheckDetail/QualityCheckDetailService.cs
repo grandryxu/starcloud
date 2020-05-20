@@ -3,8 +3,6 @@ using Abp.Domain.Repositories;
 using System;
 using System.Linq;
 using XMX.WMS.QualityCheckDetail.Dto;
-using Abp.Linq.Extensions;
-using Abp.Extensions;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Abp.Application.Services.Dto;
@@ -33,9 +31,7 @@ namespace XMX.WMS.QualityCheckDetail
         /// <returns>分页数据列表</returns>
         protected override IQueryable<QualityCheckDetail> CreateFilteredQuery(QualityCheckDetailPagedRequest input)
         {
-            return Repository.GetAllIncluding(x=>x.Goods)
-                .WhereIf(!input.check_bill_code.IsNullOrWhiteSpace(), x => x.check_bill_code.Contains(input.check_bill_code))
-                ;
+            return Repository.GetAllIncluding(x => x.Goods);
         }
 
         /// <summary>
@@ -48,6 +44,20 @@ namespace XMX.WMS.QualityCheckDetail
             return base.Get(input);
         }
 
+        public override async Task<QualityCheckDetailDto> Create(QualityCheckDetailCreateDto input)
+        {
+            return null;
+        }
+
+        public override async Task<QualityCheckDetailDto> Update(QualityCheckDetailUpdateDto input)
+        {
+            return null;
+        }
+
+        public override async Task Delete(EntityDto<Guid> input)
+        {
+        }
+
         /// <summary>
         /// 批量新增
         /// </summary>
@@ -58,12 +68,11 @@ namespace XMX.WMS.QualityCheckDetail
             List<QualityCheckDetailDto> list = new List<QualityCheckDetailDto>();
             foreach (QualityCheckDetailCreateDto input in inputList)
             {
-
                 try
                 {
                     list.Add(await base.Create(input));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return null;
                 }

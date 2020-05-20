@@ -293,6 +293,10 @@ namespace XMX.WMS.ImportBillhead.Dto
         /// 分表后缀
         /// </summary>
         //public string imphead_datestr { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

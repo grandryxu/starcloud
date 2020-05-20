@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace XMX.WMS.WMSOptLogInfo
 {
@@ -22,36 +20,40 @@ namespace XMX.WMS.WMSOptLogInfo
         /// <param name="oldVal"></param>
         /// <param name="newVal"></param>
         /// <returns></returns>
-        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info,long UserId,string OptPathMethodName,string optAction,string oldVal,string newVal)
+        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, Guid companyId, long UserId, string OptPathMethodName, string optAction, string oldVal, string newVal)
         {
             if (info == null)
                 info = new WMSOptLogInfo();
+            info.CompanyId = companyId;
             info.CreatorUserId = UserId;
-            info.OptPath =String.Concat(info.OptPath, OptPathMethodName);
+            info.OptPath = string.Concat(info.OptPath, OptPathMethodName);
             info.OptAction = optAction;
             info.OldVal = oldVal;
             info.NewVal = newVal;
             return info;
         }
 
-        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, long UserId, string OptPathMethodName, string optAction)
+        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, Guid companyId, long UserId, string OptPathMethodName, string optAction)
         {
             if (info == null)
                 info = new WMSOptLogInfo();
+            info.CompanyId = companyId;
             info.CreatorUserId = UserId;
-            info.OptPath = String.Concat(info.OptPath, OptPathMethodName);
+            info.OptPath = string.Concat(info.OptPath, OptPathMethodName);
             info.OptAction = optAction;
             return info;
         }
 
-        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, string oldVal, string newVal)
+        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, Guid companyId, string oldVal, string newVal)
         {
             if (info == null)
                 info = new WMSOptLogInfo();
+            info.CompanyId = companyId;
             info.OldVal = oldVal;
             info.NewVal = newVal;
             return info;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -63,12 +65,13 @@ namespace XMX.WMS.WMSOptLogInfo
         /// <param name="newVal">新值</param>
         /// <param name="optResult">操作结果</param>
         /// <returns></returns>
-        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, long UserId, string OptPathMethodName, string optAction, string oldVal, string newVal,string optResult)
+        public static WMSOptLogInfo CreateWMSOptLogInfo(WMSOptLogInfo info, Guid companyId, long UserId, string OptPathMethodName, string optAction, string oldVal, string newVal, string optResult)
         {
             if (info == null)
                 info = new WMSOptLogInfo();
+            info.CompanyId = companyId;
             info.CreatorUserId = UserId;
-            info.OptPath = String.Concat(info.OptPath, OptPathMethodName);
+            info.OptPath = string.Concat(info.OptPath, OptPathMethodName);
             info.OptAction = optAction;
             info.OldVal = oldVal;
             info.NewVal = newVal;

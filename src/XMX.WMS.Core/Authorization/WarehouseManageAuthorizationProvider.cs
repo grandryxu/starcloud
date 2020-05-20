@@ -42,6 +42,7 @@ namespace XMX.WMS.Authorization
             ImportBillBodyManage.CreateChildPermission(PermissionNames.ImportBillBodyManage_Print);
             ImportBillBodyManage.CreateChildPermission(PermissionNames.ImportBillBodyManage_AnalogScan);
             ImportBillBodyManage.CreateChildPermission(PermissionNames.ImportBillBodyManage_Cancle);
+            ImportBillBodyManage.CreateChildPermission(PermissionNames.ImportBillBodyManage_Task);
 
 
             //空托盘入库流水
@@ -199,6 +200,10 @@ namespace XMX.WMS.Authorization
             var InventoryReportForm = WarehouseReport.CreateChildPermission(PermissionNames.InventoryReportForm);
             InventoryReportForm.CreateChildPermission(PermissionNames.InventoryReportForm_Export);
             InventoryReportForm.CreateChildPermission(PermissionNames.InventoryReportForm_Print);
+            //自定义报表
+            var CustomReportForm = WarehouseReport.CreateChildPermission(PermissionNames.CustomReportForm);
+            CustomReportForm.CreateChildPermission(PermissionNames.CustomReportForm_Export);
+            CustomReportForm.CreateChildPermission(PermissionNames.CustomReportForm_Print);
 
 
         }

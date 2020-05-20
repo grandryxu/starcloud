@@ -17,48 +17,18 @@ namespace XMX.WMS.HistoryTaskMainInfo
     [AbpAuthorize(PermissionNames.MainHistorytask)]
     public class HistoryTaskMainInfoService : AsyncCrudAppService<HistoryTaskMainInfo, HistoryTaskMainInfoDto, Guid, HistoryTaskMainInfoPagedRequest, HistoryTaskMainInfoCreatedDto, HistoryTaskMainInfoUpdatedDto>, IHistoryTaskMainInfoService
     {
-        private readonly IRepository<PortInfo.PortInfo, Guid> _pRepository;
-        private readonly IRepository<TunnelPort.TunnelPort, Guid> _tRepository;
-        private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _gRepository;
-        private readonly IRepository<WarehouseInfo.WarehouseInfo, Guid> _wRepository;
-        private readonly IRepository<ImportBillhead.ImportBillhead, Guid> _ihRepository;
-        private readonly IRepository<ImportBillbody.ImportBillbody, Guid> _ibRepository;
         private readonly IRepository<ImportOrder.ImportOrder, Guid> _ioRepository;
         private readonly IRepository<ImportStock.ImportStock, Guid> _isRepository;
-        private readonly IRepository<ExportBillhead.ExportBillhead, Guid> _ehRepository;
-        private readonly IRepository<ExportBillbody.ExportBillbody, Guid> _ebRepository;
         private readonly IRepository<ExportOrder.ExportOrder, Guid> _eoRepository;
         private readonly IRepository<ExportStock.ExportStock, Guid> _esRepository;
-        private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iRepository;
-        private readonly IRepository<SlotInfo.SlotInfo, Guid> _sRepository;
         public HistoryTaskMainInfoService(IRepository<HistoryTaskMainInfo, Guid> repository,
-            IRepository<PortInfo.PortInfo, Guid> pRepository,
-            IRepository<TunnelPort.TunnelPort, Guid> tRepository,
-            IRepository<GoodsInfo.GoodsInfo, Guid> gRepository,
-            IRepository<WarehouseInfo.WarehouseInfo, Guid> wRepository,
-            IRepository<InventoryInfo.InventoryInfo, Guid> iRepository,
-            IRepository<SlotInfo.SlotInfo, Guid> sRepository,
-            IRepository<ImportBillhead.ImportBillhead, Guid> ihRepository,
-            IRepository<ImportBillbody.ImportBillbody, Guid> ibRepository,
             IRepository<ImportOrder.ImportOrder, Guid> ioRepository,
             IRepository<ImportStock.ImportStock, Guid> isRepository,
-            IRepository<ExportBillhead.ExportBillhead, Guid> ehRepository,
-            IRepository<ExportBillbody.ExportBillbody, Guid> ebRepository,
             IRepository<ExportOrder.ExportOrder, Guid> eoRepository,
             IRepository<ExportStock.ExportStock, Guid> esRepository) : base(repository)
         {
-            _pRepository = pRepository;
-            _tRepository = tRepository;
-            _gRepository = gRepository;
-            _wRepository = wRepository;
-            _iRepository = iRepository;
-            _sRepository = sRepository;
-            _ihRepository = ihRepository;
-            _ibRepository = ibRepository;
             _ioRepository = ioRepository;
             _isRepository = isRepository;
-            _ehRepository = ehRepository;
-            _ebRepository = ebRepository;
             _eoRepository = eoRepository;
             _esRepository = esRepository;
         }

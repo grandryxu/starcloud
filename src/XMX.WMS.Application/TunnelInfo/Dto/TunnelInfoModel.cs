@@ -118,6 +118,10 @@ namespace XMX.WMS.TunnelInfo.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled tunnel_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

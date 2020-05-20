@@ -15,6 +15,7 @@ using XMX.WMS.Authorization.Users;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.EncodingRule
 {
@@ -23,25 +24,27 @@ namespace XMX.WMS.EncodingRule
     {
         private readonly IRepository<ImportBillhead.ImportBillhead, Guid> _iRepository;
         private readonly IRepository<ExportBillhead.ExportBillhead, Guid> _eRepository;
+        private readonly IRepository<QualityCheck.QualityCheck, Guid> _cRepository;
         private readonly IRepository<TaskMainInfo.TaskMainInfo, Guid> _tRepository;
-        private readonly UserManager _userManager;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public EncodingRuleService(IRepository<EncodingRule, Guid> repository,
             IRepository<ImportBillhead.ImportBillhead, Guid> iRepository,
             IRepository<ExportBillhead.ExportBillhead, Guid> eRepository,
-            IRepository<TaskMainInfo.TaskMainInfo, Guid> tRepository,
-                                   UserManager userManager) : base(repository)
+            IRepository<QualityCheck.QualityCheck, Guid> cRepository,
+            IRepository<TaskMainInfo.TaskMainInfo, Guid> tRepository) : base(repository)
         {
-            _userManager = userManager;
             _iRepository = iRepository;
             _eRepository = eRepository;
+            _cRepository = cRepository;
             _tRepository = tRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
             LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.EncodingRule.EncodingRuleService.",
                 OptModule = "编码规则管理"
             };
@@ -56,6 +59,7 @@ namespace XMX.WMS.EncodingRule
             IRepository<ExportBillhead.ExportBillhead, Guid> eRepository) : base(repository)
         {
             _eRepository = eRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -67,6 +71,7 @@ namespace XMX.WMS.EncodingRule
             IRepository<ImportBillhead.ImportBillhead, Guid> iRepository) : base(repository)
         {
             _iRepository = iRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -78,6 +83,7 @@ namespace XMX.WMS.EncodingRule
             IRepository<TaskMainInfo.TaskMainInfo, Guid> tRepository) : base(repository)
         {
             _tRepository = tRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
         }
 
         /// <summary>
@@ -88,12 +94,13 @@ namespace XMX.WMS.EncodingRule
         [AbpAuthorize(PermissionNames.EncodingRuleManage_Get)]
         protected override IQueryable<EncodingRule> CreateFilteredQuery(EncodingRulePagedRequest input)
         {
-            return Repository.GetAllIncluding()
-                .WhereIf(!input.code_code.IsNullOrWhiteSpace(), x => x.code_code.Contains(input.code_code))
-                .WhereIf(!input.code_name.IsNullOrWhiteSpace(), x => x.code_name.Contains(input.code_name))
-                .WhereIf(!input.code_prefix.IsNullOrWhiteSpace(), x => x.code_prefix.Contains(input.code_prefix))
-                .WhereIf(input.code_date_type.HasValue, x => x.code_date_type==input.code_date_type)
-                ;
+            return Repository.GetAll()
+                    .WhereIf(AbpSession.UserId != 1, x => x.code_company_id == UserCompanyId)
+                    .WhereIf(!input.code_code.IsNullOrWhiteSpace(), x => x.code_code.Contains(input.code_code))
+                    .WhereIf(!input.code_name.IsNullOrWhiteSpace(), x => x.code_name.Contains(input.code_name))
+                    .WhereIf(!input.code_prefix.IsNullOrWhiteSpace(), x => x.code_prefix.Contains(input.code_prefix))
+                    .WhereIf(input.code_date_type.HasValue, x => x.code_date_type==input.code_date_type)
+                    ;
         }
 
         /// <summary>
@@ -115,14 +122,12 @@ namespace XMX.WMS.EncodingRule
         [AbpAuthorize(PermissionNames.EncodingRuleManage_Add)]
         public override async Task<EncodingRuleDto> Create(EncodingRuleCreatedDto input)
         {
-            //公司ID
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            input.code_company_id = loginuser.CompanyId;
+            input.code_company_id = UserCompanyId;
             var flag = Repository.GetAll().Where(x => x.code_code == input.code_code).Any();
             if (flag)
                 throw new UserFriendlyException("编码规则已存在！");
             EncodingRuleDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -139,16 +144,15 @@ namespace XMX.WMS.EncodingRule
             var flag = Repository.GetAll().Where(x => x.Id != input.Id).Where(x => x.code_code == input.code_code).Any();
             if (flag)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("编码规则已存在！");
             }
-               
-            EncodingRule oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            EncodingRule oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             EncodingRuleDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -165,7 +169,7 @@ namespace XMX.WMS.EncodingRule
             /*var flag = _gRepository.GetAll().Where(x => x.goods_warehousing_id == input.Id).Any();
             if (flag)
                 throw new UserFriendlyException("数据占用，无法删除！");*/
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -196,7 +200,7 @@ namespace XMX.WMS.EncodingRule
         public string GetEncodingRule(string code)
         {
             string erCode = null;
-            EncodingRule er = Repository.FirstOrDefault(x => x.code_code == code);
+            EncodingRule er = Repository.FirstOrDefault(x => x.code_code == code && x.code_company_id == UserCompanyId);
             if (er != null)
             {
                 //前缀
@@ -212,23 +216,36 @@ namespace XMX.WMS.EncodingRule
                 switch (code)
                 {
                     case "RKCode":
-                        MaxNo = (from s in _iRepository.GetAll().WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.imphead_code.Contains(erCode))
+                        MaxNo = (from s in _iRepository.GetAll().Where(x => x.imphead_company_id == UserCompanyId)
+                                                                .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.imphead_code.Contains(erCode))
                                      select s.imphead_code).Max();
                         break;
                     case "TaskCode":
-                        MaxNo = (from s in _tRepository.GetAll().WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.main_no.Contains(erCode))
+                        MaxNo = (from s in _tRepository.GetAll().Where(x => x.main_company_id == UserCompanyId)
+                                                                .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.main_no.Contains(erCode))
                                  select s.main_no).Max();
                         break;
                     case "CKCode":
-                        MaxNo = (from s in _eRepository.GetAll().WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.exphead_code.Contains(erCode))
+                        MaxNo = (from s in _eRepository.GetAll().Where(x => x.exphead_company_id == UserCompanyId)
+                                                                .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.exphead_code.Contains(erCode))
                                  select s.exphead_code).Max();
                         break;
                     case "WaveCode":
-                        MaxNo = (from s in _eRepository.GetAll().WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.exphead_wave_no.Contains(erCode))
-                                 select s.exphead_code).Max();
+                        MaxNo = (from s in _eRepository.GetAll().Where(x => x.exphead_company_id == UserCompanyId)
+                                                                .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.exphead_wave_no.Contains(erCode))
+                                 select s.exphead_wave_no).Max();
+                        break;
+                    case "CJCode":
+                        MaxNo = (from s in _cRepository.GetAll().Where(x => x.check_company_id == UserCompanyId)
+                                                                .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.check_code.Contains(erCode))
+                                 select s.check_code).Max();
+                        break;
+                    case "PDCode":
+                        //MaxNo = (from s in _eRepository.GetAll().Where(x => x.exphead_company_id == UserCompanyId)
+                        //                                        .WhereIf(!erCode.IsNullOrWhiteSpace(), x => x.exphead_wave_no.Contains(erCode))
+                        //         select s.exphead_wave_no).Max();
                         break;
                     default:
-                        MaxNo = "";
                         break;
                 }
                 if (MaxNo.IsNullOrWhiteSpace())

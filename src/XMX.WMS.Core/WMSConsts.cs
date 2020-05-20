@@ -243,6 +243,15 @@
     }
 
     /// <summary>
+    /// 状态 1 未初始化 2 已初始化
+    /// </summary>
+    public enum RowStatus : int
+    {
+        未初始化 = 1,
+        已初始化 = 2
+    }
+
+    /// <summary>
     /// 内外侧标志 1 内侧 2 外侧 3单排
     /// </summary>
     public enum InOutType : int
@@ -262,7 +271,7 @@
     }
 
     /// <summary>
-    /// 任务方式(1入库；2出库；3移库；4口对口；6空托盘入库；7空托盘出库)
+    /// 任务方式(1入库；2出库；3移库；4口对口；5回流；6空托盘入库；7空托盘出库)
     /// </summary>
     public enum TaskType : int
     {
@@ -270,12 +279,13 @@
         出库 = 2,
         移库 = 3,
         口对口 = 4,
+        回流 = 5,
         空托盘入库 = 6,
         空托盘出库 = 7
     }
 
     /// <summary>
-    ///  执行标志(1待执行；2输送机；3堆垛机；4RGV；5AGV；7暂停中；9已完成)
+    ///  执行标志(1待执行；2输送机；3堆垛机；4RGV；5AGV；7暂停中；9已完成；10非完成)
     /// </summary>
     public enum TaskExecuteFlag : int
     {
@@ -416,9 +426,12 @@
     /// </summary>
     public enum WarningType:int
     {
-        呆滞库存预警=1,
-        效期库存预警=2,
-        库存阈值预警=3
+        呆滞库存预警 = 1,
+        效期库存预警 = 2,
+        库存阈值预警 = 3,
+        入库异常预警 = 4,
+        出库异常预警 = 5,
+        库存异常预警 = 6
     }
 
     /// <summary>
@@ -430,4 +443,30 @@
         Api角色=2
     }
 
+    /// <summary>
+    /// 抽检类型
+    /// </summary>
+    public enum CheckType : int
+    {
+        无损抽检 = 1,
+        有损抽检 = 2
+    }
+
+    /// <summary>
+    /// 是否生成出库单
+    /// </summary>
+    public enum CheckBillStatus : int
+    {
+        未生成 = 0,
+        已生成 = 1
+    }
+
+    /// <summary>
+    /// 是否已经检测放行
+    /// </summary>
+    public enum CheckReleasedStatus : int
+    {
+        未放行 = 0,
+        已放行 = 1
+    }
 }

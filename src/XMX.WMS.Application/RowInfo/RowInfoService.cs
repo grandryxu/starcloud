@@ -14,6 +14,7 @@ using Abp.UI;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.RowInfo
 {
@@ -23,7 +24,7 @@ namespace XMX.WMS.RowInfo
         private readonly IRepository<SlotInfo.SlotInfo, Guid> SlotRepository;
         private readonly IRepository<WarehouseInfo.WarehouseInfo, Guid> WhRepository;
         private readonly IRepository<TunnelInfo.TunnelInfo, Guid> tunnelRepository;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -34,10 +35,11 @@ namespace XMX.WMS.RowInfo
             this.SlotRepository = SlotRepository;
             this.WhRepository = WhRepository;
             this.tunnelRepository = tunnelRepository;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.RowInfo.RowInfoService.",
                 OptModule = "库位初始化"
             };
@@ -51,14 +53,21 @@ namespace XMX.WMS.RowInfo
         [AbpAuthorize(PermissionNames.SlotInit_Get)]
         protected override IQueryable<RowInfo> CreateFilteredQuery(RowInfoPagedRequest input)
         {
-            /*  return Repository.GetAllIncluding(x => x.Warehouse, x => x.Row)
-                  .WhereIf(!input.row_name.IsNullOrWhiteSpace(), x => x.row_name.Contains(input.row_name));*/
             return Repository.GetAllIncluding(x => x.Warehouse, x => x.Row)
-           .WhereIf(!input.row_name.IsNullOrWhiteSpace(), x => x.row_name.Contains(input.row_name))
-           .WhereIf(input.row_warehouse_id != null && input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
-           .WhereIf(input.row_type != 0, x => x.row_type == input.row_type);
+                   .WhereIf(AbpSession.UserId != 1, x => x.row_company_id == UserCompanyId)
+                   .WhereIf(input.row_warehouse_id != null && input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
+                   .WhereIf(input.row_type != 0, x => x.row_type == input.row_type);
+        }
 
-
+        /// <summary>
+        /// 重写排序方式
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        protected override IQueryable<RowInfo> ApplySorting(IQueryable<RowInfo> query, RowInfoPagedRequest input)
+        {
+            return query.OrderBy(r => r.row_order);
         }
 
         /// <summary>
@@ -69,9 +78,9 @@ namespace XMX.WMS.RowInfo
         [AbpAuthorize(PermissionNames.SlotInit_Add)]
         public override async Task<RowInfoDto> Create(RowInfoCreatedDto input)
         {
-
+            input.row_company_id = UserCompanyId;
             RowInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -84,10 +93,10 @@ namespace XMX.WMS.RowInfo
        /// <returns></returns>
         public override async Task<RowInfoDto> Update(RowInfoUpdatedDto input)
         {
-            RowInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            RowInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             RowInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -101,7 +110,7 @@ namespace XMX.WMS.RowInfo
         [AbpAuthorize(PermissionNames.SlotInit_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -114,104 +123,81 @@ namespace XMX.WMS.RowInfo
         /// <returns></returns>
         public List<object> GetRowInfoByType(RowInfoPagedRequest input)
         {
-            var rr = Repository.GetAllIncluding()
-                .WhereIf(input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
-                .WhereIf(input.row_type != 0, x => x.row_type == input.row_type).Select(x => new  { x.row_no }) ;
-            List<object> rows = new List<object>();
-            foreach (object number in rr)
-            {
-                rows.Add(number);
-            }
-            return rows;
+            var query = Repository.GetAll()
+                            .WhereIf(input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
+                            .WhereIf(input.row_type != 0, x => x.row_type == input.row_type)
+                            .Select(x => new  { x.row_no })
+                            .ToList();
+            List<object> list = new List<object>();
+            foreach (object obj in query)
+                list.Add(obj);
+            return list;
         }
 
         /// <summary>
-        ///通过仓库id获取对应库位排的排序
+        /// 通过仓库id获取对应库位排的排序
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         public List<object> GetRowOrders(RowInfoPagedRequest input)
         {
-            var cc = Repository.GetAllIncluding()
-               .WhereIf(input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
-               .Select(x => new { x.row_order }).ToList();
-            List<object> orders = new List<object>();
-            foreach (object order in cc)
-            {
-                orders.Add(order);
-            }
-            return orders;
+            var query = Repository.GetAll()
+                           .WhereIf(input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
+                           .Select(x => new { x.row_order }).ToList();
+            List<object> list = new List<object>();
+            foreach (object obj in query)
+                list.Add(obj);
+            return list;
 
+        }
+
+        /// <summary>
+        /// 获取库位层
+        /// </summary>
+        /// <param name="warehouse_id"></param>
+        /// <returns></returns>
+        public int GetLayerCount(Guid warehouse_id)
+        {
+            var listlaycount = Repository.GetAll().Where(x => x.row_warehouse_id == warehouse_id)
+                                              .Where(x => x.row_type == RowType.库位)
+                                              .OrderByDescending(x => x.row_end_layer).ToList();
+            return listlaycount.Count > 0 ? listlaycount[0].row_end_layer : throw new UserFriendlyException("该仓库尚未初始化库位！"); ;
+        }
+
+        /// <summary>
+        /// 获取库位排
+        /// </summary>
+        /// <param name="warehouse_id"></param>
+        /// <returns></returns>
+        public List<RowInfo> GetRowCount(Guid warehouse_id)
+        {
+            return Repository.GetAll().Where(x => x.row_warehouse_id == warehouse_id)
+                                               .Where(x => x.row_type == RowType.库位)
+                                               .OrderBy(x => x.row_no).ToList();
         }
 
         /// <summary>
         /// 根据当前排位号查询附近（前后）库位排位号
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="warehouse_id"></param>
         /// <returns></returns>
-        public List<RowInfo> GetRowInfoByRowNo(RowInfoPagedRequest input)
+        public List<RowInfo> GetRowInfoByRowNo(Guid warehouse_id)
         {
-            int pre = 0;
-            int next = 0;
-            if (input.row_no>1)
-            {
-                pre = input.row_no - 1;
-                next = input.row_no + 1;
-            }
-
-            List<RowInfo> rowInfos = Repository.GetAllIncluding()
-                .WhereIf(input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
-                .WhereIf(input.row_no == 1, x => x.row_no == 2)
-                .WhereIf(input.row_no > 1, x => x.row_no.IsIn(new int[] { pre, next })).ToList();
+            List<RowInfo> rowInfos = Repository.GetAll()
+                                        .Where(x => x.row_warehouse_id == warehouse_id)
+                                        .Where(x => x.row_inout_type == InOutType.外侧)
+                                        .OrderBy(x => x.row_no)
+                                        .ToList();
             return rowInfos;
         }
 
-        /// <summary>
-        /// 获取所有库位排信息，转成特有对象返回。
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public PagedResultDto<object> GetAllRowInfoQuery(RowInfoPagedRequest input)
-        {
-            
-            var results = Repository.GetAllIncluding(x => x.Warehouse, x => x.Row)
-          .WhereIf(!input.row_name.IsNullOrWhiteSpace(), x => x.row_name.Contains(input.row_name))
-          .WhereIf(input.row_warehouse_id != null && input.row_warehouse_id != Guid.Empty, x => x.row_warehouse_id == input.row_warehouse_id)
-          .WhereIf(input.row_type != 0, x => x.row_type == input.row_type).OrderByDescending(x =>x.CreationTime);
-            var totalCount = results.Count();
-            var objs=results.Skip(input.SkipCount).Take(input.MaxResultCount).Select(x => new
-               {
-                   id=x.Id,
-                   row_type = x.row_type,
-                   row_name = x.row_name,
-                   row_no = (x.row_type==RowType.库位?x.row_no:0),
-                   row_tunnel_no= (x.row_type == RowType.巷道 ? x.row_no : 0),
-                   Row = x.Row,
-                   Warehouse = x.Warehouse,
-                   row_start_layer = x.row_start_layer,
-                   row_end_layer = x.row_end_layer,
-                   row_start_column = x.row_start_column,
-                   row_is_enable=x.row_is_enable,
-                   row_order=x.row_order,
-                   row_end_column = x.row_end_column,
-                   row_inout_type = (x.row_inout_type == InOutType.内侧 ? "内测" : (x.row_inout_type == InOutType.外侧 ? "外侧" : (x.row_inout_type == InOutType.单排 ? "单排" : "")))
-               });
-
-            List<object> rowInfos = new List<object>();
-            foreach (object rowInfo in objs)
-            {
-                rowInfos.Add(rowInfo);
-            }
-
-            /*return rowInfos;*/
-            return new PagedResultDto<object>(totalCount, rowInfos);
-        }
         /// <summary>
         /// 根据当前库位排生成库位
         /// </summary>
         /// <param name="id"></param>
         public int GetGenerateSlot(Guid id)
         {
+            int count = -1;
             RowInfo rowInfo = Repository.Get(id);
             if (rowInfo == null)
                 throw new Exception("找不到对应的库位排信息");
@@ -220,16 +206,63 @@ namespace XMX.WMS.RowInfo
             if (warehouseInfo == null)
                 throw new Exception("库位排对应仓库不存在");
             //根据RowType生成对应的库位或巷道
-            if (rowInfo.row_type==RowType.巷道)
+            if (rowInfo.row_type == RowType.巷道)
             {
-               return GenerateTunnel(rowInfo);
+                count = CreateTunnel(rowInfo, warehouseInfo);
             }
+            else
+            {
+                List<SlotInfo.SlotInfo> slotList = null;
+                //查看是否有外侧库位
+                if (rowInfo.row_inout_type == InOutType.内侧)
+                {
+                    RowInfo outRow = Repository.Get(rowInfo.row_out_id.Value);
+                    if (outRow == null || outRow.row_status == RowStatus.未初始化)
+                        throw new Exception("需要先初始化外侧库位");
+                    //找到外侧排的库位
+                    slotList = SlotRepository.GetAll().Where(x => x.slot_row_id == outRow.Id).ToList();
+                    if (slotList == null || slotList.Count == 0)
+                        throw new Exception("未找到外侧库位信息");
+                }
+                count = CreateSlot(rowInfo, warehouseInfo, slotList);
+            }
+            rowInfo.row_status = RowStatus.已初始化;
+            Repository.Update(rowInfo);
+            return count;
+        }
+
+        /// <summary>
+        /// 初始化巷道
+        /// </summary>
+        /// <param name="rowInfo"></param>
+        /// <param name="warehouseInfo"></param>
+        /// <returns></returns>
+        private int CreateTunnel(RowInfo rowInfo, WarehouseInfo.WarehouseInfo warehouseInfo)
+        {
+            TunnelInfo.TunnelInfo tunnel = new TunnelInfo.TunnelInfo();
+            tunnel.tunnel_name = rowInfo.row_name;
+            tunnel.tunnel_in_state = LockType.未锁定;
+            tunnel.tunnel_out_state = LockType.未锁定;
+            tunnel.tunnel_is_enable = WMSIsEnabled.启用;
+            tunnel.tunnel_company_id = warehouseInfo.warehouse_company_id;
+            tunnel.slot_row_id = rowInfo.Id;
+            tunnelRepository.Insert(tunnel);
+            return 1;
+        }
+
+        /// <summary>
+        /// 初始化库位
+        /// </summary>
+        /// <param name="rowInfo"></param>
+        /// <param name="warehouseInfo"></param>
+        /// <returns></returns>
+        private int CreateSlot(RowInfo rowInfo, WarehouseInfo.WarehouseInfo warehouseInfo, List<SlotInfo.SlotInfo> slotList)
+        {
             int row_no = rowInfo.row_no;
-            int start_layer = Convert.ToInt32(rowInfo.row_start_layer);
-            int end_layer = Convert.ToInt32(rowInfo.row_end_layer);
-            int start_column = Convert.ToInt32(rowInfo.row_start_column);
-            int end_column = Convert.ToInt32(rowInfo.row_end_column);
-            List<SlotInfo.SlotInfo> slots = new List<SlotInfo.SlotInfo>();
+            int start_layer = rowInfo.row_start_layer;
+            int end_layer = rowInfo.row_end_layer;
+            int start_column = rowInfo.row_start_column;
+            int end_column = rowInfo.row_end_column;
             for (var i = start_layer; i < end_layer + 1; i++)
             {
                 for (var j = start_column; j < end_column + 1; j++)
@@ -237,37 +270,32 @@ namespace XMX.WMS.RowInfo
                     SlotInfo.SlotInfo slot = new SlotInfo.SlotInfo();
                     slot.slot_column = j;
                     slot.slot_layer = i;
-                    slot.slot_name = JoinSlotName(row_no, j, i,warehouseInfo.warehouse_slot_type);
+                    slot.slot_name = JoinSlotName(row_no, j, i, warehouseInfo.warehouse_slot_type);
                     slot.slot_code = JoinSlotCode(row_no, j, i, warehouseInfo.warehouse_slot_type);
                     slot.slot_row = row_no;
                     slot.slot_stock_status = SlotStock.空闲;
                     slot.slot_closed_status = SlotClosed.正常;
                     slot.slot_imp_status = SlotImp.正常;
                     slot.slot_exp_status = SlotExp.正常;
+                    if (rowInfo.row_inout_type == InOutType.内侧)
+                        try
+                        {
+                            //找到外侧库位
+                            slot.slot_out_id = slotList.FirstOrDefault(x => x.slot_column == j && x.slot_layer == i).Id;
+                        }
+                        catch (Exception)
+                        { 
+                            //未找到外侧库位
+                        }
                     slot.slot_row_id = rowInfo.Id;
-                    slots.Add(slot);
-
+                    slot.slot_company_id = warehouseInfo.warehouse_company_id;
+                    slot.slot_warehouse_id = warehouseInfo.Id;
+                    SlotRepository.Insert(slot);
                 }
             }
-            List<SlotInfo.SlotInfo> slotlist = new List<SlotInfo.SlotInfo>();
-            try
-            {
-                slots.ForEach(item => {
-                    slotlist.Add(this.SlotRepository.Insert(item));
-                });
-                //库位生成后，将库位排设为禁用，即不可以再生成库位（先用禁用/启用这个字段来控制）
-                rowInfo.row_is_enable = WMSIsEnabled.禁用;
-                Repository.Update(rowInfo);
-            }
-            catch (Exception e)
-            {
-
-                return -1;
-            }
-            return slotlist.Count;
-
-
+            return end_layer * end_column;
         }
+
         /// <summary>
         /// 组装库位名
         /// </summary>
@@ -275,9 +303,9 @@ namespace XMX.WMS.RowInfo
         /// <param name="column">列</param>
         /// <param name="layer">层</param>
         /// <returns></returns>
-        private string JoinSlotName(int row_no,int column,int layer,SlotType slotType)
+        private string JoinSlotName(int row_no, int column, int layer, SlotType slotType)
         {
-            string slotName = "";
+            string slotName;
             switch (slotType)
             {
                 case SlotType.层列排:
@@ -289,7 +317,6 @@ namespace XMX.WMS.RowInfo
                 default:
                     slotName = layer + "层" + column + "列" + row_no + "排" + "库位";
                     break;
-
             }
             return slotName;
         }
@@ -311,7 +338,7 @@ namespace XMX.WMS.RowInfo
             col = col.Length >= 2 ? col : ("0" + col);
             lyer = lyer.Length >= 2 ? lyer : ("0" + lyer);
 
-            string slotCode = "";
+            string slotCode;
             switch (slotType)
             {
                 case SlotType.层列排:
@@ -323,119 +350,10 @@ namespace XMX.WMS.RowInfo
                 default:
                     slotCode = lyer + col + row;
                     break;
-
             }
             return slotCode;
 
         }
 
-        private int GenerateTunnel(RowInfo rowInfo)
-        {
-            TunnelInfo.TunnelInfo tunnelInfo = new TunnelInfo.TunnelInfo();
-            tunnelInfo.tunnel_name = rowInfo.row_name;
-            tunnelInfo.tunnel_in_state = LockType.未锁定;
-            tunnelInfo.tunnel_out_state = LockType.未锁定;
-            tunnelInfo.slot_row_id = rowInfo.Id;
-           TunnelInfo.TunnelInfo info= this.tunnelRepository.Insert(tunnelInfo);
-            if (info == null)
-                return -1;
-            rowInfo.row_is_enable = WMSIsEnabled.禁用;
-            this.Repository.Update(rowInfo);
-            return 1;
-        }
-
-
-        /// <summary>
-        /// 获取库位层
-        /// </summary>
-        /// <param name="warehouse_id"></param>
-        /// <returns></returns>
-        public int GetLayerCount(Guid warehouse_id)
-        {
-             var listlaycount=Repository.GetAllIncluding().Where(x => x.row_warehouse_id == warehouse_id)
-                                               .Where(x => x.row_type == RowType.库位)
-                                               .OrderByDescending(x => x.row_end_layer).ToList();
-            return listlaycount.Count > 0 ? listlaycount[0].row_end_layer : throw new UserFriendlyException("该仓库尚未初始化库位！"); ;
-        }
-
-        /// <summary>
-        /// 获取库位排
-        /// </summary>
-        /// <param name="warehouse_id"></param>
-        /// <returns></returns>
-        public List<RowInfo> GetRowCount(Guid warehouse_id)
-        {
-            return Repository.GetAllIncluding().Where(x => x.row_warehouse_id == warehouse_id)
-                                               .Where(x => x.row_type == RowType.库位)
-                                               .OrderBy(x => x.row_no).ToList();
-        }
-
-        /// <summary>
-        /// 新增或更新时验证同一排是否存在已经占用的列和层。目前因为限制了同一排只能做一次初始化，所以此方法暂未使用。
-        /// </summary>
-        /// <param name="input"></param>
-        private void verifyDuplicateLayerColumn(RowInfoCreatedDto input)
-        {
-            //找出当前排的所有初始化RowInfo,并取得已经占用的列和层，与当前列和层进行判断。
-            //已经占用的列和层后期有条件可以放入缓存，保存时候直接从缓存中取出与当前列和层比对判断。
-            var infos = Repository.GetAll().WhereIf(input.row_type != 0, x => x.row_type == input.row_type)
-                 .WhereIf(input.row_no != 0, x => x.row_no == input.row_no)
-                 .WhereIf(input.row_inout_type != 0, x => x.row_inout_type == input.row_inout_type).ToList();
-            int[] exist_columns = { };
-            int[] exist_layers = { };
-            infos.ForEach(item => {
-                int startlayer = Convert.ToInt32(item.row_start_layer);
-                int endlayer = item.row_end_layer;
-                int startColumn = item.row_start_column;
-                int endColumn = item.row_end_column;
-                List<int> item_layer_list = new List<int>();
-                List<int> item_column_list = new List<int>();
-                for (int a = startlayer; a < endlayer + 1; a++)
-                {
-                    item_layer_list.Add(a);
-                }
-                for (int a = startColumn; a < endColumn + 1; a++)
-                {
-                    item_column_list.Add(a);
-                }
-                exist_columns = exist_columns.Union(item_column_list.ToArray()).ToList().ToArray();
-                exist_layers = exist_layers.Union(item_layer_list.ToArray()).ToList().ToArray();
-            });
-
-            int current_startlayer = Convert.ToInt32(input.row_start_layer);
-            int current_endlayer = input.row_end_layer;
-            int current_startcolumn = input.row_start_column;
-            int current_endcolumn = input.row_end_column;
-            List<int> current_layer_list = new List<int>();
-            List<int> current_column_list = new List<int>();
-            for (int a = current_startlayer; a < current_endlayer + 1; a++)
-            {
-                current_layer_list.Add(a);
-            }
-            for (int a = current_startcolumn; a < current_endcolumn + 1; a++)
-            {
-                current_column_list.Add(a);
-            }
-            // 判断已占用列和层与当前列和层是否有交集
-            var intersect_layers = exist_layers.Intersect(current_layer_list.ToArray()).ToList();
-            var intersect_columns = exist_columns.Intersect(current_column_list.ToArray()).ToList();
-            string msg = "层或列重复 ";
-            if (intersect_layers.Count > 0)
-            {
-                msg=String.Concat(msg, "重复层：");
-                intersect_layers.ForEach(number => {
-                    msg = String.Concat(msg, number + " ");
-                });
-            }
-            if (intersect_columns.Count > 0)
-            {
-                msg = String.Concat(msg, "重复列:");
-                intersect_columns.ForEach(number => {
-                    msg = String.Concat(msg, number + " ");
-                });
-            }
-            if (msg.IndexOf("重复层") > 0 || msg.IndexOf("重复列") > 0)
-                throw new UserFriendlyException(msg);
-        }
     }
 }

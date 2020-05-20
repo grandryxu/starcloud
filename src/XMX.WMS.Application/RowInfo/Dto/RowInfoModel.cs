@@ -11,9 +11,9 @@ namespace XMX.WMS.RowInfo.Dto
     public class RowInfoPagedRequest : PagedResultRequestDto
     {
         /// <summary>
-        /// 名称
+        /// 仓库ID
         /// </summary>
-        public string row_name { get; set; }
+        public virtual Guid? row_warehouse_id { get; set; }
         /// <summary>
         /// 类型 1 库位 2 巷道
         /// </summary>
@@ -22,10 +22,6 @@ namespace XMX.WMS.RowInfo.Dto
         /// 排数
         /// </summary>
         public int row_no { get; set; }
-        /// <summary>
-        /// 仓库ID
-        /// </summary>
-        public virtual Guid? row_warehouse_id { get; set; }
     }
     #endregion
 
@@ -67,7 +63,7 @@ namespace XMX.WMS.RowInfo.Dto
         /// <summary>
         /// 起始层
         /// </summary>
-        public string row_start_layer { get; set; }
+        public int row_start_layer { get; set; }
         /// <summary>
         /// 终止层
         /// </summary>
@@ -85,9 +81,9 @@ namespace XMX.WMS.RowInfo.Dto
         /// </summary>
         public SlotMoveable row_movealbe_status { get; set; }
         /// <summary>
-        /// 是否禁用(1启用；2禁用)
+        /// 状态 1 未初始化 2 已初始化
         /// </summary>
-        public WMSIsEnabled row_is_enable { get; set; }
+        public RowStatus row_status { get; set; }
         #endregion
 
         #region 关联
@@ -153,7 +149,7 @@ namespace XMX.WMS.RowInfo.Dto
         /// <summary>
         /// 起始层
         /// </summary>
-        public string row_start_layer { get; set; }
+        public int row_start_layer { get; set; }
         /// <summary>
         /// 终止层
         /// </summary>
@@ -171,9 +167,9 @@ namespace XMX.WMS.RowInfo.Dto
         /// </summary>
         public SlotMoveable row_movealbe_status { get; set; }
         /// <summary>
-        /// 是否禁用(1启用；2禁用)
+        /// 状态 1 未初始化 2 已初始化
         /// </summary>
-        public WMSIsEnabled row_is_enable { get; set; }
+        public RowStatus row_status { get; set; }
         #endregion
 
         #region 关联
@@ -241,7 +237,7 @@ namespace XMX.WMS.RowInfo.Dto
         /// <summary>
         /// 起始层
         /// </summary>
-        public string row_start_layer { get; set; }
+        public int row_start_layer { get; set; }
         /// <summary>
         /// 终止层
         /// </summary>
@@ -259,9 +255,13 @@ namespace XMX.WMS.RowInfo.Dto
         /// </summary>
         public SlotMoveable row_movealbe_status { get; set; }
         /// <summary>
-        /// 是否禁用(1启用；2禁用)
+        /// 状态 1 未初始化 2 已初始化
         /// </summary>
-        public WMSIsEnabled row_is_enable { get; set; }
+        public RowStatus row_status { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

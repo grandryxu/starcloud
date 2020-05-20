@@ -9,35 +9,35 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
-using XMX.WMS.Authorization.Users;
-using Abp.AutoMapper;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
-using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.SlotInfo
 {
     [AbpAuthorize(PermissionNames.SlotBasicInfo)]
     public class SlotInfoService : AsyncCrudAppService<SlotInfo, SlotInfoDto, Guid, SlotInfoPagedRequest, SlotInfoCreatedDto, SlotInfoUpdatedDto>, ISlotInfoService
     {
-        private readonly UserManager _userManager;
         private readonly IRepository<RowInfo.RowInfo, Guid> _rRepository;
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _iRepository;
+        private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _gRepository;
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public SlotInfoService(IRepository<SlotInfo, Guid> repository,
                                IRepository<RowInfo.RowInfo, Guid> rRepository,
                                IRepository<InventoryInfo.InventoryInfo, Guid> iRepository,
-                               UserManager userManager) : base(repository)
+                               IRepository<GoodsInfo.GoodsInfo, Guid> gRepository) : base(repository)
         {
             _rRepository = rRepository;
             _iRepository = iRepository;
-            _userManager = userManager;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            _gRepository = gRepository;
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.SlotInfo.SlotInfoService.",
                 OptModule = "库位基础信息"
             };
@@ -47,8 +47,10 @@ namespace XMX.WMS.SlotInfo
         /// 获取空库位需要的构造函数
         /// </summary>
         /// <param name="repository"></param>
-        public SlotInfoService(IRepository<SlotInfo, Guid> repository) : base(repository)
+        public SlotInfoService(IRepository<SlotInfo, Guid> repository,
+                                IRepository<GoodsInfo.GoodsInfo, Guid> gRepository) : base(repository)
         {
+            _gRepository = gRepository;
         }
 
         /// <summary>
@@ -60,6 +62,7 @@ namespace XMX.WMS.SlotInfo
         protected override IQueryable<SlotInfo> CreateFilteredQuery(SlotInfoPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.Area, x => x.Size, x => x.Row)
+                                .WhereIf(AbpSession.UserId != 1, x => x.slot_company_id == UserCompanyId)
                                 .WhereIf(input.slot_warehouse_id.HasValue, x => x.Row.row_warehouse_id == input.slot_warehouse_id)
                                 .WhereIf(input.slot_area_id.HasValue, x => x.slot_area_id == input.slot_area_id)
                                 .WhereIf(input.slot_stock_status != null, x => x.slot_stock_status == input.slot_stock_status)
@@ -84,12 +87,17 @@ namespace XMX.WMS.SlotInfo
         /// <returns></returns>
         public override async Task<SlotInfoDto> Create(SlotInfoCreatedDto input)
         {
+            return null;
+        }
 
-            SlotInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
-            LogContext.WMSOptLogInfo.Add(logInfoEntity);
-            LogContext.SaveChanges();
-            return dto;
+        /// <summary>
+        /// 修改
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public override async Task<SlotInfoDto> Update(SlotInfoUpdatedDto input)
+        {
+            return await base.Update(input);
         }
 
         /// <summary>
@@ -104,7 +112,7 @@ namespace XMX.WMS.SlotInfo
             {
                 list.Add(await base.Update(input));
             }
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "UpdateList", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "批量更新", "批量更新", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "UpdateList", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "批量更新", "批量更新", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return new ListResultDto<SlotInfoDto>(list);
@@ -117,17 +125,20 @@ namespace XMX.WMS.SlotInfo
         /// <returns></returns>
         public async Task<ListResultDto<UtilizationRateDto>> GetUtilizationRatePieChart(SlotInfoPagedRequest input)
         {
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            List<UtilizationRateDto> list = new List<UtilizationRateDto>();
-            list = Repository.GetAllIncluding(x => x.Row.Warehouse)
-                        .Where(x => x.Row.Warehouse.warehouse_company_id == loginuser.CompanyId)
-                        .Where(x => x.slot_closed_status == SlotClosed.正常)
-                        .WhereIf(input.slot_warehouse_id != null, x => x.Row.row_warehouse_id == input.slot_warehouse_id)
-                        .GroupBy(x => new { x.Row.Warehouse.warehouse_code, x.Row.Warehouse.warehouse_name, x.Row.Warehouse.warehouse_type})
-                        .Select(group => new UtilizationRateDto(group.Key.warehouse_code, group.Key.warehouse_name, group.Key.warehouse_type, 
-                                                                group.Count(x => x.slot_stock_status == 0), group.Count(x => x.slot_stock_status != 0))).ToList();
+            var list = Repository.GetAllIncluding(x => x.Warehouse)
+                            .Where(x => x.slot_company_id == UserCompanyId)
+                            .Where(x => x.slot_closed_status == SlotClosed.正常)
+                            .WhereIf(input.slot_warehouse_id != null, x => x.slot_warehouse_id == input.slot_warehouse_id)
+                            .GroupBy(x => new { x.slot_warehouse_id, x.Warehouse.warehouse_code, x.Warehouse.warehouse_name, x.Warehouse.warehouse_type})
+                            .Select(g => new UtilizationRateDto{
+                                warehouse_id = g.Key.slot_warehouse_id,
+                                warehouse_code = g.Key.warehouse_code, 
+                                warehouse_name = g.Key.warehouse_name, 
+                                warehouse_type = g.Key.warehouse_type,
+                                empty_count =  g.Count(x => x.slot_stock_status == 0), 
+                                not_empty_count = g.Count(x => x.slot_stock_status != 0)}).ToList();
             return new ListResultDto<UtilizationRateDto>(list);
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -136,10 +147,8 @@ namespace XMX.WMS.SlotInfo
         /// <returns></returns>
         public PercentDto GetNowSlotPercent()
         {
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            var query = Repository.GetAllIncluding(x => x.Row.Warehouse)
-                                    .Where(x => x.Row.Warehouse.warehouse_company_id == loginuser.CompanyId)
-                                    .Where(x => x.slot_closed_status == SlotClosed.正常);
+            var query = Repository.GetAll().Where(x => x.slot_company_id == UserCompanyId)
+                                            .Where(x => x.slot_closed_status == SlotClosed.正常);
             PercentDto percent = new PercentDto();
             percent.empty_count = query.Where(x => x.slot_stock_status == 0).Count();
             percent.not_empty_count = query.Where(x => x.slot_stock_status != 0).Count();
@@ -156,7 +165,7 @@ namespace XMX.WMS.SlotInfo
         {
             SlotInfoTable sit = new SlotInfoTable();
             // 库位初始排信息
-            List<RowInfo.RowInfo> rowList = _rRepository.GetAllIncluding().Where(x => x.row_warehouse_id == input.slot_warehouse_id).OrderBy(x => x.row_order).ToList();
+            List<RowInfo.RowInfo> rowList = _rRepository.GetAll().Where(x => x.row_warehouse_id == input.slot_warehouse_id).OrderBy(x => x.row_order).ToList();
             // 表头
             sit.clos = rowList.Select(x => new SlotTH(x.Id.ToString(), x.row_name, x.row_type)).ToList();
             // 最大列数据
@@ -194,7 +203,7 @@ namespace XMX.WMS.SlotInfo
         {
             SlotInfoTable sit = new SlotInfoTable();
             // 库位初始排信息
-            List<RowInfo.RowInfo> rowList = _rRepository.GetAllIncluding().Where(x => x.row_warehouse_id == input.slot_warehouse_id).OrderBy(x => x.row_order).ToList();
+            List<RowInfo.RowInfo> rowList = _rRepository.GetAll().Where(x => x.row_warehouse_id == input.slot_warehouse_id).OrderBy(x => x.row_order).ToList();
             // 库位最大列
             RowInfo.RowInfo column_row = rowList.Where(x => x.row_type == RowType.库位).OrderByDescending(x => x.row_end_column).ToList()[0];
             // 表头
@@ -206,10 +215,10 @@ namespace XMX.WMS.SlotInfo
             // 库位最大层
             RowInfo.RowInfo layer_row = rowList.Where(x => x.row_type == RowType.库位).OrderByDescending(x => x.row_end_layer).ToList()[0];
             // 库位信息
-            List<SlotInfo> slotList = Repository.GetAllIncluding(x => x.Row).Where(x => x.Row.row_warehouse_id == input.slot_warehouse_id)
-                                                                  .Where(x => x.slot_row_id == input.slot_row_id)
-                                                                  .OrderBy(x => x.slot_layer)
-                                                                  .OrderBy(x => x.slot_column).ToList();
+            List<SlotInfo> slotList = Repository.GetAll().Where(x => x.slot_warehouse_id == input.slot_warehouse_id)
+                                                        .Where(x => x.slot_row_id == input.slot_row_id)
+                                                        .OrderBy(x => x.slot_layer)
+                                                        .OrderBy(x => x.slot_column).ToList();
             // 排,列二维数组
             SlotInfoGoods[,] slotArr = new SlotInfoGoods[layer_row.row_end_layer, column_row.row_end_column];
             SlotInfoGoods sg;
@@ -234,10 +243,10 @@ namespace XMX.WMS.SlotInfo
         public string GetSlotCodeId(SlotInfoRequest input)
         {
             var strName = "";
-            var rkis_recode = Repository.GetAllIncluding(x => x.Row).Where(x => x.slot_code == input.slot_code).Where(x => x.Row.row_warehouse_id == input.slot_warehouse_id).Where(x => !x.IsDeleted).Any();
+            var rkis_recode = Repository.GetAll().Where(x => x.slot_code == input.slot_code).Where(x => x.slot_warehouse_id == input.slot_warehouse_id).Any();
             if (rkis_recode)
             {
-                var SlotInfoId = Repository.FirstOrDefault(x => x.slot_code == input.slot_code &&  x.Row.row_warehouse_id == input.slot_warehouse_id).Id;
+                var SlotInfoId = Repository.FirstOrDefault(x => x.slot_code == input.slot_code &&  x.slot_warehouse_id == input.slot_warehouse_id).Id;
                 strName = "1@" + SlotInfoId;
             }
             else
@@ -251,17 +260,45 @@ namespace XMX.WMS.SlotInfo
         /// 获取空库位
         /// </summary>
         /// <returns></returns>
-        public SlotInfo GetEmptySlot(Guid companyId)
+        public SlotInfo GetEmptySlot(Guid warehouseId, string goodsId)
         {
-            SlotInfo slot = Repository.GetAllIncluding(x => x.Row.Warehouse)
-                                        .Where(x => x.Row.Warehouse.warehouse_company_id == companyId)
+            SlotInfo slot = null;
+            //查找仓库下可用库位
+            List<SlotInfo> list = Repository.GetAll().Where(x => x.slot_warehouse_id == warehouseId)
                                         .Where(x => x.slot_stock_status == SlotStock.空闲)
                                         .Where(x => x.slot_closed_status == SlotClosed.正常)
-                                        .Where(x => x.slot_imp_status == SlotImp.正常)
-                                        .OrderBy(x => x.slot_column)
-                                        .OrderBy(x => x.slot_layer)
-                                        .OrderBy(x => x.slot_row)
-                                        .FirstOrDefault();
+                                        .Where(x => x.slot_imp_status == SlotImp.正常).ToList();
+            if (!string.IsNullOrWhiteSpace(goodsId))
+            {
+                try 
+                {
+                    StrategyWarehousing.StrategyWarehousing sw = _gRepository.GetAllIncluding(x => x.StrategyWarehousing)
+                                                                    .Where(x => x.Id == Guid.Parse(goodsId))
+                                                                    .FirstOrDefault().StrategyWarehousing;
+                    if (sw != null && sw.warehousing_select == SelecType.从小到大)
+                        slot = list.OrderBy(x => x.slot_column)
+                                    .OrderBy(x => x.slot_layer)
+                                    .OrderBy(x => x.slot_row)
+                                    .FirstOrDefault();
+                    else if(sw != null && sw.warehousing_select == SelecType.从大到小)
+                        slot = list.OrderBy(x => x.slot_column)
+                                    .OrderBy(x => x.slot_layer)
+                                    .OrderByDescending(x => x.slot_row)
+                                    .FirstOrDefault();
+                    else
+                        slot = list.OrderBy(x => x.slot_column)
+                                    .OrderBy(x => x.slot_layer)
+                                    .OrderBy(x => x.slot_row)
+                                    .FirstOrDefault();
+                } 
+                catch (Exception)
+                {
+                    slot = list.OrderBy(x => x.slot_column)
+                                    .OrderBy(x => x.slot_layer)
+                                    .OrderBy(x => x.slot_row)
+                                    .FirstOrDefault();
+                }
+            }
             return slot;
         }
     }

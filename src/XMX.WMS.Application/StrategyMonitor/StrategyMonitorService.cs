@@ -11,10 +11,10 @@ using Abp.Application.Services.Dto;
 using System.Collections.Generic;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
-using XMX.WMS.Authorization.Users;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.StrategyMonitor
 {
@@ -22,21 +22,19 @@ namespace XMX.WMS.StrategyMonitor
     public class StrategyMonitorService : AsyncCrudAppService<StrategyMonitor, StrategyMonitorDto, Guid, StrategyMonitorPagedRequest, StrategyMonitorCreatedDto, StrategyMonitorUpdatedDto>, IStrategyMonitorService
     {
         private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _gRepository;
-        private readonly UserManager _userManager;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public StrategyMonitorService(IRepository<StrategyMonitor, Guid> repository,
-                                      IRepository<GoodsInfo.GoodsInfo, Guid> gRepository,
-                                      UserManager userManager) : base(repository)
+                                      IRepository<GoodsInfo.GoodsInfo, Guid> gRepository) : base(repository)
         {
             _gRepository = gRepository;
-            _userManager = userManager;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.StrategyMonitor.StrategyMonitorService.",
                 OptModule = "监控策略管理"
             };
@@ -50,7 +48,8 @@ namespace XMX.WMS.StrategyMonitor
         [AbpAuthorize(PermissionNames.StrategyMonitorManage_Get)]
         protected override IQueryable<StrategyMonitor> CreateFilteredQuery(StrategyMonitorPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.monitor_company_id == UserCompanyId)
                 .WhereIf(!input.monitor_name.IsNullOrWhiteSpace(), x => x.monitor_name.Contains(input.monitor_name))
                 ;
         }
@@ -74,14 +73,12 @@ namespace XMX.WMS.StrategyMonitor
         [AbpAuthorize(PermissionNames.StrategyMonitorManage_Add)]
         public override async Task<StrategyMonitorDto> Create(StrategyMonitorCreatedDto input)
         {
-            //公司ID
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            input.monitor_company_id = loginuser.CompanyId;
+            input.monitor_company_id = UserCompanyId;
             var flag = Repository.GetAll().Where(x => x.monitor_name == input.monitor_name).Any();
             if (flag)
                 throw new UserFriendlyException("名称已存在！");
             StrategyMonitorDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -98,10 +95,10 @@ namespace XMX.WMS.StrategyMonitor
             var flag = Repository.GetAll().Where(x => x.monitor_name == input.monitor_name).Where(x => x.Id != input.Id).Any();
             if (flag)
                 throw new UserFriendlyException("名称已存在！");
-            StrategyMonitor oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            StrategyMonitor oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             StrategyMonitorDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -118,7 +115,7 @@ namespace XMX.WMS.StrategyMonitor
             var flag = _gRepository.GetAll().Where(x => x.goods_warehousing_id == input.Id).Any();
             if (flag)
                 throw new UserFriendlyException("数据占用，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

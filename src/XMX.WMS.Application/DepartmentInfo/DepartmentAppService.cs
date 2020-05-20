@@ -14,20 +14,24 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.DepartmentInfo
 {
     [AbpAuthorize(PermissionNames.DepartmentBasicInfo)]
     public class DepartmentAppService : AsyncCrudAppService<DepartmentInfo, DepartmentInfoDto, Guid, DepartmentInfoPagedRequest, DepartmentCreatedModel, DepartmentUpdatedModel>, IDepartmentAppService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public DepartmentAppService(IRepository<DepartmentInfo, Guid> repository) : base(repository)
         {
+            UserCompanyId = AbpSession.GetCompanyId();
             LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.DepartmentInfo.DepartmentAppService.",
                 OptModule = "部门基础信息"
             };
@@ -42,10 +46,10 @@ namespace XMX.WMS.DepartmentInfo
         protected override IQueryable<DepartmentInfo> CreateFilteredQuery(DepartmentInfoPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.Department, x => x.Company)
-                .WhereIf(!input.DepartNo.IsNullOrWhiteSpace(), x => x.DepartNo.Contains(input.DepartNo))
-                .WhereIf(!input.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Name))
-                .WhereIf(!input.ManagerName.IsNullOrWhiteSpace(), x => x.ManagerName.Contains(input.ManagerName))
-                .WhereIf(input.CompanyId.HasValue, x => x.CompanyId.Equals(input.CompanyId));
+                    .WhereIf(!input.DepartNo.IsNullOrWhiteSpace(), x => x.DepartNo.Contains(input.DepartNo))
+                    .WhereIf(!input.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Name))
+                    .WhereIf(!input.ManagerName.IsNullOrWhiteSpace(), x => x.ManagerName.Contains(input.ManagerName))
+                    .WhereIf(input.CompanyId.HasValue, x => x.CompanyId.Equals(input.CompanyId));
         }
 
         /// <summary>
@@ -101,7 +105,7 @@ namespace XMX.WMS.DepartmentInfo
             if (is_existed)
                 throw new UserFriendlyException("已存在相同编号或相同名称的部门！");
             DepartmentInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -120,20 +124,21 @@ namespace XMX.WMS.DepartmentInfo
                 .Where(ele => ele.IsDeleted == false && ele.CompanyId == input.CompanyId).Any();
             if (is_rename)
             {
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("已存在相同编号或相同名称的部门！");
             }
                 
-            DepartmentInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            DepartmentInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             DepartmentInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 获取公司下部门树形数据
         /// </summary>
@@ -168,7 +173,7 @@ namespace XMX.WMS.DepartmentInfo
         [AbpAuthorize(PermissionNames.DepartmentBasicInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

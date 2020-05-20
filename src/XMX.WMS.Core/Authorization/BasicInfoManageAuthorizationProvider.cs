@@ -117,6 +117,7 @@ namespace XMX.WMS.Authorization
             InOutdBasicInfo.CreateChildPermission(PermissionNames.InOutdBasicInfo_Delete);
             InOutdBasicInfo.CreateChildPermission(PermissionNames.InOutdBasicInfo_Export);
             InOutdBasicInfo.CreateChildPermission(PermissionNames.InOutdBasicInfo_Print);
+            InOutdBasicInfo.CreateChildPermission(PermissionNames.InOutdBasicInfo_SetTunnel);
             #endregion
 
             #region 月台基础信息

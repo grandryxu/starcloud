@@ -264,7 +264,7 @@ namespace XMX.WMS.Users
         /// <returns></returns>
         public async Task<PagedResultDto<UserLoginAttempt>> GetUserLoginAttemptList(PagedUserLoginAttemptRequestDto input)
         {
-            var query = _userLoginAttemptRepository.GetAllIncluding().OrderByDescending(x => x.CreationTime)
+            var query = _userLoginAttemptRepository.GetAll().OrderByDescending(x => x.CreationTime)
                 .WhereIf(!input.UserNameOrEmailAddress.IsNullOrWhiteSpace(), x => x.UserNameOrEmailAddress.Contains(input.UserNameOrEmailAddress));
             string[] dt = input.DateRange?.Split("/");
             if (dt?.Length == 2)
@@ -284,7 +284,7 @@ namespace XMX.WMS.Users
         /// <returns></returns>
         public async Task<PagedResultDto<AuditLog>> GetAuditLogList(PagedAuditLogRequestDto input)
         {
-            var query = _auditLogRepository.GetAllIncluding()
+            var query = _auditLogRepository.GetAll()
                 .WhereIf(!input.Parameters.IsNullOrWhiteSpace(), x => x.Parameters.Contains(input.Parameters))
                 .WhereIf(!input.ServiceName.IsNullOrWhiteSpace(), x => x.ServiceName.Contains(input.ServiceName))
                 .WhereIf(!input.MethodName.IsNullOrWhiteSpace(), x => x.MethodName.Contains(input.MethodName));

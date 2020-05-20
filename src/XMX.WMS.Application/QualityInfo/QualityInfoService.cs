@@ -14,20 +14,24 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.QualityInfo
 {
     [AbpAuthorize(PermissionNames.MaterialQualityStatus)]
     public class QualityInfoService : AsyncCrudAppService<QualityInfo, QualityInfoDto, Guid, QualityInfoPagedRequest, QualityInfoCreatedDto, QualityInfoUpdatedDto>, IQualityInfoService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public QualityInfoService(IRepository<QualityInfo, Guid> repository) : base(repository)
         {
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.QualityInfo.QualityInfoService.",
                 OptModule = "物料质量状态"
             };
@@ -41,11 +45,11 @@ namespace XMX.WMS.QualityInfo
         [AbpAuthorize(PermissionNames.MaterialQualityStatus_Get)]
         protected override IQueryable<QualityInfo> CreateFilteredQuery(QualityInfoPagedRequest input)
         {
-            return Repository.GetAllIncluding(x=>x.Company)
-                .WhereIf(!input.quality_name.IsNullOrWhiteSpace(), x => x.quality_name.Contains(input.quality_name))
-                 .WhereIf(input.quality_company_id.HasValue, x => x.quality_company_id==input.quality_company_id)
-                
-                ;
+            return Repository.GetAllIncluding(x => x.Company)
+                        .WhereIf(AbpSession.UserId != 1, x => x.quality_company_id == UserCompanyId)
+                        .WhereIf(!input.quality_name.IsNullOrWhiteSpace(), x => x.quality_name.Contains(input.quality_name))
+                        .WhereIf(input.quality_company_id.HasValue, x => x.quality_company_id == input.quality_company_id)
+                        ;
         }
 
         /// <summary>
@@ -67,15 +71,17 @@ namespace XMX.WMS.QualityInfo
         [AbpAuthorize(PermissionNames.MaterialQualityStatus_Add)]
         public override async Task<QualityInfoDto> Create(QualityInfoCreatedDto input)
         {
-            var is_rename = Repository.GetAll().Where(x => x.quality_name == input.quality_name).Where(x => !x.IsDeleted).Any();
+            var is_rename = Repository.GetAll().Where(x => x.quality_name == input.quality_name).Any();
             if (is_rename)
                 throw new UserFriendlyException("质量状态名称已存在！");
+            input.quality_company_id = UserCompanyId;
             QualityInfoDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 更新
         /// </summary>
@@ -85,17 +91,18 @@ namespace XMX.WMS.QualityInfo
         public override async Task<QualityInfoDto> Update(QualityInfoUpdatedDto input)
         {
             var query = Repository.GetAll().Where(x => x.Id != input.Id);
-            var is_rename = query.Where(x => x.quality_name == input.quality_name).Where(x => !x.IsDeleted).Any();
+            var is_rename = query.Where(x => x.quality_name == input.quality_name).Any();
             if (is_rename)
                 throw new UserFriendlyException("质量状态名称已存在！");
-            QualityInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            QualityInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             QualityInfoDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 批量删除
         /// </summary>
@@ -111,6 +118,7 @@ namespace XMX.WMS.QualityInfo
                 throw new UserFriendlyException("参数解析异常，请联系管理员！");
             return Repository.DeleteAsync(x => x.Id.IsIn(idList.ToArray<Guid>()));
         }
+
         /// <summary>
         /// 删除
         /// </summary>
@@ -119,7 +127,7 @@ namespace XMX.WMS.QualityInfo
         [AbpAuthorize(PermissionNames.MaterialQualityStatus_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

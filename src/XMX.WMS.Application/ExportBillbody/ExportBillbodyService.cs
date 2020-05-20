@@ -14,6 +14,7 @@ using XMX.WMS.Authorization;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.ExportBillbody
 {
@@ -21,7 +22,7 @@ namespace XMX.WMS.ExportBillbody
     public class ExportBillbodyService : AsyncCrudAppService<ExportBillbody, ExportBillbodyDto, Guid, ExportBillbodyPagedRequest, ExportBillbodyCreatedDto, ExportBillbodyUpdatedDto>, IExportBillbodyService
     {
         private readonly IRepository<ExportOrder.ExportOrder, Guid> _eoRepository;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -29,9 +30,11 @@ namespace XMX.WMS.ExportBillbody
                                      IRepository<ExportOrder.ExportOrder, Guid> eoRepository) : base(repository)
         {
             _eoRepository = eoRepository;
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.ExportBillbody.ExportBillbodyService.",
                 OptModule = "出库流水管理"
             };
@@ -45,9 +48,10 @@ namespace XMX.WMS.ExportBillbody
         [AbpAuthorize(PermissionNames.ExportBillBodyManage_Get)]
         protected override IQueryable<ExportBillbody> CreateFilteredQuery(ExportBillbodyPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.expbody_company_id == UserCompanyId)
                 .WhereIf(!input.expbody_bill_bar.IsNullOrWhiteSpace(), x => x.expbody_bill_bar.Contains(input.expbody_bill_bar))
-                .WhereIf(input.expbody_imphead_id.HasValue, x => x.expbody_imphead_id == input.expbody_imphead_id)
+                .WhereIf(input.expbody_head_id.HasValue, x => x.expbody_head_id == input.expbody_head_id)
                 ;
         }
 
@@ -81,8 +85,9 @@ namespace XMX.WMS.ExportBillbody
         [AbpAuthorize(PermissionNames.ExportBillBodyManage_Add)]
         public override async Task<ExportBillbodyDto> Create(ExportBillbodyCreatedDto input)
         {
+            input.expbody_company_id = UserCompanyId;
             ExportBillbodyDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -110,10 +115,10 @@ namespace XMX.WMS.ExportBillbody
         [AbpAuthorize(PermissionNames.ExportBillBodyManage_Update)]
         public override async Task<ExportBillbodyDto> Update(ExportBillbodyUpdatedDto input)
         {
-            ExportBillbody oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            ExportBillbody oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             ExportBillbodyDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -148,7 +153,7 @@ namespace XMX.WMS.ExportBillbody
             var flag = Repository.GetAll().Where(x => x.Id == input.Id).Where(x => x.expbody_execute_flag != ExecuteFlag.未执行).Any();
             if (flag)
                 throw new UserFriendlyException("数据状态异常，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
@@ -204,6 +209,9 @@ namespace XMX.WMS.ExportBillbody
                     order.exporder_port_id = orderDto.exporder_port_id;
                     order.exporder_platform_id = orderDto.exporder_platform_id;
                     order.exporder_bill_bar = body.expbody_bill_bar;
+                    order.exporder_company_id = body.expbody_company_id;
+                    order.exporder_goods_id = body.expbody_goods_id;
+                    order.exporder_quality_status = body.expbody_quality_status;
                     order.exporder_body_id = body.Id;
                     _eoRepository.Insert(order);
                 }
@@ -226,7 +234,7 @@ namespace XMX.WMS.ExportBillbody
                 ExportOrder.ExportOrder order;
                 foreach (ExportOrder.Dto.ExportOrderUpdatedDto orderDto in updateList)
                 {
-                    order = _eoRepository.FirstOrDefault(x => x.Id == orderDto.Id);
+                    order = _eoRepository.Get(orderDto.Id);
                     order.exporder_batch_no = orderDto.exporder_batch_no;
                     order.exporder_lots_no = orderDto.exporder_lots_no;
                     order.exporder_product_date = orderDto.exporder_product_date;

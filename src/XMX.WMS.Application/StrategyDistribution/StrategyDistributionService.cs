@@ -15,6 +15,7 @@ using XMX.WMS.Authorization.Users;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.StrategyDistribution
 {
@@ -22,21 +23,19 @@ namespace XMX.WMS.StrategyDistribution
     public class StrategyDistributionService : AsyncCrudAppService<StrategyDistribution, StrategyDistributionDto, Guid, StrategyDistributionPagedRequest, StrategyDistributionCreatedDto, StrategyDistributionUpdatedDto>, IStrategyDistributionService
     {
         private readonly IRepository<GoodsInfo.GoodsInfo, Guid> _gRepository;
-        private readonly UserManager _userManager;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public StrategyDistributionService(IRepository<StrategyDistribution, Guid> repository,
-                                           IRepository<GoodsInfo.GoodsInfo, Guid> gRepository,
-                                           UserManager userManager) : base(repository)
+                                           IRepository<GoodsInfo.GoodsInfo, Guid> gRepository) : base(repository)
         {
             _gRepository = gRepository;
-            _userManager = userManager;
-
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.StrategyDistribution.StrategyDistributionService.",
                 OptModule = "分配策略管理"
             };
@@ -50,7 +49,8 @@ namespace XMX.WMS.StrategyDistribution
         [AbpAuthorize(PermissionNames.StrategyDistriManage_Get)]
         protected override IQueryable<StrategyDistribution> CreateFilteredQuery(StrategyDistributionPagedRequest input)
         {
-            return Repository.GetAllIncluding()
+            return Repository.GetAll()
+                .WhereIf(AbpSession.UserId != 1, x => x.distribution_company_id == UserCompanyId)
                 .WhereIf(!input.distribution_name.IsNullOrWhiteSpace(), x => x.distribution_name.Contains(input.distribution_name))
                 ;
         }
@@ -74,14 +74,12 @@ namespace XMX.WMS.StrategyDistribution
         [AbpAuthorize(PermissionNames.StrategyDistriManage_Add)]
         public override async Task<StrategyDistributionDto> Create(StrategyDistributionCreatedDto input)
         {
-            //公司ID
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            input.distribution_company_id = loginuser.CompanyId;
+            input.distribution_company_id = UserCompanyId;
             var flag = Repository.GetAll().Where(x => x.distribution_name == input.distribution_name).Any();
             if (flag)
                 throw new UserFriendlyException("名称已存在！");
             StrategyDistributionDto dto = await base.Create(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -98,10 +96,10 @@ namespace XMX.WMS.StrategyDistribution
             var flag = Repository.GetAll().Where(x => x.distribution_name == input.distribution_name).Where(x => x.Id != input.Id).Any();
             if (flag)
                 throw new UserFriendlyException("名称已存在！");
-            StrategyDistribution oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            StrategyDistribution oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             StrategyDistributionDto dto = await base.Update(input);
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -118,7 +116,7 @@ namespace XMX.WMS.StrategyDistribution
             var flag = _gRepository.GetAll().Where(x => x.goods_distribution_id == input.Id).Any();
             if (flag)
                 throw new UserFriendlyException("数据占用，无法删除！");
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

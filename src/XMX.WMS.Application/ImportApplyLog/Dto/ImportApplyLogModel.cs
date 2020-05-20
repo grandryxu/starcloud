@@ -49,7 +49,6 @@ namespace XMX.WMS.ImportApplyLog.Dto
     }
     #endregion
 
-
     #region 修改UpdateDto
     [AutoMapTo(typeof(ImportApplyLog))]
     public class ImportApplyLogUpdatedDto : BaseUpdateDto
@@ -58,7 +57,6 @@ namespace XMX.WMS.ImportApplyLog.Dto
 
     }
     #endregion
-
 
     #region 查询输出dto
     [AutoMapFrom(typeof(ImportApplyLog))]
@@ -73,13 +71,15 @@ namespace XMX.WMS.ImportApplyLog.Dto
         /// 入库单创建时间
         /// </summary>
         public DateTime import_creat_datetime { get; set; }
-
         /// <summary>
         /// 入库结果
         /// </summary>
         public string import_result { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
     }
     #endregion
-
 
 }

@@ -125,6 +125,10 @@ namespace XMX.WMS.QualityReleased.Dto
         /// 入库单号
         /// </summary>
         public string quare_stock_in_code { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

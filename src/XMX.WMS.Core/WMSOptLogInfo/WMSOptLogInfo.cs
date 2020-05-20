@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Abp.Domain.Entities.Auditing;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
@@ -26,16 +24,6 @@ namespace XMX.WMS.WMSOptLogInfo
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public override long Id { get; set; }
         /// <summary>
-        /// 操作者id
-        /// 父类 CreatorUserId
-        /// </summary> 
-
-        /// <summary>
-        /// 操作时间
-        /// 父类 CreationTime
-        /// </summary> 
-
-        /// <summary>
         /// 操作行为
         /// </summary>
         public string OptAction { get; set; }
@@ -59,6 +47,10 @@ namespace XMX.WMS.WMSOptLogInfo
         /// 操作模块
         /// </summary>
         public string OptModule { get; set; }
+        /// <summary>
+        /// 公司别
+        /// </summary>
+        public Guid CompanyId { get; set; }
         #endregion
     }
 }

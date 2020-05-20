@@ -81,7 +81,7 @@ namespace XMX.WMS.Fenbiao
             var flag = context.Fenbiao.Where(x => x.Id != input.Id).Where(x => x.code == input.code).Any();
             if (flag)
                 throw new UserFriendlyException("编号已存在！");
-            Fenbiao fenbiao = context.Fenbiao.FirstOrDefault(x => x.Id == input.Id);
+            Fenbiao fenbiao = context.Fenbiao.First(x => x.Id == input.Id);
             fenbiao.Id = input.Id;
             fenbiao.LastModificationTime = DateTime.Now;
             fenbiao.code = input.code;
@@ -99,7 +99,7 @@ namespace XMX.WMS.Fenbiao
         public override async Task Delete(EntityDto<Guid> input)
         {
             DynamicDbContext context = DynamicDbContext.GetInstance("Fenbiao202004");
-            Fenbiao fenbiao =  context.Fenbiao.FirstOrDefault(x => x.Id == input.Id);
+            Fenbiao fenbiao =  context.Fenbiao.First(x => x.Id == input.Id);
             fenbiao.IsDeleted = true;
             context.Fenbiao.Update(fenbiao);
             context.SaveChanges();
@@ -114,17 +114,17 @@ namespace XMX.WMS.Fenbiao
             string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
             List<WarehouseStock.WarehouseStock> list = new List<WarehouseStock.WarehouseStock>();
             //查询所有的仓库
-            var wids = _wRepository.GetAllIncluding().Select(x => new { id = x.Id }).ToList();
+            var wids = _wRepository.GetAll().Select(x => new { wid = x.Id }).ToList();
             //查询库存里有的仓库
             var wiids = _iRepository.GetAllIncluding(x => x.Slot)
-                                    .GroupBy(x => new { id = x.Slot.slot_warehouse_id.Value})                    
-                                    .Select(g => new { id = g.Key.id }).ToList();
+                                    .GroupBy(x => new { wid = x.Slot.slot_warehouse_id.Value})                    
+                                    .Select(g => new { wid = g.Key.wid }).ToList();
             //库存里面没有的仓库直接new空数据
             var query2 = wids.Except(wiids).Select(x => new WarehouseStock.WarehouseStock
                                                     {
                                                         warehouse_stock = 0,
                                                         warehouse_date = dateStr,
-                                                        warehouse_id = x.id
+                                                        warehouse_id = x.wid
                                                     }).ToList();
             var query = _iRepository.GetAllIncluding(x => x.Slot)
                                     .GroupBy(x => new {
@@ -141,8 +141,8 @@ namespace XMX.WMS.Fenbiao
             bool flag;
             foreach (WarehouseStock.WarehouseStock stock in list)
             {
-                flag = _wsRepository.GetAllIncluding(x => x.Warehouse).Where(x => x.warehouse_date.Equals(dateStr))
-                                                     .Where(x => x.warehouse_id == stock.warehouse_id).Any();
+                flag = _wsRepository.GetAll().Where(x => x.warehouse_date.Equals(dateStr))
+                                             .Where(x => x.warehouse_id == stock.warehouse_id).Any();
                 if (!flag)
                     _wsRepository.Insert(stock);
             }

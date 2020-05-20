@@ -100,6 +100,10 @@ namespace XMX.WMS.HistoryTaskMainInfo.Dto
         /// 数量
         /// </summary>
         public decimal exporder_quantity { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

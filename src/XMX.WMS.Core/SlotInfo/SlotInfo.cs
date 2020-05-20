@@ -93,6 +93,12 @@ namespace XMX.WMS.SlotInfo
         public virtual Guid? slot_tunnel_id { get; set; }
         [ForeignKey("slot_tunnel_id")]
         public virtual TunnelInfo.TunnelInfo Tunnel { get; set; }
+        /// <summary>
+        /// 库位外侧库位ID
+        /// </summary>
+        public virtual Guid? slot_out_id { get; set; }
+        [ForeignKey("slot_out_id")]
+        public virtual SlotInfo OutSlot { get; set; }
         #endregion
     }
 }

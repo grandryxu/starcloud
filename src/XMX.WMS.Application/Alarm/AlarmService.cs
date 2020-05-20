@@ -5,27 +5,36 @@ using System.Linq;
 using Abp.Linq.Extensions;
 using Abp.Extensions;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using XMX.WMS.Alarm.Dto;
 using Abp.Application.Services.Dto;
-using Abp.AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using XMX.WMS.Authorization;
 using Abp.Authorization;
-using XMX.WMS.Authorization.Users;
+using XMX.WMS.Base.Session;
+using XMX.WMS.Base.Dto;
 
 namespace XMX.WMS.Alarm
 {
     [AbpAuthorize(PermissionNames.DullStockWarning,PermissionNames.ValidityStockWarning,PermissionNames.InventoryThresholdWarning)]
     public class AlarmService : AsyncCrudAppService<Alarm, AlarmDto, Guid, AlarmPagedRequest, AlarmCreatedDto, AlarmUpdatedDto>, IAlarmService
     {
-        public UserManager _userManager { get; set; }
-        public User loginuser { get; set; }
         private readonly IRepository<InventoryInfo.InventoryInfo, Guid> _inventoryInfo;
+        private readonly Guid UserCompanyId;
         public AlarmService(IRepository<Alarm, Guid> repository, 
                             IRepository<InventoryInfo.InventoryInfo, Guid> InventoryInfo) : base(repository)
         {
             _inventoryInfo = InventoryInfo;
+            UserCompanyId = AbpSession.GetCompanyId();
+        }
+
+        public override async Task<AlarmDto> Create(AlarmCreatedDto input)
+        {
+            return null;
+        }
+
+        public override async Task<AlarmDto> Update(AlarmUpdatedDto input) 
+        {
+            return null;
         }
 
         /// <summary>
@@ -47,6 +56,7 @@ namespace XMX.WMS.Alarm
         {
             await Task.Delay(1);
             var query = Repository.GetAllIncluding(x => x.Goods, x => x.Inventory, x => x.Inventory.Slot)
+                                .WhereIf(AbpSession.UserId != 1, x => x.company_id == UserCompanyId)
                                 .WhereIf(!input.goods_name.IsNullOrWhiteSpace(), x => x.Goods.goods_name.Contains(input.goods_name))
                                 .WhereIf(!input.batch_no.IsNullOrWhiteSpace(), x => x.Inventory.inventory_batch_no.Contains(input.batch_no))
                                 .Where(x => x.warning_type == input.type)
@@ -74,10 +84,10 @@ namespace XMX.WMS.Alarm
         /// 获取当前报警数
         /// </summary>
         /// <returns></returns>
-        public int GetNowAlarmNum()
+        public GetNumDto GetNowAlarmNum()
         {
-            User loginuser = _userManager.GetUserByIdAsync(AbpSession.UserId.Value).Result;
-            return Repository.GetAllIncluding(x => x.Goods).Where(x => x.Goods.goods_company_id == loginuser.CompanyId).Count();
+            int count = Repository.GetAll().WhereIf(AbpSession.UserId != 1, x => x.company_id == UserCompanyId).Count();
+            return new GetNumDto { listCount = count };
         }
 
         /// <summary>
@@ -113,6 +123,7 @@ namespace XMX.WMS.Alarm
                             alarm.goods_id = item.inventory_goods_id;
                             alarm.inventory_id = item.Id;
                             alarm.warning_type = WarningType.效期库存预警;
+                            alarm.company_id = item.inventory_company_id;
                             Repository.Insert(alarm);
                         }
                     }
@@ -129,6 +140,8 @@ namespace XMX.WMS.Alarm
                             alarm.goods_id = item.inventory_goods_id;
                             alarm.inventory_id = item.Id;
                             alarm.warning_type = WarningType.效期库存预警;
+                            alarm.company_id = item.inventory_company_id;
+                            Repository.Insert(alarm);
                         }
                     }
                     //呆滞库存报警
@@ -146,6 +159,7 @@ namespace XMX.WMS.Alarm
                             alarm.goods_id = item.inventory_goods_id;
                             alarm.inventory_id = item.Id;
                             alarm.warning_type = WarningType.呆滞库存预警;
+                            alarm.company_id = item.inventory_company_id;
                             Repository.Insert(alarm);
                         }
                     }

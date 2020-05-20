@@ -114,8 +114,8 @@ namespace XMX.WMS.ExportBillbody
         /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid? expbody_imphead_id { get; set; }
-        [ForeignKey("expbody_imphead_id")]
+        public virtual Guid? expbody_head_id { get; set; }
+        [ForeignKey("expbody_head_id")]
         public virtual ExportBillhead.ExportBillhead ExportBillhead { get; set; }
         /// <summary>
         /// 物料ID

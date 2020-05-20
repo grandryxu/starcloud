@@ -151,8 +151,6 @@ namespace XMX.WMS.CompanyInfo.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled IsEnable { get; set; }
-
-
         /// <summary>
         /// 地址信息
         /// </summary>
@@ -161,6 +159,10 @@ namespace XMX.WMS.CompanyInfo.Dto
         /// 地址明细信息
         /// </summary>
         public string AddressDetail { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联

@@ -18,6 +18,7 @@ using XMX.WMS.Authorization.Users;
 using XMX.WMS.Models.TokenAuth;
 using XMX.WMS.MultiTenancy;
 using XMX.WMS.Authorization.Roles;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.Controllers
 {
@@ -64,9 +65,10 @@ namespace XMX.WMS.Controllers
                 model.Password,
                 GetTenancyNameOrNull()
             );
-
-            var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
             var user = _userManager.GetUserByIdAsync(loginResult.User.Id);
+            //将companyId放入session
+            loginResult.Identity.AddClaim(new Claim(WMSAbpClaimTypes.CompanyId, user.Result.CompanyId.ToString()));
+            var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
             var companyId = user.Result.CompanyId;
             var r = _userManager.GetRolesAsync(user.Result);
             var roles = r.Result.ToArray();

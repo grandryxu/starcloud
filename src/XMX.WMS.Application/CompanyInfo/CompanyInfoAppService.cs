@@ -13,6 +13,7 @@ using Abp.Authorization;
 using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.CompanyInfo
 {
@@ -20,7 +21,7 @@ namespace XMX.WMS.CompanyInfo
     public class CompanyInfoAppService : AsyncCrudAppService<CompanyInfo, CompanyInfoDto, Guid, CompanyInfoPagedRequest, CompanyCreatedDto, CompanyUpdatedDto>, ICompanyInfoAppService
     {
         private readonly IRepository<DepartmentInfo.DepartmentInfo, Guid> _departmentInfoRepository;
-
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
@@ -28,9 +29,11 @@ namespace XMX.WMS.CompanyInfo
             IRepository<DepartmentInfo.DepartmentInfo, Guid> departmentInfoRepository) : base(repository)
         {
             _departmentInfoRepository = departmentInfoRepository;
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.CompanyInfo.CompanyInfoAppService.",
                 OptModule = "公司基础信息"
             };
@@ -73,6 +76,7 @@ namespace XMX.WMS.CompanyInfo
                 relist.Add(new CompanyInfoSelectedListDto { Id = item.Id, Name = item.Name });
             return relist;
         }
+
         /// <summary>
         /// 新增
         /// </summary>
@@ -85,11 +89,12 @@ namespace XMX.WMS.CompanyInfo
             if (is_rename)
                 throw new UserFriendlyException("已存在相同名称的公司！");
             CompanyInfoDto dto= await base.Create(input);
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
         }
+
         /// <summary>
         /// 更新
         /// </summary>
@@ -102,15 +107,15 @@ namespace XMX.WMS.CompanyInfo
             var is_rename = query.Where(x => x.Name == input.Name).Where(ele => ele.IsDeleted == false).Any();
             if (is_rename)
             {
-                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
+                WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, "", "", WMSOptLogInfo.WMSOptLogInfo.FAIL);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 throw new UserFriendlyException("已存在相同名称的公司！");
             }
-            CompanyInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+            CompanyInfo oldEntity = Repository.Get(input.Id);
             string oldval = JsonConvert.SerializeObject(oldEntity);
             CompanyInfoDto dto = await base.Update(input);
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             return dto;
@@ -145,6 +150,7 @@ namespace XMX.WMS.CompanyInfo
             }
             return relist;
         }
+
         /// <summary>
         /// 获取部门目录
         /// </summary>
@@ -182,7 +188,7 @@ namespace XMX.WMS.CompanyInfo
             var count = Repository.Count(x=>x.ParentId==input.Id);
             if (count > 0)
                 throw new UserFriendlyException("该公司存在子公司，请先删除子公司");
-            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfo.WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);

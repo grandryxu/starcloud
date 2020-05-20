@@ -37,7 +37,7 @@ namespace XMX.WMS.RowInfo
         /// <summary>
         /// 起始层
         /// </summary>
-        public string row_start_layer { get; set; }
+        public int row_start_layer { get; set; }
         /// <summary>
         /// 终止层
         /// </summary>
@@ -55,9 +55,9 @@ namespace XMX.WMS.RowInfo
         /// </summary>
         public SlotMoveable row_movealbe_status { get; set; }
         /// <summary>
-        /// 是否禁用(1启用；2禁用)
+        /// 状态 1 未初始化 2 已初始化
         /// </summary>
-        public WMSIsEnabled row_is_enable { get; set; }
+        public RowStatus row_status { get; set; }
         #endregion
 
         #region 关联
@@ -79,18 +79,6 @@ namespace XMX.WMS.RowInfo
         public virtual Guid? row_out_id { get; set; }
         [ForeignKey("row_out_id")]
         public virtual RowInfo Row { get; set; }
-        /// <summary>
-        /// 容积大小
-        /// </summary>
-        public virtual Guid? row_size_id { get; set; }
-        [ForeignKey("row_size_id")]
-        public virtual SlotSize.SlotSize Size { get; set; }
-        /// <summary>
-        /// 区域
-        /// </summary>
-        public virtual Guid? row_area_id { get; set; }
-        [ForeignKey("row_area_id")]
-        public virtual AreaInfo.AreaInfo Area { get; set; }
         #endregion
     }
 }

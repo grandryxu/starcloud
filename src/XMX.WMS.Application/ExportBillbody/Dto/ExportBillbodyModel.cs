@@ -18,7 +18,7 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 表头ID
         /// </summary>
-        public Guid? expbody_imphead_id { get; set; }
+        public Guid? expbody_head_id { get; set; }
     }
     #endregion
 
@@ -144,7 +144,7 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid? expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_head_id { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
@@ -287,7 +287,7 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid? expbody_imphead_id { get; set; }
+        public virtual Guid? expbody_head_id { get; set; }
         /// <summary>
         /// 物料ID
         /// </summary>
@@ -416,6 +416,10 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// 是否禁用(1启用；2禁用)
         /// </summary>
         public WMSIsEnabled expbody_is_enable { get; set; }
+        /// <summary>
+        ///创建时间
+        /// </summary>
+        public DateTime CreationTime { get; set; }
         #endregion
 
         #region 关联
@@ -428,8 +432,8 @@ namespace XMX.WMS.ExportBillbody.Dto
         /// <summary>
         /// 表头ID
         /// </summary>
-        public virtual Guid? expbody_imphead_id { get; set; }
-        [ForeignKey("expbody_imphead_id")]
+        public virtual Guid? expbody_head_id { get; set; }
+        [ForeignKey("expbody_head_id")]
         public virtual ExportBillhead.ExportBillhead ExportBillhead { get; set; }
         /// <summary>
         /// 物料ID

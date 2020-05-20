@@ -14,20 +14,24 @@ using Abp.Application.Services.Dto;
 using XMX.WMS.EntityFrameworkCore.Dynamic;
 using XMX.WMS.WMSOptLogInfo;
 using Newtonsoft.Json;
+using XMX.WMS.Base.Session;
 
 namespace XMX.WMS.AreaInfo
 {
     [AbpAuthorize(PermissionNames.AreaBasicInfo)]
     public class AreaInfoService : AsyncCrudAppService<AreaInfo, AreaInfoDto, Guid, AreaInfoPagedRequest, AreaInfoCreatedDto, AreaInfoUpdatedDto>, IAreaInfoService
     {
+        private readonly Guid UserCompanyId;
         //日志
         private DynamicDbContext LogContext;
         private WMSOptLogInfo.WMSOptLogInfo logInfoEntity;
         public AreaInfoService(IRepository<AreaInfo, Guid> repository) : base(repository)
         {
-            LogContext = DynamicDbContext.GetInstance(String.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
+            UserCompanyId = AbpSession.GetCompanyId();
+            LogContext = DynamicDbContext.GetInstance(string.Concat("WMSOptLogInfo", DateTime.Now.ToString("yyyyMM")));
             logInfoEntity = new WMSOptLogInfo.WMSOptLogInfo
             {
+                CompanyId = UserCompanyId,
                 OptPath = "XMX.WMS.AreaInfo.AreaInfoService.",
                 OptModule = "库区基础信息"
             };
@@ -42,11 +46,11 @@ namespace XMX.WMS.AreaInfo
         protected override IQueryable<AreaInfo> CreateFilteredQuery(AreaInfoPagedRequest input)
         {
             return Repository.GetAllIncluding(x => x.Warehouse)
-                .WhereIf(!input.area_name.IsNullOrWhiteSpace(), x => x.area_name.Contains(input.area_name))
-                   .WhereIf(!input.area_code.IsNullOrWhiteSpace(), x => x.area_code.Contains(input.area_code))
-                      .WhereIf(input.area_warehouse_id.HasValue, x => x.area_warehouse_id==input.area_warehouse_id)
-
-                ;
+                        .WhereIf(AbpSession.UserId != 1, x => x.area_company_id == UserCompanyId)
+                        .WhereIf(!input.area_name.IsNullOrWhiteSpace(), x => x.area_name.Contains(input.area_name))
+                        .WhereIf(!input.area_code.IsNullOrWhiteSpace(), x => x.area_code.Contains(input.area_code))
+                        .WhereIf(input.area_warehouse_id.HasValue, x => x.area_warehouse_id == input.area_warehouse_id)
+                        ;
         }
 
         /// <summary>
@@ -71,8 +75,9 @@ namespace XMX.WMS.AreaInfo
             var isrecode = Repository.GetAll().Where(x => x.area_code == input.area_code).Any();
             if (!isrename && !isrecode)
             {
+                input.area_company_id = UserCompanyId;
                 AreaInfoDto dto = await base.Create(input);
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Create", WMSOptLogInfo.WMSOptLogInfo.ADD, "", JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
@@ -81,15 +86,15 @@ namespace XMX.WMS.AreaInfo
             {
                 if (isrename && isrecode)
                 {
-                    throw new Abp.UI.UserFriendlyException("区域名、区域编码重复！");
+                    throw new UserFriendlyException("区域名、区域编码重复！");
                 }
                 else if (isrename)
                 {
-                    throw new Abp.UI.UserFriendlyException("区域名重复！");
+                    throw new UserFriendlyException("区域名重复！");
                 }
                 else
                 {
-                    throw new Abp.UI.UserFriendlyException("区域编码重复！");
+                    throw new UserFriendlyException("区域编码重复！");
                 }
             }
 
@@ -106,19 +111,20 @@ namespace XMX.WMS.AreaInfo
             var isrenamecode = query.Where(x => x.area_code == input.area_code || x.area_name == input.area_name).Any();
             if (isrenamecode)
             {
-                throw new Abp.UI.UserFriendlyException("区域名、区域编码重复！");
+                throw new UserFriendlyException("区域名、区域编码重复！");
             }
             else
             {
-                AreaInfo oldEntity = Repository.FirstOrDefault(x => x.Id == input.Id);
+                AreaInfo oldEntity = Repository.Get(input.Id);
                 string oldval = JsonConvert.SerializeObject(oldEntity);
                 AreaInfoDto dto = await base.Update(input);
-                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+                WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Update", WMSOptLogInfo.WMSOptLogInfo.UPDATE, oldval, JsonConvert.SerializeObject(dto), WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
                 LogContext.WMSOptLogInfo.Add(logInfoEntity);
                 LogContext.SaveChanges();
                 return dto;
             }
         }
+
         /// <summary>
         /// 区域下拉列表
         /// </summary>
@@ -158,7 +164,7 @@ namespace XMX.WMS.AreaInfo
         [AbpAuthorize(PermissionNames.AreaBasicInfo_Delete)]
         public override async Task Delete(EntityDto<Guid> input)
         {
-            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
+            WMSOptLogInfoFactory.CreateWMSOptLogInfo(logInfoEntity, UserCompanyId, AbpSession.UserId.Value, "Delete", WMSOptLogInfo.WMSOptLogInfo.DELETE, input.Id.ToString(), "", WMSOptLogInfo.WMSOptLogInfo.SUCCESS);
             LogContext.WMSOptLogInfo.Add(logInfoEntity);
             LogContext.SaveChanges();
             await Repository.DeleteAsync(x => x.Id == input.Id);
