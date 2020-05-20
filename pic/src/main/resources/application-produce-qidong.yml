@@ -1,0 +1,72 @@
+server:
+  port: 9066
+
+spring:
+  redis:
+      host: 192.168.1.172
+      port: 6379
+      password: Xingyun*_001
+      max-idle: 500
+      min-idle: 50
+      active: 2000
+      wait: 1000
+      cahce-names: xywg-sbgl-day-2,xywg-sbgl-min-30,xywg-sbgl-min-2,xywg-sbgl-hour-2
+  datasource:
+    url: jdbc:mysql://192.168.1.172:3306/gblabor?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&useServerPrepStmts=false&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+   # url: jdbc:mysql://118.31.69.25:3306/hubei_realname?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&useServerPrepStmts=false&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: Xingyun*_001
+
+ #mongo配置
+  data:
+    mongodb:
+      #database: collect
+      #uri: mongodb://127.0.0.1:27017
+      uri: mongodb://collect:collect@192.168.1.120:27017/collect
+
+#---------------------------  mybatis-plus配置  -------------------------
+mybatis-plus:
+  mapper-locations: classpath*:**/mapping/*.xml
+  typeAliasesPackage: com.xywg.attendance.modular
+  global-config:
+    id-type: 0  #0:数据库ID自增   1:用户输入id  2:全局唯一id(IdWorker)  3:全局唯一ID(uuid)
+    db-column-underline: false
+    refresh-mapper: true
+    logic-delete-value: 1
+    logic-not-delete-value: 0
+    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  #  metaObjectHandler: com.xywg.equipmentmonitor.core.aop.MyMetaObjectHandler
+  configuration:
+    map-underscore-to-camel-case: false
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
+
+
+ftp:
+  host: 192.168.1.124
+  port: 21
+  username: jack
+  password: qwer1234
+com:
+  xywg:
+    zbus:
+      address: 192.168.1.187:15555
+
+##分布式文件系统
+#fdfs:
+#  so-timeout: 1501
+#  connect-timeout: 2000
+#  thumb-image:             #缩略图生成参数
+#    width: 150
+#    height: 150
+#  pool:
+#    jmx-enabled: false
+#  tracker-list: 192.168.1.209:22122    #TrackerList参数,支持多个
+
+
+
+
+
+

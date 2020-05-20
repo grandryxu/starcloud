@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.attendance.modular.system.dao.TableMapper">
+
+    <select id="isExistTable" resultType="Integer">
+    	 select count(*) from information_schema.TABLES where table_name = #{tableName} and table_schema = #{suffixSchema}; 
+    </select>
+    
+    
+	<update id="createTable" parameterType="string">  
+     CREATE TABLE ${tableName} (                                                                                                 
+                      `id` bigint(20) NOT NULL AUTO_INCREMENT,                                                                       
+                      `organization_code` varchar(20) NOT NULL,                            
+                      `project_code` varchar(50) NOT NULL,                                                                  
+                      `team_sys_no` int(20) DEFAULT NULL,
+                      `id_card_type` int(20) NOT NULL,                                                                        
+                      `id_card_number` varchar(50) NOT NULL,                                                                  
+                      `device_sn` varchar(50) DEFAULT NULL,                                                                       
+                      `sh_imei` varchar(50) DEFAULT NULL,                                                                        
+                      `record_user_id` bigint(20) DEFAULT NULL,                                                        
+                      `time` timestamp NULL DEFAULT NULL,                                                                      
+                      `type` tinyint(4) DEFAULT '1',                                                        
+                      `photo` varchar(200) DEFAULT NULL,                                                                        
+                      `lng` decimal(18,8) DEFAULT NULL,                                                                              
+                      `lat` decimal(18,6) DEFAULT NULL,                                                                              
+                      `address` varchar(50) DEFAULT NULL,                                                                       
+                      `source` tinyint(4) DEFAULT NULL,                                                      
+                      `is_valid` tinyint(2) DEFAULT NULL,                                                        
+                      `create_date` datetime DEFAULT NULL,                                                                         
+                      `create_user` varchar(50) DEFAULT NULL,                                                                   
+                      `update_date` datetime DEFAULT NULL,                                                                       
+                      `update_user` varchar(50) DEFAULT NULL,                                                                  
+                      `remark` varchar(255) DEFAULT NULL,                                                                             
+                      `map` varchar(255) DEFAULT NULL,                                                                                 
+                      `icon_photo` varchar(255) DEFAULT NULL,                                                                      
+                      `device_type` tinyint(4) DEFAULT NULL,                                                  
+                      `is_deal` char(2) DEFAULT NULL,                                               
+                      `worker_name` varchar(50) DEFAULT NULL,                                                                                             
+                      PRIMARY KEY (`id`)                                                                                                                
+                    ) ENGINE=InnoDB AUTO_INCREMENT=1184 DEFAULT CHARSET=utf8  
+    	</update>
+</mapper>

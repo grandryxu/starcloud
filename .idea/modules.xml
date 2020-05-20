@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/attendance-consumer-public/attendance-consumer-public.iml" filepath="$PROJECT_DIR$/attendance-consumer-public/attendance-consumer-public.iml" />
+      <module fileurl="file://$PROJECT_DIR$/attendance-receive-public/attendance-receive-public.iml" filepath="$PROJECT_DIR$/attendance-receive-public/attendance-receive-public.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pic/pic.iml" filepath="$PROJECT_DIR$/pic/pic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/中控通用版.iml" filepath="$PROJECT_DIR$/.idea/中控通用版.iml" />
+    </modules>
+  </component>
+</project>

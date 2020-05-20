@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="attendance-consumer-public:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="attendance-consumer-public-0.0.1-SNAPSHOT.war">
+      <element id="artifact" artifact-name="attendance-consumer-public:war exploded" />
+    </root>
+  </artifact>
+</component>

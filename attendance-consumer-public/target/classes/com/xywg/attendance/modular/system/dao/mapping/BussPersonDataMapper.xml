@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.attendance.modular.system.dao.BussPersonDataMapper">
+
+
+    <select id="selectByTypeAndNumberIn" resultType="com.xywg.attendance.modular.system.model.BussPersonData">
+    SELECT
+        id_card_type AS idCardType,
+        id_card_number AS idCardNumber,
+        ocv_face AS ocvFace
+    FROM
+        `buss_person_data`
+    WHERE
+        (
+            id_card_type,
+            id_card_number
+        ) IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            (#{item.idCardType},#{item.idCardNumber})
+        </foreach>
+    </select>
+</mapper>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xywg.attendance.modular.system.dao.WorkerMasterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap"
+               type="com.xywg.attendance.modular.system.model.WorkerMaster">
+        <id column="id" property="id"/>
+        <result column="worker_name" property="workerName"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="gender" property="gender"/>
+        <result column="nation" property="nation"/>
+        <result column="birthday" property="birthday"/>
+        <result column="birth_place_code" property="birthPlaceCode"/>
+        <result column="address" property="address"/>
+        <result column="head_image" property="headImage"/>
+        <result column="politics_type" property="politicsType"/>
+        <result column="is_joined" property="isJoined"/>
+        <result column="joined_time" property="joinedTime"/>
+        <result column="cell_phone" property="cellPhone"/>
+        <result column="culture_level_type" property="cultureLevelType"/>
+        <result column="has_bad_medical_history" property="hasBadMedicalHistory"/>
+        <result column="urgent_contract_name" property="urgentContractName"/>
+        <result column="urgent_contract_cellphone" property="urgentContractCellphone"/>
+        <result column="work_type_code" property="workTypeCode"/>
+        <result column="work_date" property="workDate"/>
+        <result column="icon_image" property="iconImage"/>
+        <result column="id_image" property="idImage"/>
+        <result column="is_face" property="isFace"/>
+        <result column="face" property="face"/>
+        <result column="is_auth" property="isAuth"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="note" property="note"/>
+        <result column="is_del" property="isDel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+		id,
+		worker_name AS workerName,
+		id_card_type AS idCardType,
+		id_card_number AS idCardNumber,
+		gender, nation,
+		DATE_FORMAT(birthday,'%YYYY-%mm-%dd') as birthday,
+		birth_place_code AS
+		birthPlaceCode,
+		address, head_image AS headImage,
+		politics_type AS
+		politicsType,
+		is_joined AS isJoined,
+		joined_time AS joinedTime,
+		cell_phone AS cellPhone,
+		culture_level_type AS cultureLevelType,
+		has_bad_medical_history AS hasBadMedicalHistory,
+		urgent_contract_name
+		AS urgentContractName,
+		urgent_contract_cellphone AS
+		urgentContractCellphone,
+		work_type_code AS workTypeCode, work_date AS
+		workDate,
+		icon_image AS iconImage,
+		id_image AS idImage,
+		is_face AS
+		isFace,
+		face,
+		is_auth AS isAuth,
+		create_date AS createDate,
+		create_user AS
+		createUser,
+		update_date AS updateDate,
+		update_user AS updateUser,
+		note,
+		is_del AS isDel
+	</sql>
+
+	<select id="getWorkerListByProjectCode" resultType="com.xywg.attendance.modular.system.model.WorkerMaster">
+		SELECT
+		w.id,
+		w.worker_name AS workerName,
+		w.id_card_type AS idCardType,
+		w.id_card_number AS idCardNumber,
+		w.gender, w.nation,
+		w.birthday as birthday,
+		w.birth_place_code AS
+		birthPlaceCode,
+		w.address, w.head_image AS headImage,
+		w.politics_type AS
+		politicsType,
+		w.is_joined AS isJoined,
+		w.joined_time AS joinedTime,
+		w.cell_phone AS cellPhone,
+		w.culture_level_type AS cultureLevelType,
+		w.has_bad_medical_history AS hasBadMedicalHistory,
+		w.urgent_contract_name
+		AS urgentContractName,
+		w.urgent_contract_cellphone AS
+		urgentContractCellphone,
+		w.work_type_code AS workTypeCode, w.work_date AS
+		workDate,
+		w.icon_image AS iconImage,
+		w.id_image AS idImage,
+		w.is_face AS
+		isFace,
+		w.face,
+		w.is_auth AS isAuth,
+		w.create_date AS createDate,
+		w.create_user AS
+		createUser,
+		w.update_date AS updateDate,
+		w.update_user AS updateUser,
+		w.note,
+		w.is_del AS isDel
+FROM
+buss_project_worker AS pw
+LEFT JOIN buss_worker_master AS w ON pw.id_card_number = w.id_card_number AND w.is_del = 0
+WHERE
+pw.is_del = 0 AND
+pw.project_code = #{projectCode}
+
+	</select>
+
+	<select id="getFaceModel" resultType="String">
+SELECT
+face
+FROM
+worker_face
+WHERE
+id_card_number = #{idCardNumber}
+LIMIT 1
+    </select>
+</mapper>
