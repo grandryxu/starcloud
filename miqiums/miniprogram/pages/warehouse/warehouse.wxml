@@ -1,0 +1,37 @@
+<view class="container">
+  <view class='page_row' bindtap="suo">
+    <view class="search">
+      <view class="df search_arr">
+        <icon class="searchcion" size='20' type='search'></icon>
+        <input bindinput="inputEdit" placeholder="输入查询物料" value="{{searchValue}}" />
+      </view>
+    </view>
+    <view class='sousuo' bindtap="GetMaterialInfo">搜索</view>
+  </view>
+  <!--数据列表 -->
+  <view class="table">
+    <view class="tr bg-w">
+      <view class="th">序号</view>
+      <view class="th">名称</view>
+      <view class="th">数量</view>
+      <view class="th">单位</view>
+      <view class="th">图片</view>
+    </view>
+    <block wx:for="{{listData}}" wx:for-item="item" wx:key="*this">
+      <view class="tr bg-g" wx:if="{{index % 2 == 0}}">
+        <view class="td">{{index+1}}</view>
+        <view class="td">{{item.material_name}}</view>
+        <view class="td">{{item.material_num}}</view>
+        <view class="td">{{item.unit}}</view>
+        <view class="td"><icon type="download" data-index="{{index}}" catchtap="previewImg" ></icon></view>
+      </view>
+      <view class="tr" wx:else>
+        <view class="td">{{index+1}}</view>
+        <view class="td">{{item.material_name}}</view>
+        <view class="td">{{item.material_num}}</view>
+        <view class="td">{{item.unit}}</view>
+        <view class="td"><icon type="download" data-index="{{index}}" catchtap="previewImg"></icon></view>
+      </view>
+    </block>
+  </view>
+</view>

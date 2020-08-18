@@ -1,0 +1,44 @@
+<!--index.wxml-->  <!--background-image:url(../../image/account_icon@3x.png) -->
+<view class="miqiu_page page-my">
+  <view class="userinfo">
+    <button wx:if="{{logged}}" open-type="getUserInfo" bindgetuserinfo="onGetUserInfo" class="userinfo-avatar" style="background-image: url({{avatarUrl}});background-size:100% 100%" size="default"></button>
+    <button wx:else open-type="getUserInfo" bindgetuserinfo="onGetUserInfo" class="userinfo-avatar" style="background-color: #007aff;background-size:100% 100%;" size="default"></button>
+    <view class="userinfo-nickname-wrapper">
+      <button class="userinfo-nickname">欢迎使用米丘智能仓库</button>
+    </view>
+  </view>
+
+  <view class="my-list">
+    <navigator class="list__item border" url="/pages/warehouse/warehouse">
+      <view class="list__item_left">
+        <image class="online__contact_icon" src="../../image/mine_phone_icon@3x.png"></image>
+        <text class="">仓库一览</text>
+      </view>
+      <image class="online__contact_right" mode="aspectFit" src="../../image/list_right_icon@3x.png"></image>
+    </navigator>
+
+    <navigator class="list__item border" url="/pages/export/export">
+      <view class="list__item_left">
+        <image class="online__contact_icon" src="../../image/mine_phone_icon@3x.png"></image>
+        <text class="">物料出库</text>
+      </view>
+      <image class="online__contact_right" mode="aspectFit" src="../../image/list_right_icon@3x.png"></image>
+    </navigator>
+
+    <navigator class="list__item border" url="/pages/import/import">
+      <view class="list__item_left">
+        <image class="online__contact_icon" src="../../image/mine_phone_icon@3x.png"></image>
+        <text class="">物料入库</text>
+      </view>
+      <image class="online__contact_right" mode="aspectFit" src="../../image/list_right_icon@3x.png"></image>
+    </navigator>
+
+    <navigator class="list__item border" url="/pages/setting/setting">
+      <view class="list__item_left">
+        <image class="online__contact_icon" src="../../image/mine_feedback_icon@3x.png"></image>
+        <text class="">物料设置</text>
+      </view>
+      <image class="online__contact_right" mode="aspectFit" src="../../image/list_right_icon@3x.png"></image>
+    </navigator>
+  </view>
+</view>

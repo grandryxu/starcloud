@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="page-body">
+    <form catchsubmit="FormSubmit" catchreset="formReset">
+      <view class=" page-section section">
+        <view class="section__title label">选择物料:</view>
+        <picker class="picker_area" mode="selector" bindchange="bindPickerChange" value="{{index}}" range="{{array}}" range-key="name" >
+          <view class="picker">
+            物料名称：{{array[index].name}}
+          </view>
+        </picker>
+      </view>
+
+      <view class="page-section">
+        <view class="page-section-title label">出库数量:</view>
+        <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__bd" style="margin: 30rpx 0">
+              <input class="weui-input" bindinput="InputEditNum" name="input" type="number" placeholder="输入出库数量" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="page-section">
+        <view class="page-section-title label">地址:</view>
+        <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__bd" style="margin: 30rpx 0">
+              <input class="weui-input" bindinput="InputEditRemark" name="input" type="text" placeholder="订单地址简写" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="btn-area">
+        <button style="margin: 30rpx 0" type="primary" formType="submit">确认</button>
+        <button style="margin: 30rpx 0" bindtap="GoBack" type="primary">返回上一页</button>
+      </view>
+    </form>
+  </view>
+
+</view>

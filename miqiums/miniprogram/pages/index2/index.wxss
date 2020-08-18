@@ -1,0 +1,140 @@
+/**index.wxss**/
+@import "../../style/guide.wxss";
+page {
+  background: #262e42;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.page-my {
+  /* box-sizing: content-box; */
+  padding-bottom: 136rpx;
+}
+
+.userinfo, .uploader, .tunnel {
+  margin-top: 40rpx;
+  height: 140rpx;
+  width: 100%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: none;
+  border-right: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  transition: all 300ms ease;
+}
+
+.userinfo {
+  padding-left: 120rpx;
+}
+
+.userinfo-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  margin: 20rpx;
+  border-radius: 50%;
+  background-size: cover;
+  background-color: white;
+}
+
+.userinfo-avatar[size] {
+  width: 100rpx;
+}
+
+
+.userinfo-avatar:after {
+  border: none;
+}
+
+
+.userinfo-nickname {
+  font-size: 32rpx;
+  color: #007aff;
+  background-color: white;
+  background-size: cover;
+  text-align: left;
+  padding-left: 0;
+  margin-left: 2px;
+}
+
+.userinfo-nickname::after {
+  border: none;
+}
+
+.userinfo-nickname-wrapper {
+  flex: 1;
+}
+
+.my-list {
+  margin-top:16rpx;
+  margin-bottom:32rpx;
+}
+
+
+.online__contact {
+  height: 100rpx;
+  font-size: 32rpx;
+  color: #283140;
+  background: #FFF;
+  border: none;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0;
+  padding: 0 30rpx 0 32rpx;
+}
+.online__contact::after {
+  border: none;
+  border-radius: 0;
+}
+.online__contact_icon {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+  margin-right: 22rpx;
+}
+.online__contact text{
+  display: block;
+  flex: 1;
+  text-align: left;
+}
+.border {
+  position: relative;
+}
+.border::after {
+  position: absolute;
+  content: '';
+  width: 720rpx;
+  border-bottom: 1px solid #e5e5e5;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+}
+.border__end {
+  border-bottom: 1px solid #e5e5e5;
+}
+.online__contact_right {
+  display: block;
+  width: 24rpx;
+  height: 24rpx;
+}
+
+.list__item {
+  height: 100rpx;
+  font-size: 32rpx;
+  color: #283140;
+  background: #FFF;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30rpx 0 32rpx;
+}
+.list__item_left {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}

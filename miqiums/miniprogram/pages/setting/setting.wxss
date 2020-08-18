@@ -1,0 +1,60 @@
+@import "../../style/guide.wxss";
+
+
+.radio-group{
+  display: flex;
+  flex-direction: row;
+  justify-content:space-between;
+
+}
+.btn-area{
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  bottom: 2rem;
+  width: 90%;
+  justify-content:space-around;
+}
+
+.weui-input{
+  background-color: #e6f3f9
+}
+
+.page-form{
+  width: 90%;
+}
+.page-section{
+  margin-top: 1rem;
+}
+
+.label{
+  font-size: 18px;
+}
+
+/**图片 **/
+.img{
+  display: inline-block;
+}
+ 
+.pic {
+float:left;
+position:relative;
+margin-right:9px;
+margin-bottom:9px;
+}
+ 
+.delete-btn{
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.ok-btn{
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+ 
+.weui-uploader{
+  padding: 10rpx;
+}

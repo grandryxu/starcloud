@@ -1,0 +1,72 @@
+<view class="container">
+    <form class="page-form" catchsubmit="FormSubmit" catchreset="formReset">
+
+      <view class="page-section">
+        <view class="page-section-title label">物料名称</view>
+        <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__bd" style="margin: 30rpx 0">
+              <input bindinput="InputEditMaterial" class="weui-input" name="input" placeholder="" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="page-section">
+        <view class="page-section-title label">数量</view>
+        <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__bd" style="margin: 30rpx 0">
+              <input bindinput="InputEditNum" class="weui-input" type="number" name="input" placeholder="" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="page-section">
+        <view class="page-section-title label">单位</view>
+        <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__bd" style="margin: 30rpx 0">
+              <input bindinput="InputEditUnit" class="weui-input" type="text" name="input" placeholder="" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="weui-uploader">
+        <view class="img-v weui-uploader__bd">
+          <view class='pic' wx:for="{{imgs}}" wx:for-item="item" wx:key="*this">
+            <image class='weui-uploader__img ' src="{{item}}" data-index="{{index}}" mode="aspectFill" bindtap="previewImg">
+              <icon type='cancel' class="delete-btn" data-index="{{index}}" catchtap="deleteImg"></icon>
+              <icon type='success' class='ok-btn' data-index="{{index}}" catchtap="uploadImg"></icon>
+            </image>
+          </view>
+
+          <!-- 用来提示用户上传图片 -->
+          <view class="weui-uploader__input-box pic" bindtap="chooseImg"> </view>
+        </view>
+        <button class="upload-img-btn" bindtap="chooseImg" type='primary'>拍照 / 上传</button>
+      </view>
+
+      <view class="page-section page-section-gap">
+        <radio-group class='radio-group' name="radio" bindchange="RadioChange">
+          <label class="weui-cell weui-check__label" wx:for="{{items}}" wx:key="value">
+            <label wx:if="{{item.value=='add'}}">
+              <radio value="{{item.value}}" checked="true" />{{item.name}}
+            </label>
+            <label wx:else>
+              <radio value="{{item.value}}" />{{item.name}}
+            </label>
+          </label>
+        </radio-group>
+      </view>
+
+
+
+      <view class="btn-area">
+        <button style="margin: 30rpx 0" type="primary" size="mini" formType="submit">确认</button>
+        <button style="margin: 30rpx 0" bindtap="GoBack" size="mini" type="primary">取消</button>
+      </view>
+    </form>
+</view>
